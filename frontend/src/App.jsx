@@ -4,6 +4,7 @@ import Navbar from './components/Navbar'
 import Landing from './pages/Landing'
 import UsernameSelection from './pages/UsernameSelection'
 import ResumeUpload from './pages/ResumeUpload'
+import ProfileEditor from './pages/ProfileEditor'
 import Dashboard from './pages/Dashboard'
 import Portfolio from './pages/Portfolio'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -50,6 +51,11 @@ function App() {
                             <ResumeUpload />
                         </ProtectedRoute>
                     } />
+                    <Route path="/editor" element={
+                        <ProtectedRoute>
+                            <ProfileEditor />
+                        </ProtectedRoute>
+                    } />
                     <Route path="/dashboard" element={
                         <ProtectedRoute>
                             <Dashboard />
@@ -65,3 +71,4 @@ function App() {
 }
 
 export default App
+

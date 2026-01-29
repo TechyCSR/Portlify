@@ -2,12 +2,12 @@ import express from 'express';
 import User from '../models/User.js';
 import Profile from '../models/Profile.js';
 import authMiddleware, { getUserFromAuth } from '../middleware/auth.js';
-import { parseResume } from '../utils/resumeParser.js';
+import { parseResumeWithGemini } from '../utils/geminiParser.js';
 
 const router = express.Router();
 
-// Create/update profile with resume parsing (protected)
-router.post('/create', authMiddleware, getUserFromAuth, async (req, res) => {
+// Parse resume with AI (returns data without saving)
+router.post('/parse', authMiddleware, getUserFromAuth, async (req, res) => {
     try {
         const { resumeUrl } = req.body;
 
@@ -21,33 +21,64 @@ router.post('/create', authMiddleware, getUserFromAuth, async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        // Parse resume
-        let parsedData;
-        try {
-            parsedData = await parseResume(resumeUrl);
-        } catch (parseError) {
-            console.error('Parse error:', parseError);
-            // Return empty profile structure if parsing fails
-            parsedData = {
-                name: '',
-                headline: '',
-                about: '',
-                skills: [],
-                experience: [],
-                education: []
-            };
+        // Parse resume with Gemini AI
+        const parsedData = await parseResumeWithGemini(resumeUrl);
+
+        // Return parsed data for user to review/edit
+        res.json({
+            message: 'Resume parsed successfully',
+            data: parsedData,
+            resumeUrl
+        });
+    } catch (error) {
+        console.error('Parse resume error:', error);
+        res.status(500).json({ error: error.message || 'Failed to parse resume' });
+    }
+});
+
+// Create/update profile with parsed data (after user review)
+router.post('/create', authMiddleware, getUserFromAuth, async (req, res) => {
+    try {
+        const {
+            resumeUrl,
+            basicDetails,
+            skills,
+            experience,
+            education,
+            projects,
+            achievements,
+            extraCurricular,
+            socialLinks,
+            customSections
+        } = req.body;
+
+        // Find user
+        const user = await User.findOne({ clerkId: req.clerkUserId });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
         }
+
+        // Build profile data
+        const profileData = {
+            username: user.username,
+            resumeUrl: resumeUrl || '',
+            basicDetails: basicDetails || {},
+            skills: skills || { technical: [], soft: [], tools: [], languages: [] },
+            experience: experience || [],
+            education: education || [],
+            projects: projects || [],
+            achievements: achievements || [],
+            extraCurricular: extraCurricular || [],
+            socialLinks: socialLinks || {},
+            customSections: customSections || [],
+            updatedAt: new Date()
+        };
 
         // Update or create profile
         const profile = await Profile.findOneAndUpdate(
             { userId: user._id },
-            {
-                ...parsedData,
-                resumeUrl,
-                username: user.username,
-                updatedAt: new Date()
-            },
-            { new: true, upsert: true }
+            profileData,
+            { new: true, upsert: true, setDefaultsOnInsert: true }
         );
 
         res.json({
@@ -60,10 +91,10 @@ router.post('/create', authMiddleware, getUserFromAuth, async (req, res) => {
     }
 });
 
-// Update profile (protected)
+// Update profile (for editing individual sections)
 router.put('/update', authMiddleware, getUserFromAuth, async (req, res) => {
     try {
-        const { name, headline, about, skills, experience, education, socialLinks, isPublic } = req.body;
+        const updates = req.body;
 
         // Find user
         const user = await User.findOne({ clerkId: req.clerkUserId });
@@ -72,22 +103,15 @@ router.put('/update', authMiddleware, getUserFromAuth, async (req, res) => {
         }
 
         // Find and update profile
-        const profile = await Profile.findOne({ userId: user._id });
+        const profile = await Profile.findOneAndUpdate(
+            { userId: user._id },
+            { ...updates, updatedAt: new Date() },
+            { new: true }
+        );
+
         if (!profile) {
             return res.status(404).json({ error: 'Profile not found' });
         }
-
-        // Update only provided fields
-        if (name !== undefined) profile.name = name;
-        if (headline !== undefined) profile.headline = headline;
-        if (about !== undefined) profile.about = about;
-        if (skills !== undefined) profile.skills = skills;
-        if (experience !== undefined) profile.experience = experience;
-        if (education !== undefined) profile.education = education;
-        if (socialLinks !== undefined) profile.socialLinks = socialLinks;
-        if (isPublic !== undefined) profile.isPublic = isPublic;
-
-        await profile.save();
 
         res.json({
             message: 'Profile updated successfully',
@@ -96,6 +120,42 @@ router.put('/update', authMiddleware, getUserFromAuth, async (req, res) => {
     } catch (error) {
         console.error('Update profile error:', error);
         res.status(500).json({ error: 'Failed to update profile' });
+    }
+});
+
+// Update profile photo
+router.put('/photo', authMiddleware, getUserFromAuth, async (req, res) => {
+    try {
+        const { photoUrl } = req.body;
+
+        if (!photoUrl) {
+            return res.status(400).json({ error: 'Photo URL is required' });
+        }
+
+        // Find user
+        const user = await User.findOne({ clerkId: req.clerkUserId });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Update profile photo
+        const profile = await Profile.findOneAndUpdate(
+            { userId: user._id },
+            { 'basicDetails.profilePhoto': photoUrl, updatedAt: new Date() },
+            { new: true }
+        );
+
+        if (!profile) {
+            return res.status(404).json({ error: 'Profile not found' });
+        }
+
+        res.json({
+            message: 'Profile photo updated successfully',
+            profilePhoto: photoUrl
+        });
+    } catch (error) {
+        console.error('Update photo error:', error);
+        res.status(500).json({ error: 'Failed to update profile photo' });
     }
 });
 
@@ -109,7 +169,7 @@ router.get('/me', authMiddleware, getUserFromAuth, async (req, res) => {
 
         const profile = await Profile.findOne({ userId: user._id });
         if (!profile) {
-            return res.status(404).json({ error: 'Profile not found' });
+            return res.status(404).json({ error: 'Profile not found', needsSetup: true });
         }
 
         res.json(profile);
@@ -119,7 +179,7 @@ router.get('/me', authMiddleware, getUserFromAuth, async (req, res) => {
     }
 });
 
-// Get public profile by username (public)
+// Get public profile by username (public - no auth required)
 router.get('/:username', async (req, res) => {
     try {
         const { username } = req.params;

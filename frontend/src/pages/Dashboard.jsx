@@ -9,56 +9,21 @@ function Dashboard() {
     const navigate = useNavigate()
     const [profile, setProfile] = useState(null)
     const [loading, setLoading] = useState(true)
-    const [saving, setSaving] = useState(false)
-    const [error, setError] = useState('')
-    const [success, setSuccess] = useState('')
     const [dbUser, setDbUser] = useState(null)
-
-    // Editable fields
-    const [formData, setFormData] = useState({
-        name: '',
-        headline: '',
-        about: '',
-        skills: [],
-        socialLinks: {
-            linkedin: '',
-            github: '',
-            twitter: '',
-            website: ''
-        }
-    })
-    const [newSkill, setNewSkill] = useState('')
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Get user info
                 const { data: userData } = await getCurrentUser()
                 setDbUser(userData)
 
-                // Get profile
                 const { data: profileData } = await getMyProfile()
                 setProfile(profileData)
-                setFormData({
-                    name: profileData.name || '',
-                    headline: profileData.headline || '',
-                    about: profileData.about || '',
-                    skills: profileData.skills || [],
-                    socialLinks: profileData.socialLinks || {
-                        linkedin: '',
-                        github: '',
-                        twitter: '',
-                        website: ''
-                    }
-                })
             } catch (err) {
-                if (err.response?.status === 404) {
-                    // No profile yet, redirect to upload
+                if (err.response?.status === 404 || err.response?.data?.needsSetup) {
                     navigate('/upload')
                 } else if (err.response?.data?.needsRegistration) {
                     navigate('/username')
-                } else {
-                    setError('Failed to load profile')
                 }
             } finally {
                 setLoading(false)
@@ -66,57 +31,6 @@ function Dashboard() {
         }
         fetchData()
     }, [navigate])
-
-    const handleChange = (e) => {
-        const { name, value } = e.target
-        if (name.startsWith('social.')) {
-            const socialKey = name.replace('social.', '')
-            setFormData(prev => ({
-                ...prev,
-                socialLinks: {
-                    ...prev.socialLinks,
-                    [socialKey]: value
-                }
-            }))
-        } else {
-            setFormData(prev => ({ ...prev, [name]: value }))
-        }
-    }
-
-    const addSkill = () => {
-        if (newSkill.trim() && !formData.skills.includes(newSkill.trim())) {
-            setFormData(prev => ({
-                ...prev,
-                skills: [...prev.skills, newSkill.trim()]
-            }))
-            setNewSkill('')
-        }
-    }
-
-    const removeSkill = (skillToRemove) => {
-        setFormData(prev => ({
-            ...prev,
-            skills: prev.skills.filter(s => s !== skillToRemove)
-        }))
-    }
-
-    const handleSubmit = async (e) => {
-        e.preventDefault()
-        setSaving(true)
-        setError('')
-        setSuccess('')
-
-        try {
-            const { data } = await updateProfile(formData)
-            setProfile(data.profile)
-            setSuccess('Profile updated successfully!')
-            setTimeout(() => setSuccess(''), 3000)
-        } catch (err) {
-            setError(err.response?.data?.error || 'Failed to update profile')
-        } finally {
-            setSaving(false)
-        }
-    }
 
     if (loading) {
         return (
@@ -126,267 +40,193 @@ function Dashboard() {
         )
     }
 
+    const { basicDetails, skills, experience, education, projects } = profile || {}
+    const allSkills = [...(skills?.technical || []), ...(skills?.tools || [])]
+
     return (
         <div className="min-h-screen pt-24 pb-12 px-4">
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-6xl mx-auto">
                 {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8"
+                    className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8"
                 >
                     <div>
-                        <h1 className="text-3xl font-display font-bold text-white">
-                            Dashboard
-                        </h1>
-                        <p className="text-dark-400">
-                            Edit your portfolio information
-                        </p>
+                        <h1 className="text-3xl font-display font-bold text-white">Dashboard</h1>
+                        <p className="text-dark-400">Manage your portfolio</p>
                     </div>
                     <div className="flex gap-3">
-                        <Link
-                            to="/upload"
-                            className="btn-secondary text-sm"
-                        >
+                        <Link to="/upload" className="btn-secondary text-sm">
                             Re-upload Resume
                         </Link>
                         {dbUser?.username && (
-                            <Link
-                                to={`/${dbUser.username}`}
-                                className="btn-primary text-sm"
-                            >
+                            <Link to={`/${dbUser.username}`} className="btn-primary text-sm">
                                 View Portfolio →
                             </Link>
                         )}
                     </div>
                 </motion.div>
 
-                {/* Portfolio URL */}
+                {/* Portfolio URL Card */}
                 {dbUser?.username && (
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
-                        className="glass rounded-2xl p-4 mb-8 flex items-center justify-between"
+                        className="glass-card rounded-2xl p-6 mb-8"
                     >
-                        <div>
-                            <p className="text-dark-400 text-sm mb-1">Your portfolio URL</p>
-                            <p className="text-lg font-medium text-primary-300">
-                                portlify.techycsr.dev/{dbUser.username}
-                            </p>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div>
+                                <p className="text-dark-400 text-sm mb-1">Your Portfolio URL</p>
+                                <p className="text-xl font-medium text-primary-300">
+                                    portlify.techycsr.dev/{dbUser.username}
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    navigator.clipboard.writeText(`https://portlify.techycsr.dev/${dbUser.username}`)
+                                    // Could add toast notification here
+                                }}
+                                className="px-4 py-2 rounded-xl bg-dark-700 hover:bg-dark-600 text-dark-300 text-sm transition-colors flex items-center gap-2"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                                Copy Link
+                            </button>
                         </div>
-                        <button
-                            onClick={() => navigator.clipboard.writeText(`https://portlify.techycsr.dev/${dbUser.username}`)}
-                            className="px-4 py-2 rounded-lg bg-dark-700 hover:bg-dark-600 text-dark-300 text-sm transition-colors"
-                        >
-                            Copy Link
-                        </button>
                     </motion.div>
                 )}
 
-                {/* Success/Error messages */}
-                {success && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mb-6 p-4 rounded-xl bg-green-500/10 border border-green-500/30"
-                    >
-                        <p className="text-green-400">{success}</p>
-                    </motion.div>
-                )}
-                {error && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30"
-                    >
-                        <p className="text-red-400">{error}</p>
-                    </motion.div>
-                )}
-
-                {/* Edit Form */}
-                <motion.form
+                {/* Stats Grid */}
+                <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
-                    onSubmit={handleSubmit}
+                    className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
+                >
+                    {[
+                        { label: 'Skills', value: allSkills.length, icon: '⚡', color: 'primary' },
+                        { label: 'Experience', value: experience?.length || 0, icon: '💼', color: 'green' },
+                        { label: 'Projects', value: projects?.length || 0, icon: '🚀', color: 'accent' },
+                        { label: 'Education', value: education?.length || 0, icon: '🎓', color: 'yellow' }
+                    ].map((stat, i) => (
+                        <div key={i} className="glass rounded-2xl p-4 text-center">
+                            <div className="text-2xl mb-2">{stat.icon}</div>
+                            <p className={`text-3xl font-bold text-${stat.color}-400 mb-1`}>{stat.value}</p>
+                            <p className="text-dark-500 text-sm">{stat.label}</p>
+                        </div>
+                    ))}
+                </motion.div>
+
+                {/* Profile Preview */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
                     className="glass-card rounded-3xl p-6 md:p-8"
                 >
-                    <div className="grid md:grid-cols-2 gap-6">
-                        {/* Name */}
-                        <div>
-                            <label className="block text-dark-300 text-sm font-medium mb-2">
-                                Full Name
-                            </label>
-                            <input
-                                type="text"
-                                name="name"
-                                value={formData.name}
-                                onChange={handleChange}
-                                className="input-field"
-                                placeholder="John Doe"
-                            />
-                        </div>
-
-                        {/* Headline */}
-                        <div>
-                            <label className="block text-dark-300 text-sm font-medium mb-2">
-                                Headline
-                            </label>
-                            <input
-                                type="text"
-                                name="headline"
-                                value={formData.headline}
-                                onChange={handleChange}
-                                className="input-field"
-                                placeholder="Full Stack Developer"
-                            />
-                        </div>
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-xl font-bold text-white">Profile Preview</h2>
+                        <Link to="/editor" className="text-primary-400 hover:text-primary-300 text-sm font-medium">
+                            Edit Profile →
+                        </Link>
                     </div>
 
-                    {/* About */}
-                    <div className="mt-6">
-                        <label className="block text-dark-300 text-sm font-medium mb-2">
-                            About
-                        </label>
-                        <textarea
-                            name="about"
-                            value={formData.about}
-                            onChange={handleChange}
-                            rows={4}
-                            className="input-field resize-none"
-                            placeholder="Tell us about yourself..."
-                        />
-                    </div>
-
-                    {/* Skills */}
-                    <div className="mt-6">
-                        <label className="block text-dark-300 text-sm font-medium mb-2">
-                            Skills
-                        </label>
-                        <div className="flex gap-2 mb-3">
-                            <input
-                                type="text"
-                                value={newSkill}
-                                onChange={(e) => setNewSkill(e.target.value)}
-                                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
-                                className="input-field flex-1"
-                                placeholder="Add a skill..."
-                            />
-                            <button
-                                type="button"
-                                onClick={addSkill}
-                                className="px-4 py-2 rounded-xl bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors"
-                            >
-                                Add
-                            </button>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                            {formData.skills.map((skill, index) => (
-                                <span
-                                    key={index}
-                                    className="group px-3 py-1.5 rounded-full bg-dark-700 text-dark-200 text-sm flex items-center gap-2"
-                                >
-                                    {skill}
-                                    <button
-                                        type="button"
-                                        onClick={() => removeSkill(skill)}
-                                        className="text-dark-500 hover:text-red-400 transition-colors"
-                                    >
-                                        ×
-                                    </button>
-                                </span>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Social Links */}
-                    <div className="mt-6">
-                        <label className="block text-dark-300 text-sm font-medium mb-4">
-                            Social Links
-                        </label>
-                        <div className="grid md:grid-cols-2 gap-4">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-dark-700 flex items-center justify-center flex-shrink-0">
-                                    <svg className="w-5 h-5 text-dark-400" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
-                                    </svg>
-                                </div>
-                                <input
-                                    type="url"
-                                    name="social.linkedin"
-                                    value={formData.socialLinks.linkedin}
-                                    onChange={handleChange}
-                                    className="input-field flex-1"
-                                    placeholder="LinkedIn URL"
-                                />
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-dark-700 flex items-center justify-center flex-shrink-0">
-                                    <svg className="w-5 h-5 text-dark-400" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-                                    </svg>
-                                </div>
-                                <input
-                                    type="url"
-                                    name="social.github"
-                                    value={formData.socialLinks.github}
-                                    onChange={handleChange}
-                                    className="input-field flex-1"
-                                    placeholder="GitHub URL"
-                                />
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-dark-700 flex items-center justify-center flex-shrink-0">
-                                    <svg className="w-5 h-5 text-dark-400" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                                    </svg>
-                                </div>
-                                <input
-                                    type="url"
-                                    name="social.twitter"
-                                    value={formData.socialLinks.twitter}
-                                    onChange={handleChange}
-                                    className="input-field flex-1"
-                                    placeholder="Twitter/X URL"
-                                />
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-dark-700 flex items-center justify-center flex-shrink-0">
-                                    <svg className="w-5 h-5 text-dark-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                                    </svg>
-                                </div>
-                                <input
-                                    type="url"
-                                    name="social.website"
-                                    value={formData.socialLinks.website}
-                                    onChange={handleChange}
-                                    className="input-field flex-1"
-                                    placeholder="Personal Website URL"
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Submit */}
-                    <div className="mt-8 flex justify-end">
-                        <button
-                            type="submit"
-                            disabled={saving}
-                            className="btn-primary disabled:opacity-50"
-                        >
-                            {saving ? (
-                                <span className="flex items-center">
-                                    <div className="spinner w-5 h-5 mr-2" />
-                                    Saving...
-                                </span>
+                    <div className="flex items-start gap-6">
+                        {/* Avatar */}
+                        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                            {basicDetails?.profilePhoto ? (
+                                <img src={basicDetails.profilePhoto} alt={basicDetails.name} className="w-full h-full object-cover" />
                             ) : (
-                                'Save Changes'
+                                <span className="text-2xl font-bold text-white">
+                                    {basicDetails?.name?.charAt(0)?.toUpperCase() || '?'}
+                                </span>
                             )}
-                        </button>
+                        </div>
+
+                        {/* Info */}
+                        <div className="flex-1 min-w-0">
+                            <h3 className="text-2xl font-bold text-white mb-1">
+                                {basicDetails?.name || 'Your Name'}
+                            </h3>
+                            {basicDetails?.headline && (
+                                <p className="text-primary-400 mb-2">{basicDetails.headline}</p>
+                            )}
+                            {basicDetails?.location && (
+                                <p className="text-dark-500 text-sm mb-4">{basicDetails.location}</p>
+                            )}
+
+                            {/* Skills preview */}
+                            {allSkills.length > 0 && (
+                                <div className="flex flex-wrap gap-2">
+                                    {allSkills.slice(0, 6).map((skill, i) => (
+                                        <span key={i} className="px-3 py-1 rounded-full bg-dark-700/50 text-dark-300 text-sm">
+                                            {skill}
+                                        </span>
+                                    ))}
+                                    {allSkills.length > 6 && (
+                                        <span className="px-3 py-1 rounded-full bg-dark-700/50 text-dark-500 text-sm">
+                                            +{allSkills.length - 6} more
+                                        </span>
+                                    )}
+                                </div>
+                            )}
+                        </div>
                     </div>
-                </motion.form>
+                </motion.div>
+
+                {/* Quick Actions */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="mt-8 grid md:grid-cols-3 gap-4"
+                >
+                    <Link
+                        to="/editor"
+                        className="glass rounded-2xl p-6 group hover:bg-dark-800/50 transition-colors"
+                    >
+                        <div className="w-12 h-12 rounded-xl bg-primary-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <svg className="w-6 h-6 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                        </div>
+                        <h3 className="text-lg font-semibold text-white mb-1">Edit Profile</h3>
+                        <p className="text-dark-500 text-sm">Update your information, add projects, and more</p>
+                    </Link>
+
+                    <Link
+                        to="/upload"
+                        className="glass rounded-2xl p-6 group hover:bg-dark-800/50 transition-colors"
+                    >
+                        <div className="w-12 h-12 rounded-xl bg-accent-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <svg className="w-6 h-6 text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                            </svg>
+                        </div>
+                        <h3 className="text-lg font-semibold text-white mb-1">Upload New Resume</h3>
+                        <p className="text-dark-500 text-sm">Re-parse your resume with the latest AI</p>
+                    </Link>
+
+                    {dbUser?.username && (
+                        <a
+                            href={`https://portlify.techycsr.dev/${dbUser.username}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="glass rounded-2xl p-6 group hover:bg-dark-800/50 transition-colors"
+                        >
+                            <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                </svg>
+                            </div>
+                            <h3 className="text-lg font-semibold text-white mb-1">View Live Portfolio</h3>
+                            <p className="text-dark-500 text-sm">See how your portfolio looks to visitors</p>
+                        </a>
+                    )}
+                </motion.div>
             </div>
         </div>
     )

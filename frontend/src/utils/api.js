@@ -36,11 +36,17 @@ export const getCloudinarySignature = () =>
     api.get('/api/cloudinary/signature')
 
 // Profile APIs
+export const parseResume = (resumeUrl) =>
+    api.post('/api/profile/parse', { resumeUrl })
+
 export const createProfile = (data) =>
     api.post('/api/profile/create', data)
 
 export const updateProfile = (data) =>
     api.put('/api/profile/update', data)
+
+export const updateProfilePhoto = (photoUrl) =>
+    api.put('/api/profile/photo', { photoUrl })
 
 export const getMyProfile = () =>
     api.get('/api/profile/me')
@@ -49,3 +55,4 @@ export const getPublicProfile = (username) =>
     api.get(`/api/profile/${encodeURIComponent(username)}`)
 
 export default api
+

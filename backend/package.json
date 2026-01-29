@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@clerk/express": "^1.0.0",
+    "@google/generative-ai": "^0.21.0",
     "axios": "^1.6.0",
     "cloudinary": "^1.41.0",
     "cors": "^2.8.5",
