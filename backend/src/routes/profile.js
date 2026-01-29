@@ -2,7 +2,7 @@ import express from 'express';
 import User from '../models/User.js';
 import Profile from '../models/Profile.js';
 import authMiddleware, { getUserFromAuth } from '../middleware/auth.js';
-import { parseResumeWithGemini } from '../utils/geminiParser.js';
+import { parseResumeWithAI } from '../utils/geminiParser.js';
 
 const router = express.Router();
 
@@ -21,8 +21,8 @@ router.post('/parse', authMiddleware, getUserFromAuth, async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        // Parse resume with Gemini AI
-        const parsedData = await parseResumeWithGemini(resumeUrl);
+        // Parse resume with Ollama AI
+        const parsedData = await parseResumeWithAI(resumeUrl);
 
         // Return parsed data for user to review/edit
         res.json({

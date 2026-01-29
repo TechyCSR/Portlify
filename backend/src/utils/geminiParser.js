@@ -1,121 +1,123 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { Ollama } from 'ollama';
 import axios from 'axios';
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
 
-// Initialize Gemini
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// Initialize Ollama with cloud API
+const ollama = new Ollama({
+  host: 'https://ollama.com',
+  headers: {
+    Authorization: 'Bearer ' + process.env.OLLAMA_API_KEY
+  }
+});
+
+// Model to use
+const MODEL = 'gemma3:4b-cloud';
 
 // System prompt for resume parsing
-const RESUME_PARSER_PROMPT = `You are an expert resume parser. Your task is to extract structured data from the resume text provided.
+const RESUME_PARSER_PROMPT = `You are an expert resume parser. Analyze the resume image(s) provided and extract structured data.
 
 CRITICAL RULES:
 1. Return ONLY valid JSON - no markdown, no explanations, no code blocks
 2. If a section doesn't exist in the resume, return an empty array [] or empty string ""
-3. Preserve ALL URLs and links found in the text exactly as they appear
-4. For any section you find that doesn't fit the standard categories, add it to customSections
+3. Preserve ALL URLs and links found exactly as they appear
+4. For any section you find that doesn't fit standard categories, add to customSections
 5. Be thorough - extract every piece of relevant information
 6. Skills should be categorized: technical (programming languages, frameworks), soft (communication, leadership), tools (software, platforms), languages (spoken/written)
 7. For projects, always try to find demo URLs and GitHub links
-8. Extract achievements, certifications, awards, publications into the achievements section
-9. Parse dates in a readable format (e.g., "Jan 2023 - Present" or "2020 - 2024")
+8. Extract achievements, certifications, awards into the achievements section
+9. Parse dates in readable format (e.g., "Jan 2023 - Present" or "2020 - 2024")
 
-Return this EXACT JSON structure (no deviations):
+Return this EXACT JSON structure:
 {
   "basicDetails": {
-    "name": "Full name of the person",
-    "headline": "Professional title or tagline (e.g., 'Full Stack Developer' or 'Software Engineer at Google')",
+    "name": "Full name",
+    "headline": "Professional title",
     "email": "email@example.com",
     "phone": "+1-234-567-8900",
-    "location": "City, State/Country",
-    "about": "Professional summary or objective if present"
+    "location": "City, Country",
+    "about": "Professional summary"
   },
   "skills": {
-    "technical": ["JavaScript", "Python", "React", "Node.js"],
-    "soft": ["Leadership", "Communication", "Problem Solving"],
-    "tools": ["Git", "Docker", "AWS", "Figma"],
-    "languages": ["English", "Spanish", "Hindi"]
+    "technical": ["JavaScript", "Python"],
+    "soft": ["Leadership", "Communication"],
+    "tools": ["Git", "Docker", "AWS"],
+    "languages": ["English", "Spanish"]
   },
-  "experience": [
-    {
-      "title": "Job Title",
-      "company": "Company Name",
-      "duration": "Jan 2023 - Present",
-      "location": "City, Country",
-      "description": "Brief description of role",
-      "achievements": ["Achievement 1", "Achievement 2"]
-    }
-  ],
-  "education": [
-    {
-      "degree": "Bachelor of Science in Computer Science",
-      "institution": "University Name",
-      "year": "2020 - 2024",
-      "gpa": "3.8/4.0",
-      "coursework": ["Data Structures", "Algorithms", "Machine Learning"]
-    }
-  ],
-  "projects": [
-    {
-      "title": "Project Name",
-      "description": "What the project does",
-      "techStack": ["React", "Node.js", "MongoDB"],
-      "demoUrl": "https://project-demo.com",
-      "githubUrl": "https://github.com/user/project"
-    }
-  ],
-  "achievements": [
-    {
-      "title": "Award or Achievement Name",
-      "description": "Brief description",
-      "date": "2023"
-    }
-  ],
-  "extraCurricular": [
-    {
-      "activity": "Activity or Club Name",
-      "role": "Role or Position",
-      "description": "What you did"
-    }
-  ],
+  "experience": [{
+    "title": "Job Title",
+    "company": "Company Name",
+    "duration": "Jan 2023 - Present",
+    "location": "City, Country",
+    "description": "Role description",
+    "achievements": ["Achievement 1"]
+  }],
+  "education": [{
+    "degree": "Bachelor of Science",
+    "institution": "University Name",
+    "year": "2020 - 2024",
+    "gpa": "3.8/4.0",
+    "coursework": ["Data Structures"]
+  }],
+  "projects": [{
+    "title": "Project Name",
+    "description": "What it does",
+    "techStack": ["React", "Node.js"],
+    "demoUrl": "https://demo.com",
+    "githubUrl": "https://github.com/user/project"
+  }],
+  "achievements": [{
+    "title": "Award Name",
+    "description": "Description",
+    "date": "2023"
+  }],
+  "extraCurricular": [{
+    "activity": "Club Name",
+    "role": "Position",
+    "description": "What you did"
+  }],
   "socialLinks": {
     "linkedin": "https://linkedin.com/in/username",
     "github": "https://github.com/username",
     "twitter": "https://twitter.com/username",
-    "website": "https://personal-website.com",
+    "website": "https://website.com",
     "email": "email@example.com"
   },
-  "customSections": [
-    {
-      "title": "Section Title",
-      "content": "Content from this section"
-    }
-  ]
+  "customSections": [{
+    "title": "Section Title",
+    "content": "Content"
+  }]
 }
 
-RESUME TEXT TO PARSE:
-`;
+Now analyze the resume image(s) and extract the information:`;
 
 /**
- * Parse resume using Gemini AI
+ * Parse resume using Ollama with gemma3:4b-cloud
  * @param {string} pdfUrl - Cloudinary URL of the PDF
  * @returns {Object} Structured resume data
  */
-export async function parseResumeWithGemini(pdfUrl) {
+export async function parseResumeWithAI(pdfUrl) {
   try {
-    // Fetch PDF and extract text
-    const pdfText = await extractTextFromPDF(pdfUrl);
+    // Download PDF and convert to images
+    const images = await downloadAndConvertPDF(pdfUrl);
 
-    if (!pdfText || pdfText.trim().length < 50) {
-      throw new Error('Could not extract sufficient text from PDF');
+    if (!images || images.length === 0) {
+      throw new Error('Could not convert PDF to images');
     }
 
-    // Call Gemini API - Using latest Gemini 2.0 Flash model
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    // Call Ollama API with images
+    const response = await ollama.chat({
+      model: MODEL,
+      messages: [{
+        role: 'user',
+        content: RESUME_PARSER_PROMPT,
+        images: images // Base64 encoded images
+      }],
+      stream: false
+    });
 
-    const prompt = RESUME_PARSER_PROMPT + pdfText;
-
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    let text = response.text();
+    let text = response.message.content;
 
     // Clean up response - remove markdown code blocks if present
     text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
@@ -130,36 +132,121 @@ export async function parseResumeWithGemini(pdfUrl) {
       throw new Error('Failed to parse AI response as JSON');
     }
 
+    // Cleanup temp files
+    cleanupTempFiles(images);
+
     // Validate and sanitize the response
     return sanitizeAndValidate(parsedData);
 
   } catch (error) {
-    console.error('Gemini parsing error:', error);
+    console.error('Ollama parsing error:', error);
     throw new Error(`Resume parsing failed: ${error.message}`);
   }
 }
 
 /**
- * Extract text from PDF using pdf-parse
+ * Download PDF and convert to base64 images
  */
-async function extractTextFromPDF(pdfUrl) {
+async function downloadAndConvertPDF(pdfUrl) {
+  const tempDir = path.join(os.tmpdir(), 'portlify-' + Date.now());
+  fs.mkdirSync(tempDir, { recursive: true });
+
   try {
-    // Fetch PDF from Cloudinary
+    // Download PDF
     const response = await axios.get(pdfUrl, {
       responseType: 'arraybuffer',
       timeout: 30000
     });
-    const pdfBuffer = Buffer.from(response.data);
 
-    // Dynamic import for pdf-parse (CommonJS module)
+    const pdfPath = path.join(tempDir, 'resume.pdf');
+    fs.writeFileSync(pdfPath, Buffer.from(response.data));
+
+    // Convert PDF to images using pdf2pic
+    const { fromPath } = await import('pdf2pic');
+
+    const options = {
+      density: 150,
+      saveFilename: 'page',
+      savePath: tempDir,
+      format: 'png',
+      width: 1200,
+      height: 1600
+    };
+
+    const converter = fromPath(pdfPath, options);
+
+    // Get PDF info to know page count
     const pdfParse = (await import('pdf-parse')).default;
-    const data = await pdfParse(pdfBuffer);
+    const pdfData = await pdfParse(Buffer.from(response.data));
+    const pageCount = pdfData.numpages;
 
-    return data.text;
+    // Convert pages (max 5 pages)
+    const pagesToConvert = Math.min(pageCount, 5);
+    const images = [];
+
+    for (let i = 1; i <= pagesToConvert; i++) {
+      try {
+        const result = await converter(i);
+        if (result.path && fs.existsSync(result.path)) {
+          // Read image and convert to base64
+          const imageBuffer = fs.readFileSync(result.path);
+          const base64Image = imageBuffer.toString('base64');
+          images.push(base64Image);
+        }
+      } catch (pageError) {
+        console.error(`Error converting page ${i}:`, pageError);
+      }
+    }
+
+    // Cleanup PDF
+    if (fs.existsSync(pdfPath)) {
+      fs.unlinkSync(pdfPath);
+    }
+
+    return images;
   } catch (error) {
-    console.error('PDF extraction error:', error);
-    throw new Error('Failed to extract text from PDF');
+    console.error('PDF conversion error:', error);
+    // Fallback to text extraction
+    return await fallbackToTextExtraction(pdfUrl);
   }
+}
+
+/**
+ * Fallback: Extract text from PDF and send as text prompt
+ */
+async function fallbackToTextExtraction(pdfUrl) {
+  console.log('Falling back to text extraction...');
+
+  const response = await axios.get(pdfUrl, {
+    responseType: 'arraybuffer',
+    timeout: 30000
+  });
+
+  const pdfParse = (await import('pdf-parse')).default;
+  const data = await pdfParse(Buffer.from(response.data));
+  const text = data.text;
+
+  // Send as text prompt instead of images
+  const textResponse = await ollama.chat({
+    model: MODEL,
+    messages: [{
+      role: 'user',
+      content: RESUME_PARSER_PROMPT + '\n\nRESUME TEXT:\n' + text
+    }],
+    stream: false
+  });
+
+  let responseText = textResponse.message.content;
+  responseText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+
+  return JSON.parse(responseText);
+}
+
+/**
+ * Cleanup temporary image files
+ */
+function cleanupTempFiles(images) {
+  // Images are base64 strings, no cleanup needed
 }
 
 /**
@@ -214,7 +301,7 @@ function sanitizeAndValidate(data) {
     customSections: Array.isArray(data.customSections) ? data.customSections : []
   };
 
-  // Copy email to socialLinks if present in basicDetails
+  // Copy email to socialLinks if present
   if (result.basicDetails.email && !result.socialLinks.email) {
     result.socialLinks.email = result.basicDetails.email;
   }
@@ -269,4 +356,4 @@ function sanitizeExtraCurricular(extra) {
   };
 }
 
-export default { parseResumeWithGemini };
+export default { parseResumeWithAI };
