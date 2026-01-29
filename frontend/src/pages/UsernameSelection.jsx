@@ -81,27 +81,27 @@ function UsernameSelection() {
             >
                 <div className="glass-card rounded-3xl p-8">
                     <div className="text-center mb-8">
-                        <h1 className="text-2xl font-display font-bold text-white mb-2">
+                        <h1 className="text-2xl font-display font-bold text-primary mb-2">
                             Choose Your Username
                         </h1>
-                        <p className="text-dark-400">
+                        <p className="text-secondary">
                             This will be your unique portfolio URL
                         </p>
                     </div>
 
                     <form onSubmit={handleSubmit}>
                         {/* Username preview */}
-                        <div className="mb-6 p-4 rounded-xl bg-dark-800/50 border border-dark-700">
-                            <p className="text-dark-400 text-sm mb-1">Your portfolio URL</p>
+                        <div className="mb-6 p-4 rounded-xl" style={{ background: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)' }}>
+                            <p className="text-tertiary text-sm mb-1">Your portfolio URL</p>
                             <p className="text-lg font-medium">
-                                <span className="text-dark-500">portlify.techycsr.dev/</span>
-                                <span className="text-primary-400">{username || 'username'}</span>
+                                <span className="text-muted">portlify.techycsr.dev/</span>
+                                <span className="heading-gradient">{username || 'username'}</span>
                             </p>
                         </div>
 
                         {/* Username input */}
                         <div className="mb-6">
-                            <label className="block text-dark-300 text-sm font-medium mb-2">
+                            <label className="block text-secondary text-sm font-medium mb-2">
                                 Username
                             </label>
                             <div className="relative">
@@ -130,7 +130,7 @@ function UsernameSelection() {
 
                             {/* Status message */}
                             {username.length > 0 && username.length < 3 && (
-                                <p className="mt-2 text-sm text-dark-400">
+                                <p className="mt-2 text-sm text-muted">
                                     Username must be at least 3 characters
                                 </p>
                             )}

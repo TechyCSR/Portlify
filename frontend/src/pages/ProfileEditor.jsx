@@ -195,10 +195,10 @@ function ProfileEditor() {
                     animate={{ opacity: 1, y: 0 }}
                     className="text-center mb-8"
                 >
-                    <h1 className="text-3xl font-display font-bold text-white mb-2">
+                    <h1 className="text-3xl font-display font-bold text-primary mb-2">
                         Review Your Profile
                     </h1>
-                    <p className="text-dark-400">
+                    <p className="text-secondary">
                         AI has extracted your information. Review and edit before generating your portfolio.
                     </p>
                 </motion.div>
@@ -217,9 +217,10 @@ function ProfileEditor() {
                                         key={section.id}
                                         onClick={() => setActiveSection(section.id)}
                                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left ${activeSection === section.id
-                                                ? 'bg-primary-500/20 text-primary-300'
-                                                : 'text-dark-400 hover:text-white hover:bg-dark-700/50'
+                                            ? 'text-white'
+                                            : 'text-secondary hover:text-primary'
                                             }`}
+                                        style={activeSection === section.id ? { background: 'var(--gradient-primary)' } : { background: 'transparent' }}
                                     >
                                         <span className="text-lg">{section.icon}</span>
                                         <span className="font-medium">{section.label}</span>
