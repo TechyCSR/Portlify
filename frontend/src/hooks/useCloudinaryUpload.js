@@ -17,13 +17,14 @@ export function useCloudinaryUpload() {
             const { signature, timestamp, cloudName, apiKey, folder } = signatureData
 
             // Create form data for upload
+            // Only include parameters that are signed (timestamp, folder)
+            // resource_type is handled by the URL endpoint (/raw/upload)
             const formData = new FormData()
             formData.append('file', file)
             formData.append('api_key', apiKey)
             formData.append('timestamp', timestamp)
             formData.append('signature', signature)
             formData.append('folder', folder)
-            formData.append('resource_type', 'raw')
 
             // Upload directly to Cloudinary
             const response = await fetch(

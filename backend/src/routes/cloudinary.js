@@ -8,19 +8,18 @@ const router = express.Router();
 router.get('/signature', authMiddleware, getUserFromAuth, async (req, res) => {
     try {
         const timestamp = Math.round(new Date().getTime() / 1000);
+        const folder = 'portlify/resumes';
 
-        // Create upload params
-        const params = {
+        // Only include signable parameters in the signature
+        // resource_type, allowed_formats, and max_file_size are NOT signable
+        const paramsToSign = {
             timestamp,
-            folder: 'portlify/resumes',
-            resource_type: 'raw',
-            allowed_formats: 'pdf',
-            max_file_size: 10000000 // 10MB limit
+            folder
         };
 
         // Generate signature
         const signature = cloudinary.utils.api_sign_request(
-            params,
+            paramsToSign,
             process.env.CLOUDINARY_API_SECRET
         );
 
@@ -29,7 +28,7 @@ router.get('/signature', authMiddleware, getUserFromAuth, async (req, res) => {
             timestamp,
             cloudName: process.env.CLOUDINARY_CLOUD_NAME,
             apiKey: process.env.CLOUDINARY_API_KEY,
-            folder: params.folder
+            folder
         });
     } catch (error) {
         console.error('Cloudinary signature error:', error);
@@ -38,3 +37,4 @@ router.get('/signature', authMiddleware, getUserFromAuth, async (req, res) => {
 });
 
 export default router;
+
