@@ -1,6 +1,5 @@
 import { Ollama } from 'ollama';
 import axios from 'axios';
-import { createCanvas } from 'canvas';
 
 // Initialize Ollama with cloud API
 const ollama = new Ollama({
@@ -14,7 +13,7 @@ const ollama = new Ollama({
 const MODEL = 'gemma3:4b-cloud';
 
 // System prompt for resume parsing
-const RESUME_PARSER_PROMPT = `You are an expert resume parser. Analyze the resume image(s) provided and extract structured data.
+const RESUME_PARSER_PROMPT = `You are an expert resume parser. Analyze the resume text and extract structured data.
 
 CRITICAL RULES:
 1. Return ONLY valid JSON - no markdown, no explanations, no code blocks
@@ -97,39 +96,48 @@ Now analyze the resume and extract the information:`;
  */
 export async function parseResumeWithAI(pdfUrl) {
   try {
-    // Download PDF and convert to base64 images
-    const images = await convertPDFToImages(pdfUrl);
+    // Download and extract text from PDF
+    console.log('Downloading PDF from:', pdfUrl);
 
-    if (!images || images.length === 0) {
-      console.log('Image conversion failed, falling back to text extraction');
-      return await parseWithTextFallback(pdfUrl);
+    const response = await axios.get(pdfUrl, {
+      responseType: 'arraybuffer',
+      timeout: 30000
+    });
+
+    const pdfParse = (await import('pdf-parse')).default;
+    const data = await pdfParse(Buffer.from(response.data));
+    const text = data.text;
+
+    console.log(`Extracted ${text.length} characters from ${data.numpages} page(s)`);
+
+    if (!text || text.trim().length < 50) {
+      throw new Error('Could not extract sufficient text from PDF');
     }
 
-    console.log(`Sending ${images.length} page image(s) to Ollama...`);
+    // Send to Ollama
+    console.log('Sending to Ollama (gemma3:4b-cloud)...');
 
-    // Call Ollama API with images
-    const response = await ollama.chat({
+    const aiResponse = await ollama.chat({
       model: MODEL,
       messages: [{
         role: 'user',
-        content: RESUME_PARSER_PROMPT,
-        images: images // Base64 encoded images
+        content: RESUME_PARSER_PROMPT + '\n\n' + text
       }],
       stream: false
     });
 
-    let text = response.message.content;
+    let responseText = aiResponse.message.content;
 
     // Clean up response - remove markdown code blocks if present
-    text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    responseText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
 
     // Parse JSON
     let parsedData;
     try {
-      parsedData = JSON.parse(text);
+      parsedData = JSON.parse(responseText);
     } catch (parseError) {
       console.error('JSON parse error:', parseError);
-      console.error('Raw response:', text.substring(0, 500));
+      console.error('Raw response:', responseText.substring(0, 500));
       throw new Error('Failed to parse AI response as JSON');
     }
 
@@ -140,103 +148,6 @@ export async function parseResumeWithAI(pdfUrl) {
     console.error('Ollama parsing error:', error);
     throw new Error(`Resume parsing failed: ${error.message}`);
   }
-}
-
-/**
- * Convert PDF to base64 images using pdfjs-dist and canvas
- */
-async function convertPDFToImages(pdfUrl) {
-  try {
-    // Download PDF
-    console.log('Downloading PDF from:', pdfUrl);
-    const response = await axios.get(pdfUrl, {
-      responseType: 'arraybuffer',
-      timeout: 30000
-    });
-
-    const pdfBuffer = Buffer.from(response.data);
-    const pdfData = new Uint8Array(pdfBuffer);
-
-    // Import pdfjs-dist
-    const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
-
-    // Load PDF document
-    const loadingTask = pdfjsLib.getDocument({ data: pdfData });
-    const pdfDoc = await loadingTask.promise;
-
-    console.log(`PDF loaded: ${pdfDoc.numPages} page(s)`);
-
-    const images = [];
-    const maxPages = Math.min(pdfDoc.numPages, 5); // Max 5 pages
-
-    for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
-      try {
-        console.log(`Rendering page ${pageNum}...`);
-        const page = await pdfDoc.getPage(pageNum);
-
-        // Set scale for good quality
-        const scale = 2.0;
-        const viewport = page.getViewport({ scale });
-
-        // Create canvas
-        const canvas = createCanvas(viewport.width, viewport.height);
-        const context = canvas.getContext('2d');
-
-        // Render page to canvas
-        await page.render({
-          canvasContext: context,
-          viewport: viewport
-        }).promise;
-
-        // Convert to base64 PNG
-        const base64 = canvas.toDataURL('image/png').replace(/^data:image\/png;base64,/, '');
-        images.push(base64);
-
-        console.log(`Page ${pageNum} rendered successfully`);
-      } catch (pageError) {
-        console.error(`Error rendering page ${pageNum}:`, pageError);
-      }
-    }
-
-    return images;
-  } catch (error) {
-    console.error('PDF to image conversion error:', error);
-    return null;
-  }
-}
-
-/**
- * Fallback: Extract text from PDF and send as text prompt
- */
-async function parseWithTextFallback(pdfUrl) {
-  console.log('Using text extraction fallback...');
-
-  const response = await axios.get(pdfUrl, {
-    responseType: 'arraybuffer',
-    timeout: 30000
-  });
-
-  const pdfParse = (await import('pdf-parse')).default;
-  const data = await pdfParse(Buffer.from(response.data));
-  const text = data.text;
-
-  console.log(`Extracted ${text.length} characters of text`);
-
-  // Send as text prompt instead of images
-  const textResponse = await ollama.chat({
-    model: MODEL,
-    messages: [{
-      role: 'user',
-      content: RESUME_PARSER_PROMPT + '\n\nRESUME TEXT:\n' + text
-    }],
-    stream: false
-  });
-
-  let responseText = textResponse.message.content;
-  responseText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-
-  const parsedData = JSON.parse(responseText);
-  return sanitizeAndValidate(parsedData);
 }
 
 /**
