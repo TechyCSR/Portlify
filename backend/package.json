@@ -1,0 +1,24 @@
+{
+  "name": "portlify-backend",
+  "version": "1.0.0",
+  "description": "Portlify backend API - Resume parsing and portfolio generation",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "@clerk/express": "^1.0.0",
+    "axios": "^1.6.0",
+    "cloudinary": "^1.41.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "mongoose": "^8.0.0",
+    "pdf-parse": "^1.1.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
