@@ -1,8 +1,6 @@
 import { Ollama } from 'ollama';
 import axios from 'axios';
-import fs from 'fs';
-import path from 'path';
-import os from 'os';
+import { createCanvas } from 'canvas';
 
 // Initialize Ollama with cloud API
 const ollama = new Ollama({
@@ -90,7 +88,7 @@ Return this EXACT JSON structure:
   }]
 }
 
-Now analyze the resume image(s) and extract the information:`;
+Now analyze the resume and extract the information:`;
 
 /**
  * Parse resume using Ollama with gemma3:4b-cloud
@@ -99,12 +97,15 @@ Now analyze the resume image(s) and extract the information:`;
  */
 export async function parseResumeWithAI(pdfUrl) {
   try {
-    // Download PDF and convert to images
-    const images = await downloadAndConvertPDF(pdfUrl);
+    // Download PDF and convert to base64 images
+    const images = await convertPDFToImages(pdfUrl);
 
     if (!images || images.length === 0) {
-      throw new Error('Could not convert PDF to images');
+      console.log('Image conversion failed, falling back to text extraction');
+      return await parseWithTextFallback(pdfUrl);
     }
+
+    console.log(`Sending ${images.length} page image(s) to Ollama...`);
 
     // Call Ollama API with images
     const response = await ollama.chat({
@@ -128,12 +129,9 @@ export async function parseResumeWithAI(pdfUrl) {
       parsedData = JSON.parse(text);
     } catch (parseError) {
       console.error('JSON parse error:', parseError);
-      console.error('Raw response:', text);
+      console.error('Raw response:', text.substring(0, 500));
       throw new Error('Failed to parse AI response as JSON');
     }
-
-    // Cleanup temp files
-    cleanupTempFiles(images);
 
     // Validate and sanitize the response
     return sanitizeAndValidate(parsedData);
@@ -145,77 +143,73 @@ export async function parseResumeWithAI(pdfUrl) {
 }
 
 /**
- * Download PDF and convert to base64 images
+ * Convert PDF to base64 images using pdfjs-dist and canvas
  */
-async function downloadAndConvertPDF(pdfUrl) {
-  const tempDir = path.join(os.tmpdir(), 'portlify-' + Date.now());
-  fs.mkdirSync(tempDir, { recursive: true });
-
+async function convertPDFToImages(pdfUrl) {
   try {
     // Download PDF
+    console.log('Downloading PDF from:', pdfUrl);
     const response = await axios.get(pdfUrl, {
       responseType: 'arraybuffer',
       timeout: 30000
     });
 
-    const pdfPath = path.join(tempDir, 'resume.pdf');
-    fs.writeFileSync(pdfPath, Buffer.from(response.data));
+    const pdfBuffer = Buffer.from(response.data);
+    const pdfData = new Uint8Array(pdfBuffer);
 
-    // Convert PDF to images using pdf2pic
-    const { fromPath } = await import('pdf2pic');
+    // Import pdfjs-dist
+    const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
 
-    const options = {
-      density: 150,
-      saveFilename: 'page',
-      savePath: tempDir,
-      format: 'png',
-      width: 1200,
-      height: 1600
-    };
+    // Load PDF document
+    const loadingTask = pdfjsLib.getDocument({ data: pdfData });
+    const pdfDoc = await loadingTask.promise;
 
-    const converter = fromPath(pdfPath, options);
+    console.log(`PDF loaded: ${pdfDoc.numPages} page(s)`);
 
-    // Get PDF info to know page count
-    const pdfParse = (await import('pdf-parse')).default;
-    const pdfData = await pdfParse(Buffer.from(response.data));
-    const pageCount = pdfData.numpages;
-
-    // Convert pages (max 5 pages)
-    const pagesToConvert = Math.min(pageCount, 5);
     const images = [];
+    const maxPages = Math.min(pdfDoc.numPages, 5); // Max 5 pages
 
-    for (let i = 1; i <= pagesToConvert; i++) {
+    for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
       try {
-        const result = await converter(i);
-        if (result.path && fs.existsSync(result.path)) {
-          // Read image and convert to base64
-          const imageBuffer = fs.readFileSync(result.path);
-          const base64Image = imageBuffer.toString('base64');
-          images.push(base64Image);
-        }
-      } catch (pageError) {
-        console.error(`Error converting page ${i}:`, pageError);
-      }
-    }
+        console.log(`Rendering page ${pageNum}...`);
+        const page = await pdfDoc.getPage(pageNum);
 
-    // Cleanup PDF
-    if (fs.existsSync(pdfPath)) {
-      fs.unlinkSync(pdfPath);
+        // Set scale for good quality
+        const scale = 2.0;
+        const viewport = page.getViewport({ scale });
+
+        // Create canvas
+        const canvas = createCanvas(viewport.width, viewport.height);
+        const context = canvas.getContext('2d');
+
+        // Render page to canvas
+        await page.render({
+          canvasContext: context,
+          viewport: viewport
+        }).promise;
+
+        // Convert to base64 PNG
+        const base64 = canvas.toDataURL('image/png').replace(/^data:image\/png;base64,/, '');
+        images.push(base64);
+
+        console.log(`Page ${pageNum} rendered successfully`);
+      } catch (pageError) {
+        console.error(`Error rendering page ${pageNum}:`, pageError);
+      }
     }
 
     return images;
   } catch (error) {
-    console.error('PDF conversion error:', error);
-    // Fallback to text extraction
-    return await fallbackToTextExtraction(pdfUrl);
+    console.error('PDF to image conversion error:', error);
+    return null;
   }
 }
 
 /**
  * Fallback: Extract text from PDF and send as text prompt
  */
-async function fallbackToTextExtraction(pdfUrl) {
-  console.log('Falling back to text extraction...');
+async function parseWithTextFallback(pdfUrl) {
+  console.log('Using text extraction fallback...');
 
   const response = await axios.get(pdfUrl, {
     responseType: 'arraybuffer',
@@ -225,6 +219,8 @@ async function fallbackToTextExtraction(pdfUrl) {
   const pdfParse = (await import('pdf-parse')).default;
   const data = await pdfParse(Buffer.from(response.data));
   const text = data.text;
+
+  console.log(`Extracted ${text.length} characters of text`);
 
   // Send as text prompt instead of images
   const textResponse = await ollama.chat({
@@ -239,14 +235,8 @@ async function fallbackToTextExtraction(pdfUrl) {
   let responseText = textResponse.message.content;
   responseText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
 
-  return JSON.parse(responseText);
-}
-
-/**
- * Cleanup temporary image files
- */
-function cleanupTempFiles(images) {
-  // Images are base64 strings, no cleanup needed
+  const parsedData = JSON.parse(responseText);
+  return sanitizeAndValidate(parsedData);
 }
 
 /**

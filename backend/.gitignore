@@ -16,3 +16,5 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+
+test-ollama.js
