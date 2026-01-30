@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { createProfile, getCurrentUser } from '../utils/api'
+import { createProfile, updateProfile, getCurrentUser, getMyProfile } from '../utils/api'
 import { useCloudinaryUpload } from '../hooks/useCloudinaryUpload'
 
 function ProfileEditor() {
@@ -11,6 +11,8 @@ function ProfileEditor() {
     const [error, setError] = useState('')
     const [activeSection, setActiveSection] = useState('basic')
     const [resumeUrl, setResumeUrl] = useState('')
+    const [isEditing, setIsEditing] = useState(false)
+    const [loading, setLoading] = useState(true)
 
     // Form data state
     const [formData, setFormData] = useState({
@@ -44,10 +46,11 @@ function ProfileEditor() {
         customSections: []
     })
 
-    // Load parsed data from sessionStorage
+    // Load data from API or sessionStorage
     useEffect(() => {
-        const checkUser = async () => {
+        const loadProfileData = async () => {
             try {
+                // First check if user is registered
                 await getCurrentUser()
             } catch (err) {
                 if (err.response?.data?.needsRegistration) {
@@ -55,30 +58,59 @@ function ProfileEditor() {
                     return
                 }
             }
-        }
-        checkUser()
 
-        const storedData = sessionStorage.getItem('parsedResumeData')
-        if (storedData) {
+            // Try to load from API first (for editing existing profile)
             try {
-                const parsed = JSON.parse(storedData)
-                setResumeUrl(parsed.resumeUrl || '')
-                setFormData(prev => ({
-                    ...prev,
-                    basicDetails: { ...prev.basicDetails, ...parsed.basicDetails },
-                    skills: { ...prev.skills, ...parsed.skills },
-                    experience: parsed.experience || [],
-                    education: parsed.education || [],
-                    projects: parsed.projects || [],
-                    achievements: parsed.achievements || [],
-                    extraCurricular: parsed.extraCurricular || [],
-                    socialLinks: { ...prev.socialLinks, ...parsed.socialLinks },
-                    customSections: parsed.customSections || []
-                }))
-            } catch (e) {
-                console.error('Failed to parse stored data:', e)
+                const { data: profileData } = await getMyProfile()
+                if (profileData) {
+                    setIsEditing(true)
+                    setResumeUrl(profileData.resumeUrl || '')
+                    setFormData(prev => ({
+                        ...prev,
+                        basicDetails: { ...prev.basicDetails, ...profileData.basicDetails },
+                        skills: { ...prev.skills, ...profileData.skills },
+                        experience: profileData.experience || [],
+                        education: profileData.education || [],
+                        projects: profileData.projects || [],
+                        achievements: profileData.achievements || [],
+                        extraCurricular: profileData.extraCurricular || [],
+                        socialLinks: { ...prev.socialLinks, ...profileData.socialLinks },
+                        customSections: profileData.customSections || []
+                    }))
+                    setLoading(false)
+                    return
+                }
+            } catch (err) {
+                // No existing profile, continue to check sessionStorage
+                console.log('No existing profile found, checking sessionStorage')
             }
+
+            // Fallback to sessionStorage (for new resume uploads)
+            const storedData = sessionStorage.getItem('parsedResumeData')
+            if (storedData) {
+                try {
+                    const parsed = JSON.parse(storedData)
+                    setResumeUrl(parsed.resumeUrl || '')
+                    setFormData(prev => ({
+                        ...prev,
+                        basicDetails: { ...prev.basicDetails, ...parsed.basicDetails },
+                        skills: { ...prev.skills, ...parsed.skills },
+                        experience: parsed.experience || [],
+                        education: parsed.education || [],
+                        projects: parsed.projects || [],
+                        achievements: parsed.achievements || [],
+                        extraCurricular: parsed.extraCurricular || [],
+                        socialLinks: { ...prev.socialLinks, ...parsed.socialLinks },
+                        customSections: parsed.customSections || []
+                    }))
+                } catch (e) {
+                    console.error('Failed to parse stored data:', e)
+                }
+            }
+            setLoading(false)
         }
+
+        loadProfileData()
     }, [navigate])
 
     // Handle basic details change
@@ -158,10 +190,16 @@ function ProfileEditor() {
         setError('')
 
         try {
-            await createProfile({
+            const profileData = {
                 resumeUrl,
                 ...formData
-            })
+            }
+
+            if (isEditing) {
+                await updateProfile(profileData)
+            } else {
+                await createProfile(profileData)
+            }
 
             // Clear stored data
             sessionStorage.removeItem('parsedResumeData')
@@ -186,6 +224,15 @@ function ProfileEditor() {
         { id: 'social', label: 'Social Links', icon: '🔗' }
     ]
 
+    // Show loading spinner while fetching data
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center pt-20">
+                <div className="spinner" />
+            </div>
+        )
+    }
+
     return (
         <div className="min-h-screen pt-20 pb-12 px-4">
             <div className="max-w-6xl mx-auto">
@@ -193,14 +240,30 @@ function ProfileEditor() {
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="text-center mb-8"
+                    className="mb-8"
                 >
-                    <h1 className="text-3xl font-display font-bold text-primary mb-2">
-                        Review Your Profile
-                    </h1>
-                    <p className="text-secondary">
-                        AI has extracted your information. Review and edit before generating your portfolio.
-                    </p>
+                    {/* Back button */}
+                    <button
+                        onClick={() => navigate('/dashboard')}
+                        className="flex items-center gap-2 text-secondary hover:text-primary mb-6 transition-colors group"
+                    >
+                        <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                        Back to Dashboard
+                    </button>
+
+                    <div className="text-center">
+                        <h1 className="text-3xl font-display font-bold text-primary mb-2">
+                            {isEditing ? 'Edit Your Profile' : 'Review Your Profile'}
+                        </h1>
+                        <p className="text-secondary">
+                            {isEditing
+                                ? 'Update your information and save changes to your portfolio.'
+                                : 'AI has extracted your information. Review and edit before generating your portfolio.'
+                            }
+                        </p>
+                    </div>
                 </motion.div>
 
                 <div className="flex flex-col lg:flex-row gap-6">
