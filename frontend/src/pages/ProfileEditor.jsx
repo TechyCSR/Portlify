@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useUser } from '@clerk/clerk-react'
 import { motion } from 'framer-motion'
 import { createProfile, updateProfile, getCurrentUser, getMyProfile } from '../utils/api'
 import { useCloudinaryUpload } from '../hooks/useCloudinaryUpload'
 
 function ProfileEditor() {
     const navigate = useNavigate()
+    const { isLoaded, isSignedIn } = useUser()
     const { upload: uploadPhoto, uploading: photoUploading } = useCloudinaryUpload()
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState('')
@@ -48,6 +50,15 @@ function ProfileEditor() {
 
     // Load data from API or sessionStorage
     useEffect(() => {
+        // Wait for Clerk to be fully loaded before making API calls
+        if (!isLoaded) return
+
+        // If not signed in, redirect to home
+        if (!isSignedIn) {
+            navigate('/')
+            return
+        }
+
         const loadProfileData = async () => {
             try {
                 // First check if user is registered
@@ -111,7 +122,7 @@ function ProfileEditor() {
         }
 
         loadProfileData()
-    }, [navigate])
+    }, [navigate, isLoaded, isSignedIn])
 
     // Handle basic details change
     const handleBasicChange = (field, value) => {

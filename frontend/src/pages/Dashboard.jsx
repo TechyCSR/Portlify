@@ -91,7 +91,7 @@ const itemVariants = {
 }
 
 function Dashboard() {
-    const { user } = useUser()
+    const { user, isLoaded, isSignedIn } = useUser()
     const navigate = useNavigate()
     const [profile, setProfile] = useState(null)
     const [loading, setLoading] = useState(true)
@@ -99,6 +99,15 @@ function Dashboard() {
     const [copied, setCopied] = useState(false)
 
     useEffect(() => {
+        // Wait for Clerk to be fully loaded before making API calls
+        if (!isLoaded) return
+
+        // If not signed in, redirect to home
+        if (!isSignedIn) {
+            navigate('/')
+            return
+        }
+
         const fetchData = async () => {
             try {
                 const { data: userData } = await getCurrentUser()
@@ -117,7 +126,7 @@ function Dashboard() {
             }
         }
         fetchData()
-    }, [navigate])
+    }, [navigate, isLoaded, isSignedIn])
 
     const copyLink = () => {
         navigator.clipboard.writeText(`https://portlify.techycsr.dev/${dbUser.username}`)
