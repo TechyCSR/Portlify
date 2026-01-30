@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { getCurrentUser, getPreferences, updatePreferences, getMyProfile, downloadPortfolio } from '../utils/api'
+import { getCurrentUser, getPreferences, updatePreferences, getMyProfile, downloadPortfolio, resetProfile, updateVisibility } from '../utils/api'
 
 // Icons
 const icons = {
@@ -27,6 +27,11 @@ const icons = {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
         </svg>
     ),
+    trash: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+    ),
     back: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -36,6 +41,16 @@ const icons = {
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
         </svg>
+    ),
+    warning: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+    ),
+    close: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
     )
 }
 
@@ -43,7 +58,8 @@ const tabs = [
     { id: 'profile', label: 'Profile', icon: icons.user },
     { id: 'appearance', label: 'Appearance', icon: icons.palette },
     { id: 'export', label: 'Export', icon: icons.download },
-    { id: 'privacy', label: 'Privacy', icon: icons.eye }
+    { id: 'privacy', label: 'Privacy', icon: icons.eye },
+    { id: 'data', label: 'Data', icon: icons.trash }
 ]
 
 const portfolioTypes = [
@@ -70,8 +86,11 @@ function Settings() {
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [downloading, setDownloading] = useState(false)
+    const [resetting, setResetting] = useState(false)
     const [saveSuccess, setSaveSuccess] = useState(false)
     const [error, setError] = useState('')
+    const [showResetModal, setShowResetModal] = useState(false)
+    const [resetConfirmText, setResetConfirmText] = useState('')
 
     const [userData, setUserData] = useState(null)
     const [preferences, setPreferences] = useState({
@@ -80,6 +99,7 @@ function Settings() {
         themePreference: 'modern'
     })
     const [isPublic, setIsPublic] = useState(true)
+    const [originalIsPublic, setOriginalIsPublic] = useState(true)
 
     useEffect(() => {
         if (!isLoaded) return
@@ -96,8 +116,12 @@ function Settings() {
                     getMyProfile()
                 ])
                 setUserData(userRes.data)
-                setPreferences(prefsRes.data.preferences || preferences)
-                setIsPublic(profileRes.data?.isPublic ?? true)
+                if (prefsRes.data.preferences) {
+                    setPreferences(prefsRes.data.preferences)
+                }
+                const publicStatus = profileRes.data?.isPublic ?? true
+                setIsPublic(publicStatus)
+                setOriginalIsPublic(publicStatus)
             } catch (err) {
                 if (err.response?.data?.needsRegistration) {
                     navigate('/username')
@@ -118,11 +142,20 @@ function Settings() {
         setError('')
         setSaveSuccess(false)
         try {
+            // Save preferences
             await updatePreferences(preferences)
+
+            // Save visibility if changed
+            if (isPublic !== originalIsPublic) {
+                await updateVisibility(isPublic)
+                setOriginalIsPublic(isPublic)
+            }
+
             setSaveSuccess(true)
             setTimeout(() => setSaveSuccess(false), 3000)
         } catch (err) {
-            setError('Failed to save settings')
+            console.error('Save error:', err)
+            setError('Failed to save settings. Please try again.')
         } finally {
             setSaving(false)
         }
@@ -146,6 +179,30 @@ function Settings() {
             setError('Failed to download portfolio')
         } finally {
             setDownloading(false)
+        }
+    }
+
+    const handleReset = async () => {
+        if (resetConfirmText !== 'DELETE') return
+
+        setResetting(true)
+        setError('')
+        try {
+            await resetProfile()
+            setShowResetModal(false)
+            setResetConfirmText('')
+            // Reset local state
+            setPreferences({
+                portfolioType: 'technical',
+                experienceLevel: 'fresher',
+                themePreference: 'modern'
+            })
+            // Navigate to upload page to re-setup
+            navigate('/upload')
+        } catch (err) {
+            setError('Failed to reset profile')
+        } finally {
+            setResetting(false)
         }
     }
 
@@ -186,8 +243,8 @@ function Settings() {
                                     whileHover={{ x: 4 }}
                                     onClick={() => setActiveTab(tab.id)}
                                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === tab.id
-                                            ? 'bg-indigo-500/20 text-indigo-400'
-                                            : 'text-secondary hover:text-primary hover:bg-surface'
+                                        ? tab.id === 'data' ? 'bg-red-500/20 text-red-400' : 'bg-indigo-500/20 text-indigo-400'
+                                        : 'text-secondary hover:text-primary hover:bg-surface'
                                         }`}
                                 >
                                     {tab.icon}
@@ -221,8 +278,8 @@ function Settings() {
                                                     whileTap={{ scale: 0.98 }}
                                                     onClick={() => handlePreferenceChange('portfolioType', type.id)}
                                                     className={`p-4 rounded-xl border-2 transition-all text-left ${preferences.portfolioType === type.id
-                                                            ? 'border-indigo-500 bg-indigo-500/10'
-                                                            : 'border-border hover:border-indigo-500/50'
+                                                        ? 'border-indigo-500 bg-indigo-500/10'
+                                                        : 'border-border hover:border-indigo-500/50'
                                                         }`}
                                                 >
                                                     <p className="font-medium text-primary">{type.name}</p>
@@ -243,8 +300,8 @@ function Settings() {
                                                     whileTap={{ scale: 0.98 }}
                                                     onClick={() => handlePreferenceChange('experienceLevel', level.id)}
                                                     className={`p-4 rounded-xl border-2 transition-all text-left ${preferences.experienceLevel === level.id
-                                                            ? 'border-indigo-500 bg-indigo-500/10'
-                                                            : 'border-border hover:border-indigo-500/50'
+                                                        ? 'border-indigo-500 bg-indigo-500/10'
+                                                        : 'border-border hover:border-indigo-500/50'
                                                         }`}
                                                 >
                                                     <p className="font-medium text-primary">{level.name}</p>
@@ -274,8 +331,8 @@ function Settings() {
                                                 whileTap={{ scale: 0.98 }}
                                                 onClick={() => handlePreferenceChange('themePreference', theme.id)}
                                                 className={`relative p-4 rounded-xl border-2 transition-all ${preferences.themePreference === theme.id
-                                                        ? 'border-indigo-500'
-                                                        : 'border-border hover:border-indigo-500/50'
+                                                    ? 'border-indigo-500'
+                                                    : 'border-border hover:border-indigo-500/50'
                                                     }`}
                                             >
                                                 <div
@@ -311,7 +368,7 @@ function Settings() {
 
                                     <div className="p-6 rounded-xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 mb-6">
                                         <div className="flex items-start gap-4">
-                                            <div className="p-3 rounded-xl bg-indigo-500/20">
+                                            <div className="p-3 rounded-xl bg-indigo-500/20 text-indigo-400">
                                                 {icons.download}
                                             </div>
                                             <div className="flex-1">
@@ -380,24 +437,82 @@ function Settings() {
                                             </button>
                                         </div>
                                     </div>
+
+                                    <p className="mt-4 text-sm text-muted">
+                                        {isPublic
+                                            ? '✓ Your portfolio is publicly accessible at portlify.techycsr.dev/' + (userData?.username || 'username')
+                                            : '✗ Your portfolio is hidden from public view'
+                                        }
+                                    </p>
+                                </motion.div>
+                            )}
+
+                            {/* Data Tab */}
+                            {activeTab === 'data' && (
+                                <motion.div
+                                    key="data"
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                >
+                                    <h2 className="text-xl font-bold text-primary mb-6">Data Management</h2>
+
+                                    <div className="p-6 rounded-xl bg-gradient-to-br from-red-500/10 to-orange-500/10 border border-red-500/20">
+                                        <div className="flex items-start gap-4">
+                                            <div className="p-3 rounded-xl bg-red-500/20 text-red-400">
+                                                {icons.trash}
+                                            </div>
+                                            <div className="flex-1">
+                                                <h3 className="font-bold text-primary mb-2">Reset All Data</h3>
+                                                <p className="text-secondary text-sm mb-4">
+                                                    This will permanently delete all your profile data including your resume, skills,
+                                                    experience, projects, and all other information. Your username and account will
+                                                    be preserved.
+                                                </p>
+                                                <motion.button
+                                                    whileHover={{ scale: 1.02 }}
+                                                    whileTap={{ scale: 0.98 }}
+                                                    onClick={() => setShowResetModal(true)}
+                                                    className="px-6 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-medium transition-colors"
+                                                >
+                                                    Reset Profile Data
+                                                </motion.button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-6 p-4 rounded-xl bg-surface border border-border">
+                                        <h4 className="font-medium text-primary mb-2">What gets deleted:</h4>
+                                        <ul className="text-sm text-secondary space-y-1">
+                                            <li>• All profile information (name, bio, etc.)</li>
+                                            <li>• Skills, experience, and education</li>
+                                            <li>• Projects and achievements</li>
+                                            <li>• Uploaded resume and photos</li>
+                                            <li>• Analytics data (views reset to 0)</li>
+                                        </ul>
+                                        <p className="mt-3 text-sm text-muted">
+                                            <strong>Note:</strong> Your username and account will remain intact.
+                                        </p>
+                                    </div>
                                 </motion.div>
                             )}
                         </AnimatePresence>
 
-                        {/* Save Button */}
+                        {/* Save Button - show for profile, appearance, privacy tabs */}
                         {(activeTab === 'profile' || activeTab === 'appearance' || activeTab === 'privacy') && (
                             <div className="mt-8 pt-6 border-t border-border flex items-center justify-between">
-                                {error && <p className="text-red-400 text-sm">{error}</p>}
-                                {saveSuccess && (
-                                    <motion.p
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        className="text-green-400 text-sm flex items-center gap-2"
-                                    >
-                                        {icons.check} Settings saved!
-                                    </motion.p>
-                                )}
-                                <div className="flex-1" />
+                                <div>
+                                    {error && <p className="text-red-400 text-sm">{error}</p>}
+                                    {saveSuccess && (
+                                        <motion.p
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            className="text-green-400 text-sm flex items-center gap-2"
+                                        >
+                                            {icons.check} Settings saved!
+                                        </motion.p>
+                                    )}
+                                </div>
                                 <motion.button
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.98 }}
@@ -419,6 +534,84 @@ function Settings() {
                     </div>
                 </div>
             </div>
+
+            {/* Reset Confirmation Modal */}
+            <AnimatePresence>
+                {showResetModal && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+                        onClick={() => setShowResetModal(false)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="w-full max-w-md glass-card rounded-2xl p-6"
+                        >
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 rounded-xl bg-red-500/20 text-red-400">
+                                        {icons.warning}
+                                    </div>
+                                    <h3 className="text-lg font-bold text-primary">Confirm Reset</h3>
+                                </div>
+                                <button
+                                    onClick={() => setShowResetModal(false)}
+                                    className="p-2 rounded-lg hover:bg-surface text-muted hover:text-primary transition-colors"
+                                >
+                                    {icons.close}
+                                </button>
+                            </div>
+
+                            <p className="text-secondary mb-4">
+                                This action cannot be undone. All your profile data will be permanently deleted.
+                            </p>
+
+                            <div className="mb-4">
+                                <label className="block text-sm text-muted mb-2">
+                                    Type <strong className="text-red-400">DELETE</strong> to confirm:
+                                </label>
+                                <input
+                                    type="text"
+                                    value={resetConfirmText}
+                                    onChange={(e) => setResetConfirmText(e.target.value.toUpperCase())}
+                                    placeholder="DELETE"
+                                    className="input-field"
+                                />
+                            </div>
+
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setShowResetModal(false)}
+                                    className="flex-1 px-4 py-2.5 rounded-xl bg-surface border border-border text-primary font-medium hover:bg-border/50 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <motion.button
+                                    whileHover={{ scale: resetConfirmText === 'DELETE' ? 1.02 : 1 }}
+                                    whileTap={{ scale: resetConfirmText === 'DELETE' ? 0.98 : 1 }}
+                                    onClick={handleReset}
+                                    disabled={resetConfirmText !== 'DELETE' || resetting}
+                                    className="flex-1 px-4 py-2.5 rounded-xl bg-red-500 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    {resetting ? (
+                                        <span className="flex items-center justify-center gap-2">
+                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                            Resetting...
+                                        </span>
+                                    ) : (
+                                        'Reset Data'
+                                    )}
+                                </motion.button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     )
 }

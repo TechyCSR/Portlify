@@ -77,4 +77,11 @@ export const getAnalyticsDetailed = () =>
 export const downloadPortfolio = () =>
     api.get('/api/export/portfolio', { responseType: 'blob' })
 
+// Profile management APIs
+export const resetProfile = () =>
+    api.post('/api/profile/reset')
+
+export const updateVisibility = (isPublic) =>
+    api.put('/api/profile/visibility', { isPublic })
+
 export default api

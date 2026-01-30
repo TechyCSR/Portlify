@@ -200,4 +200,103 @@ router.get('/:username', async (req, res) => {
     }
 });
 
+// Reset profile data (protected)
+router.post('/reset', authMiddleware, getUserFromAuth, async (req, res) => {
+    try {
+        const user = await User.findOne({ clerkId: req.clerkUserId });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Reset profile to empty state
+        const profile = await Profile.findOneAndUpdate(
+            { userId: user._id },
+            {
+                basicDetails: {
+                    name: '',
+                    title: '',
+                    email: '',
+                    phone: '',
+                    location: '',
+                    bio: '',
+                    profilePhoto: ''
+                },
+                skills: {
+                    technical: [],
+                    soft: [],
+                    tools: [],
+                    languages: []
+                },
+                experience: [],
+                education: [],
+                projects: [],
+                achievements: [],
+                extraCurricular: [],
+                certifications: [],
+                publications: [],
+                volunteering: [],
+                socialLinks: {},
+                customSections: [],
+                resumeUrl: '',
+                stats: {
+                    totalViews: 0,
+                    lastViewed: null
+                },
+                updatedAt: new Date()
+            },
+            { new: true }
+        );
+
+        if (!profile) {
+            return res.status(404).json({ error: 'Profile not found' });
+        }
+
+        // Reset user preferences but keep onboardingCompleted true
+        user.preferences = {
+            portfolioType: 'technical',
+            experienceLevel: 'fresher',
+            themePreference: 'modern'
+        };
+        await user.save();
+
+        res.json({
+            message: 'Profile reset successfully',
+            profile
+        });
+    } catch (error) {
+        console.error('Reset profile error:', error);
+        res.status(500).json({ error: 'Failed to reset profile' });
+    }
+});
+
+// Update profile visibility (protected)
+router.put('/visibility', authMiddleware, getUserFromAuth, async (req, res) => {
+    try {
+        const { isPublic } = req.body;
+
+        const user = await User.findOne({ clerkId: req.clerkUserId });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        const profile = await Profile.findOneAndUpdate(
+            { userId: user._id },
+            { isPublic: isPublic, updatedAt: new Date() },
+            { new: true }
+        );
+
+        if (!profile) {
+            return res.status(404).json({ error: 'Profile not found' });
+        }
+
+        res.json({
+            message: 'Visibility updated successfully',
+            isPublic: profile.isPublic
+        });
+    } catch (error) {
+        console.error('Update visibility error:', error);
+        res.status(500).json({ error: 'Failed to update visibility' });
+    }
+});
+
 export default router;
