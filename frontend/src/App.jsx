@@ -4,9 +4,12 @@ import { ThemeProvider, useTheme } from './context/ThemeContext'
 import Navbar from './components/Navbar'
 import Landing from './pages/Landing'
 import UsernameSelection from './pages/UsernameSelection'
+import Onboarding from './pages/Onboarding'
 import ResumeUpload from './pages/ResumeUpload'
 import ProfileEditor from './pages/ProfileEditor'
 import Dashboard from './pages/Dashboard'
+import Settings from './pages/Settings'
+import Analytics from './pages/Analytics'
 import Portfolio from './pages/Portfolio'
 import ProtectedRoute from './components/ProtectedRoute'
 
@@ -119,9 +122,12 @@ function AppLayout({ children }) {
     const isPortfolioPage = location.pathname !== '/' &&
         !location.pathname.startsWith('/sign') &&
         !location.pathname.startsWith('/username') &&
+        !location.pathname.startsWith('/onboarding') &&
         !location.pathname.startsWith('/upload') &&
         !location.pathname.startsWith('/editor') &&
-        !location.pathname.startsWith('/dashboard')
+        !location.pathname.startsWith('/dashboard') &&
+        !location.pathname.startsWith('/settings') &&
+        !location.pathname.startsWith('/analytics')
 
     const clerkAppearance = getClerkAppearance(theme)
 
@@ -183,6 +189,11 @@ function AppRoutes() {
                         <UsernameSelection />
                     </ProtectedRoute>
                 } />
+                <Route path="/onboarding" element={
+                    <ProtectedRoute>
+                        <Onboarding />
+                    </ProtectedRoute>
+                } />
                 <Route path="/upload" element={
                     <ProtectedRoute>
                         <ResumeUpload />
@@ -196,6 +207,16 @@ function AppRoutes() {
                 <Route path="/dashboard" element={
                     <ProtectedRoute>
                         <Dashboard />
+                    </ProtectedRoute>
+                } />
+                <Route path="/settings" element={
+                    <ProtectedRoute>
+                        <Settings />
+                    </ProtectedRoute>
+                } />
+                <Route path="/analytics" element={
+                    <ProtectedRoute>
+                        <Analytics />
                     </ProtectedRoute>
                 } />
 

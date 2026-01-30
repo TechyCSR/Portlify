@@ -61,6 +61,17 @@ const icons = {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
         </svg>
     ),
+    analytics: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+    ),
+    settings: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+    ),
     wave: (
         <svg className="w-8 h-8 inline-block ml-2" viewBox="0 0 36 36" fill="none">
             <path d="M7.5 17.5C7.5 17.5 8 14, 11 13 C14 12, 15.5 14, 16 16.5 C16.5 19, 18 20, 20 19 C22 18, 23.5 15.5, 26 15 C28.5 14.5, 30 17, 30 17" stroke="url(#waveGrad)" strokeWidth="3" strokeLinecap="round" />
@@ -161,11 +172,18 @@ function Dashboard() {
             gradient: 'from-indigo-500 to-purple-500'
         },
         {
-            to: '/upload',
-            icon: icons.upload,
-            title: 'New Resume',
-            desc: 'Re-parse with latest AI',
-            gradient: 'from-pink-500 to-rose-500'
+            to: '/analytics',
+            icon: icons.analytics,
+            title: 'Analytics',
+            desc: 'View portfolio stats',
+            gradient: 'from-blue-500 to-cyan-500'
+        },
+        {
+            to: '/settings',
+            icon: icons.settings,
+            title: 'Settings',
+            desc: 'Preferences & export',
+            gradient: 'from-orange-500 to-amber-500'
         },
         {
             to: dbUser?.username ? `/${dbUser.username}` : '#',

@@ -4,8 +4,10 @@ import { useUser } from '@clerk/clerk-react'
 import { motion } from 'framer-motion'
 import { checkUsername, registerUser, getCurrentUser } from '../utils/api'
 
+const MAX_USERNAME_LENGTH = 7
+
 function UsernameSelection() {
-    const { user } = useUser()
+    const { user, isLoaded, isSignedIn } = useUser()
     const navigate = useNavigate()
     const [username, setUsername] = useState('')
     const [isAvailable, setIsAvailable] = useState(null)
@@ -15,18 +17,29 @@ function UsernameSelection() {
 
     // Check if user already has a username
     useEffect(() => {
+        if (!isLoaded) return
+        if (!isSignedIn) {
+            navigate('/')
+            return
+        }
+
         const checkExistingUser = async () => {
             try {
                 const { data } = await getCurrentUser()
                 if (data?.username) {
-                    navigate('/upload')
+                    // If onboarding not complete, go to onboarding
+                    if (!data.onboardingCompleted) {
+                        navigate('/onboarding')
+                    } else {
+                        navigate('/dashboard')
+                    }
                 }
             } catch (err) {
                 // User doesn't exist yet, that's fine
             }
         }
         checkExistingUser()
-    }, [navigate])
+    }, [navigate, isLoaded, isSignedIn])
 
     // Debounced username check
     useEffect(() => {
@@ -64,11 +77,19 @@ function UsernameSelection() {
                 username,
                 email: user.primaryEmailAddress?.emailAddress || user.emailAddresses[0]?.emailAddress
             })
-            navigate('/upload')
+            // Navigate to onboarding after username selection
+            navigate('/onboarding')
         } catch (err) {
             setError(err.response?.data?.error || 'Failed to register username')
         } finally {
             setIsSubmitting(false)
+        }
+    }
+
+    const handleUsernameChange = (e) => {
+        const value = e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, '')
+        if (value.length <= MAX_USERNAME_LENGTH) {
+            setUsername(value)
         }
     }
 
@@ -95,7 +116,7 @@ function UsernameSelection() {
                             <p className="text-tertiary text-sm mb-1">Your portfolio URL</p>
                             <p className="text-lg font-medium">
                                 <span className="text-muted">portlify.techycsr.dev/</span>
-                                <span className="heading-gradient">{username || 'username'}</span>
+                                <span className="heading-gradient">{username || 'you'}</span>
                             </p>
                         </div>
 
@@ -108,12 +129,16 @@ function UsernameSelection() {
                                 <input
                                     type="text"
                                     value={username}
-                                    onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))}
-                                    placeholder="johndoe"
-                                    className="input-field pr-12"
-                                    maxLength={30}
+                                    onChange={handleUsernameChange}
+                                    placeholder="techpro"
+                                    className="input-field pr-20"
+                                    maxLength={MAX_USERNAME_LENGTH}
                                 />
-                                <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                                    <span className={`text-xs font-medium ${username.length === MAX_USERNAME_LENGTH ? 'text-amber-400' : 'text-muted'
+                                        }`}>
+                                        {username.length}/{MAX_USERNAME_LENGTH}
+                                    </span>
                                     {isChecking && <div className="spinner w-5 h-5" />}
                                     {!isChecking && isAvailable === true && (
                                         <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -128,15 +153,20 @@ function UsernameSelection() {
                                 </div>
                             </div>
 
+                            {/* Character info */}
+                            <p className="mt-2 text-xs text-muted">
+                                3-7 characters · Lowercase letters, numbers, underscore, hyphen
+                            </p>
+
                             {/* Status message */}
                             {username.length > 0 && username.length < 3 && (
-                                <p className="mt-2 text-sm text-muted">
+                                <p className="mt-2 text-sm text-amber-400">
                                     Username must be at least 3 characters
                                 </p>
                             )}
                             {isAvailable === true && (
                                 <p className="mt-2 text-sm text-green-400">
-                                    Username is available!
+                                    ✓ Username is available!
                                 </p>
                             )}
                             {error && (
@@ -147,9 +177,11 @@ function UsernameSelection() {
                         </div>
 
                         {/* Submit button */}
-                        <button
+                        <motion.button
                             type="submit"
                             disabled={!isAvailable || isSubmitting}
+                            whileHover={{ scale: isAvailable ? 1.02 : 1 }}
+                            whileTap={{ scale: isAvailable ? 0.98 : 1 }}
                             className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isSubmitting ? (
@@ -158,9 +190,9 @@ function UsernameSelection() {
                                     Creating...
                                 </span>
                             ) : (
-                                'Claim Username'
+                                'Continue →'
                             )}
-                        </button>
+                        </motion.button>
                     </form>
                 </div>
             </motion.div>

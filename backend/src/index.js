@@ -9,6 +9,8 @@ import { v2 as cloudinary } from 'cloudinary';
 import authRoutes from './routes/auth.js';
 import cloudinaryRoutes from './routes/cloudinary.js';
 import profileRoutes from './routes/profile.js';
+import analyticsRoutes from './routes/analytics.js';
+import exportRoutes from './routes/export.js';
 
 const app = express();
 
@@ -50,6 +52,8 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/cloudinary', cloudinaryRoutes);
 app.use('/api/profile', profileRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/export', exportRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

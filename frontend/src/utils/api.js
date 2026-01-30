@@ -31,6 +31,15 @@ export const registerUser = (data) =>
 export const getCurrentUser = () =>
     api.get('/api/auth/me')
 
+export const getPreferences = () =>
+    api.get('/api/auth/preferences')
+
+export const savePreferences = (data) =>
+    api.post('/api/auth/preferences', data)
+
+export const updatePreferences = (data) =>
+    api.put('/api/auth/preferences', data)
+
 // Cloudinary APIs
 export const getCloudinarySignature = () =>
     api.get('/api/cloudinary/signature')
@@ -54,5 +63,18 @@ export const getMyProfile = () =>
 export const getPublicProfile = (username) =>
     api.get(`/api/profile/${encodeURIComponent(username)}`)
 
-export default api
+// Analytics APIs
+export const trackPortfolioView = (username, referrer) =>
+    api.post(`/api/analytics/track/${encodeURIComponent(username)}`, { referrer })
 
+export const getAnalyticsSummary = () =>
+    api.get('/api/analytics/summary')
+
+export const getAnalyticsDetailed = () =>
+    api.get('/api/analytics/me')
+
+// Export APIs
+export const downloadPortfolio = () =>
+    api.get('/api/export/portfolio', { responseType: 'blob' })
+
+export default api
