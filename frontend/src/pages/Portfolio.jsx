@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { getPublicProfile } from '../utils/api'
+import { getPublicProfile, trackPortfolioView } from '../utils/api'
 import { useTheme } from '../context/ThemeContext'
 
 // SVG Icons for tabs
@@ -43,6 +43,14 @@ function Portfolio() {
             try {
                 const { data } = await getPublicProfile(username)
                 setProfile(data)
+
+                // Track the view (fire and forget)
+                try {
+                    const referrer = document.referrer || 'direct'
+                    trackPortfolioView(username, referrer)
+                } catch (e) {
+                    // Silently fail - analytics shouldn't break the page
+                }
             } catch (err) {
                 if (err.response?.status === 404) {
                     setError('Profile not found')
