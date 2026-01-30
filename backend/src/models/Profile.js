@@ -43,6 +43,30 @@ const customSectionSchema = new mongoose.Schema({
     content: { type: String, default: '' }
 }, { _id: false });
 
+// New schemas for additional sections
+const certificationSchema = new mongoose.Schema({
+    name: { type: String, default: '' },
+    issuer: { type: String, default: '' },
+    date: { type: String, default: '' },
+    credentialUrl: { type: String, default: '' },
+    credentialId: { type: String, default: '' }
+}, { _id: false });
+
+const publicationSchema = new mongoose.Schema({
+    title: { type: String, default: '' },
+    publisher: { type: String, default: '' },
+    date: { type: String, default: '' },
+    url: { type: String, default: '' },
+    description: { type: String, default: '' }
+}, { _id: false });
+
+const volunteeringSchema = new mongoose.Schema({
+    organization: { type: String, default: '' },
+    role: { type: String, default: '' },
+    duration: { type: String, default: '' },
+    description: { type: String, default: '' }
+}, { _id: false });
+
 // Main profile schema
 const profileSchema = new mongoose.Schema({
     userId: {
@@ -108,6 +132,24 @@ const profileSchema = new mongoose.Schema({
         default: []
     },
 
+    // Certifications (new)
+    certifications: {
+        type: [certificationSchema],
+        default: []
+    },
+
+    // Publications (new - for non-technical users)
+    publications: {
+        type: [publicationSchema],
+        default: []
+    },
+
+    // Volunteering (new)
+    volunteering: {
+        type: [volunteeringSchema],
+        default: []
+    },
+
     // Social Links
     socialLinks: {
         linkedin: { type: String, default: '' },
@@ -129,6 +171,13 @@ const profileSchema = new mongoose.Schema({
         default: ''
     },
 
+    // OG Metadata for social previews
+    ogMetadata: {
+        title: { type: String, default: '' },
+        description: { type: String, default: '' },
+        image: { type: String, default: '' } // Uses profilePhoto if empty
+    },
+
     // Portfolio settings
     isPublic: {
         type: Boolean,
@@ -137,7 +186,13 @@ const profileSchema = new mongoose.Schema({
 
     theme: {
         type: String,
-        default: 'default'
+        default: 'modern'
+    },
+
+    // Quick analytics (detailed in Analytics model)
+    stats: {
+        totalViews: { type: Number, default: 0 },
+        lastViewed: { type: Date, default: null }
     },
 
     updatedAt: {

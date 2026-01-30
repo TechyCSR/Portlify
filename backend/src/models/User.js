@@ -14,7 +14,7 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     trim: true,
     minlength: 3,
-    maxlength: 30,
+    maxlength: 7,
     match: /^[a-z0-9_-]+$/
   },
   email: {
@@ -23,6 +23,32 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     trim: true
   },
+
+  // User Preferences (set during onboarding)
+  preferences: {
+    portfolioType: {
+      type: String,
+      enum: ['technical', 'non-technical'],
+      default: 'technical'
+    },
+    experienceLevel: {
+      type: String,
+      enum: ['fresher', 'experienced'],
+      default: 'fresher'
+    },
+    themePreference: {
+      type: String,
+      enum: ['modern', 'minimal', 'creative', 'professional'],
+      default: 'modern'
+    }
+  },
+
+  // Onboarding status
+  onboardingCompleted: {
+    type: Boolean,
+    default: false
+  },
+
   createdAt: {
     type: Date,
     default: Date.now

@@ -1,6 +1,7 @@
 import express from 'express';
 import User from '../models/User.js';
 import Profile from '../models/Profile.js';
+import Analytics from '../models/Analytics.js';
 import authMiddleware, { getUserFromAuth } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -14,17 +15,17 @@ router.get('/check-username', async (req, res) => {
             return res.status(400).json({ error: 'Username is required' });
         }
 
-        // Validate username format
-        const usernameRegex = /^[a-z0-9_-]{3,30}$/;
+        // Validate username format - max 7 characters
+        const usernameRegex = /^[a-z0-9_-]{3,7}$/;
         if (!usernameRegex.test(username.toLowerCase())) {
             return res.status(400).json({
                 available: false,
-                error: 'Username must be 3-30 characters, lowercase letters, numbers, underscores, or hyphens only'
+                error: 'Username must be 3-7 characters, lowercase letters, numbers, underscores, or hyphens only'
             });
         }
 
         // Check reserved usernames
-        const reserved = ['admin', 'api', 'auth', 'dashboard', 'login', 'signup', 'profile', 'settings', 'upload'];
+        const reserved = ['admin', 'api', 'auth', 'dash', 'login', 'signup', 'user', 'help', 'app'];
         if (reserved.includes(username.toLowerCase())) {
             return res.status(400).json({ available: false, error: 'This username is reserved' });
         }
@@ -51,6 +52,14 @@ router.post('/register', authMiddleware, getUserFromAuth, async (req, res) => {
             return res.status(400).json({ error: 'Username and email are required' });
         }
 
+        // Validate username format
+        const usernameRegex = /^[a-z0-9_-]{3,7}$/;
+        if (!usernameRegex.test(username.toLowerCase())) {
+            return res.status(400).json({
+                error: 'Username must be 3-7 characters, lowercase letters, numbers, underscores, or hyphens only'
+            });
+        }
+
         // Check if user already exists with this Clerk ID
         const existingUser = await User.findOne({ clerkId });
         if (existingUser) {
@@ -67,7 +76,8 @@ router.post('/register', authMiddleware, getUserFromAuth, async (req, res) => {
         const user = new User({
             clerkId,
             username: username.toLowerCase(),
-            email: email.toLowerCase()
+            email: email.toLowerCase(),
+            onboardingCompleted: false
         });
 
         await user.save();
@@ -80,12 +90,16 @@ router.post('/register', authMiddleware, getUserFromAuth, async (req, res) => {
 
         await profile.save();
 
+        // Create analytics entry
+        await Analytics.getOrCreate(profile._id, user.username);
+
         res.status(201).json({
             message: 'User registered successfully',
             user: {
                 id: user._id,
                 username: user.username,
-                email: user.email
+                email: user.email,
+                onboardingCompleted: user.onboardingCompleted
             }
         });
     } catch (error) {
@@ -110,10 +124,103 @@ router.get('/me', authMiddleware, getUserFromAuth, async (req, res) => {
             id: user._id,
             username: user.username,
             email: user.email,
+            preferences: user.preferences,
+            onboardingCompleted: user.onboardingCompleted,
             createdAt: user.createdAt
         });
     } catch (error) {
         console.error('Get user error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Get user preferences (protected)
+router.get('/preferences', authMiddleware, getUserFromAuth, async (req, res) => {
+    try {
+        const user = await User.findOne({ clerkId: req.clerkUserId });
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found', needsRegistration: true });
+        }
+
+        res.json({
+            preferences: user.preferences,
+            onboardingCompleted: user.onboardingCompleted
+        });
+    } catch (error) {
+        console.error('Get preferences error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Save user preferences (protected) - used during onboarding
+router.post('/preferences', authMiddleware, getUserFromAuth, async (req, res) => {
+    try {
+        const { portfolioType, experienceLevel, themePreference } = req.body;
+
+        const user = await User.findOne({ clerkId: req.clerkUserId });
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found', needsRegistration: true });
+        }
+
+        // Update preferences
+        if (portfolioType) user.preferences.portfolioType = portfolioType;
+        if (experienceLevel) user.preferences.experienceLevel = experienceLevel;
+        if (themePreference) user.preferences.themePreference = themePreference;
+
+        user.onboardingCompleted = true;
+
+        await user.save();
+
+        // Also update profile theme
+        await Profile.findOneAndUpdate(
+            { userId: user._id },
+            { theme: themePreference || 'modern' }
+        );
+
+        res.json({
+            message: 'Preferences saved successfully',
+            preferences: user.preferences,
+            onboardingCompleted: user.onboardingCompleted
+        });
+    } catch (error) {
+        console.error('Save preferences error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Update preferences (protected) - used from settings page
+router.put('/preferences', authMiddleware, getUserFromAuth, async (req, res) => {
+    try {
+        const { portfolioType, experienceLevel, themePreference } = req.body;
+
+        const user = await User.findOne({ clerkId: req.clerkUserId });
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found', needsRegistration: true });
+        }
+
+        // Update only provided preferences
+        if (portfolioType) user.preferences.portfolioType = portfolioType;
+        if (experienceLevel) user.preferences.experienceLevel = experienceLevel;
+        if (themePreference) {
+            user.preferences.themePreference = themePreference;
+            // Also update profile theme
+            await Profile.findOneAndUpdate(
+                { userId: user._id },
+                { theme: themePreference }
+            );
+        }
+
+        await user.save();
+
+        res.json({
+            message: 'Preferences updated successfully',
+            preferences: user.preferences
+        });
+    } catch (error) {
+        console.error('Update preferences error:', error);
         res.status(500).json({ error: 'Server error' });
     }
 });
