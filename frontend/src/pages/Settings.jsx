@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getCurrentUser, getPreferences, updatePreferences, getMyProfile, downloadPortfolio, resetProfile, updateVisibility } from '../utils/api'
+import { useToast } from '../context/ToastContext'
 
 // Icons
 const icons = {
@@ -137,10 +138,15 @@ function Settings() {
         setPreferences(prev => ({ ...prev, [key]: value }))
     }
 
+    const toast = useToast()
+
     const handleSave = async () => {
         setSaving(true)
         setError('')
         setSaveSuccess(false)
+
+        const loadingId = toast.loading('Saving settings...')
+
         try {
             // Save preferences
             await updatePreferences(preferences)
@@ -151,10 +157,14 @@ function Settings() {
                 setOriginalIsPublic(isPublic)
             }
 
+            toast.dismiss(loadingId)
+            toast.saved('Settings saved successfully!')
             setSaveSuccess(true)
             setTimeout(() => setSaveSuccess(false), 3000)
         } catch (err) {
             console.error('Save error:', err)
+            toast.dismiss(loadingId)
+            toast.error('Failed to save settings')
             setError('Failed to save settings. Please try again.')
         } finally {
             setSaving(false)
@@ -164,6 +174,9 @@ function Settings() {
     const handleDownload = async () => {
         setDownloading(true)
         setError('')
+
+        const loadingId = toast.processing('Preparing your portfolio download...')
+
         try {
             const response = await downloadPortfolio()
             const blob = new Blob([response.data], { type: 'application/zip' })
@@ -175,7 +188,12 @@ function Settings() {
             a.click()
             window.URL.revokeObjectURL(url)
             a.remove()
+
+            toast.dismiss(loadingId)
+            toast.success('Portfolio downloaded!')
         } catch (err) {
+            toast.dismiss(loadingId)
+            toast.error('Failed to download portfolio')
             setError('Failed to download portfolio')
         } finally {
             setDownloading(false)
@@ -187,6 +205,9 @@ function Settings() {
 
         setResetting(true)
         setError('')
+
+        const loadingId = toast.loading('Resetting your profile...')
+
         try {
             await resetProfile()
             setShowResetModal(false)
@@ -197,9 +218,15 @@ function Settings() {
                 experienceLevel: 'fresher',
                 themePreference: 'modern'
             })
+
+            toast.dismiss(loadingId)
+            toast.success('Profile reset successfully!')
+
             // Navigate to upload page to re-setup
-            navigate('/upload')
+            setTimeout(() => navigate('/upload'), 500)
         } catch (err) {
+            toast.dismiss(loadingId)
+            toast.error('Failed to reset profile')
             setError('Failed to reset profile')
         } finally {
             setResetting(false)

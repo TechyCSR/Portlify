@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
 import { SignIn, SignUp, ClerkProvider } from '@clerk/clerk-react'
 import { ThemeProvider, useTheme } from './context/ThemeContext'
+import { ToastProvider } from './context/ToastContext'
 import Navbar from './components/Navbar'
 import Landing from './pages/Landing'
 import UsernameSelection from './pages/UsernameSelection'
@@ -230,9 +231,11 @@ function AppRoutes() {
 function App() {
     return (
         <ThemeProvider>
-            <Router>
-                <AppRoutes />
-            </Router>
+            <ToastProvider>
+                <Router>
+                    <AppRoutes />
+                </Router>
+            </ToastProvider>
         </ThemeProvider>
     )
 }

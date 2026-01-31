@@ -232,8 +232,8 @@ function Dashboard() {
                                 to={item.to}
                                 onClick={() => setSidebarOpen(false)}
                                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${location.pathname === item.to
-                                        ? 'bg-indigo-500/20 text-indigo-400'
-                                        : 'text-secondary hover:text-primary hover:bg-surface'
+                                    ? 'bg-indigo-500/20 text-indigo-400'
+                                    : 'text-secondary hover:text-primary hover:bg-surface'
                                     }`}
                             >
                                 {item.icon}
@@ -368,7 +368,18 @@ function Dashboard() {
                         {/* Quick Actions */}
                         <motion.div variants={itemVariants}>
                             <h2 className="text-lg font-semibold text-primary mb-4">Quick Actions</h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <Link
+                                    to="/upload"
+                                    className="glass-card rounded-xl p-5 group hover:border-purple-500/50 border border-transparent transition-all"
+                                >
+                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform">
+                                        {icons.upload}
+                                    </div>
+                                    <h3 className="font-semibold text-primary mb-1">Upload Resume</h3>
+                                    <p className="text-sm text-muted">Update with new resume</p>
+                                </Link>
+
                                 <Link
                                     to="/editor"
                                     className="glass-card rounded-xl p-5 group hover:border-indigo-500/50 border border-transparent transition-all"

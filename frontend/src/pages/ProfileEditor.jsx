@@ -4,11 +4,13 @@ import { useUser } from '@clerk/clerk-react'
 import { motion } from 'framer-motion'
 import { createProfile, updateProfile, getCurrentUser, getMyProfile } from '../utils/api'
 import { useCloudinaryUpload } from '../hooks/useCloudinaryUpload'
+import { useToast } from '../context/ToastContext'
 
 function ProfileEditor() {
     const navigate = useNavigate()
     const { isLoaded, isSignedIn } = useUser()
     const { upload: uploadPhoto, uploading: photoUploading } = useCloudinaryUpload()
+    const toast = useToast()
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState('')
     const [activeSection, setActiveSection] = useState('basic')
@@ -70,10 +72,39 @@ function ProfileEditor() {
                 }
             }
 
-            // Try to load from API first (for editing existing profile)
+            // IMPORTANT: Check sessionStorage FIRST for fresh resume uploads
+            const storedData = sessionStorage.getItem('parsedResumeData')
+            if (storedData) {
+                try {
+                    const parsed = JSON.parse(storedData)
+                    console.log('Loading from sessionStorage (resume upload):', parsed)
+                    setResumeUrl(parsed.resumeUrl || '')
+                    setFormData(prev => ({
+                        ...prev,
+                        basicDetails: { ...prev.basicDetails, ...parsed.basicDetails },
+                        skills: { ...prev.skills, ...parsed.skills },
+                        experience: parsed.experience || [],
+                        education: parsed.education || [],
+                        projects: parsed.projects || [],
+                        achievements: parsed.achievements || [],
+                        extraCurricular: parsed.extraCurricular || [],
+                        socialLinks: { ...prev.socialLinks, ...parsed.socialLinks },
+                        customSections: parsed.customSections || []
+                    }))
+                    setIsEditing(false) // This is a new profile from resume
+                    setLoading(false)
+                    toast.success('Resume data loaded! Review and save your profile.')
+                    return
+                } catch (e) {
+                    console.error('Failed to parse stored data:', e)
+                }
+            }
+
+            // Try to load from API (for editing existing profile)
             try {
                 const { data: profileData } = await getMyProfile()
-                if (profileData) {
+                if (profileData && profileData.basicDetails?.name) {
+                    // Only consider it a valid existing profile if it has actual data
                     setIsEditing(true)
                     setResumeUrl(profileData.resumeUrl || '')
                     setFormData(prev => ({
@@ -88,36 +119,12 @@ function ProfileEditor() {
                         socialLinks: { ...prev.socialLinks, ...profileData.socialLinks },
                         customSections: profileData.customSections || []
                     }))
-                    setLoading(false)
-                    return
                 }
             } catch (err) {
-                // No existing profile, continue to check sessionStorage
-                console.log('No existing profile found, checking sessionStorage')
+                // No existing profile, user will start fresh
+                console.log('No existing profile found')
             }
 
-            // Fallback to sessionStorage (for new resume uploads)
-            const storedData = sessionStorage.getItem('parsedResumeData')
-            if (storedData) {
-                try {
-                    const parsed = JSON.parse(storedData)
-                    setResumeUrl(parsed.resumeUrl || '')
-                    setFormData(prev => ({
-                        ...prev,
-                        basicDetails: { ...prev.basicDetails, ...parsed.basicDetails },
-                        skills: { ...prev.skills, ...parsed.skills },
-                        experience: parsed.experience || [],
-                        education: parsed.education || [],
-                        projects: parsed.projects || [],
-                        achievements: parsed.achievements || [],
-                        extraCurricular: parsed.extraCurricular || [],
-                        socialLinks: { ...prev.socialLinks, ...parsed.socialLinks },
-                        customSections: parsed.customSections || []
-                    }))
-                } catch (e) {
-                    console.error('Failed to parse stored data:', e)
-                }
-            }
             setLoading(false)
         }
 
@@ -200,6 +207,8 @@ function ProfileEditor() {
         setSaving(true)
         setError('')
 
+        const loadingToast = toast.loading('Saving your profile...')
+
         try {
             const profileData = {
                 resumeUrl,
@@ -215,9 +224,14 @@ function ProfileEditor() {
             // Clear stored data
             sessionStorage.removeItem('parsedResumeData')
 
+            toast.dismiss(loadingToast)
+            toast.success('Profile saved successfully!')
+
             // Navigate to dashboard
-            navigate('/dashboard')
+            setTimeout(() => navigate('/dashboard'), 500)
         } catch (err) {
+            toast.dismiss(loadingToast)
+            toast.error(err.response?.data?.error || 'Failed to save profile')
             setError(err.response?.data?.error || 'Failed to save profile')
         } finally {
             setSaving(false)

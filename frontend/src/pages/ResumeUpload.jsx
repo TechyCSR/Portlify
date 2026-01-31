@@ -4,10 +4,12 @@ import { motion } from 'framer-motion'
 import UploadZone from '../components/UploadZone'
 import { useCloudinaryUpload } from '../hooks/useCloudinaryUpload'
 import { parseResume, getCurrentUser } from '../utils/api'
+import { useToast } from '../context/ToastContext'
 
 function ResumeUpload() {
     const navigate = useNavigate()
     const { upload, uploading, progress, error: uploadError } = useCloudinaryUpload()
+    const toast = useToast()
     const [status, setStatus] = useState('idle') // idle, uploading, parsing, success, error
     const [error, setError] = useState('')
     const [parsingMessage, setParsingMessage] = useState('')
@@ -30,9 +32,14 @@ function ResumeUpload() {
         setError('')
         setStatus('uploading')
 
+        const uploadToastId = toast.upload('Uploading your resume...')
+
         try {
             // Upload to Cloudinary
             const { url } = await upload(file)
+
+            toast.dismiss(uploadToastId)
+            toast.processing('Analyzing your resume with AI...')
 
             setStatus('parsing')
             setParsingMessage('Analyzing your resume with AI...')
@@ -51,11 +58,14 @@ function ResumeUpload() {
             setStatus('success')
             setParsingMessage('Done! Redirecting to editor...')
 
+            toast.success('Resume analyzed successfully!')
+
             // Redirect to profile editor
             setTimeout(() => {
                 navigate('/editor')
             }, 1500)
         } catch (err) {
+            toast.error(err.response?.data?.error || err.message || 'Upload failed')
             setError(err.response?.data?.error || err.message || 'Upload failed')
             setStatus('error')
         }
