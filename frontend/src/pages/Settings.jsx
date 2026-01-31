@@ -149,11 +149,15 @@ function Settings() {
 
         try {
             // Save preferences
-            await updatePreferences(preferences)
+            console.log('Saving preferences:', preferences)
+            const prefResponse = await updatePreferences(preferences)
+            console.log('Preferences saved:', prefResponse.data)
 
             // Save visibility if changed
             if (isPublic !== originalIsPublic) {
-                await updateVisibility(isPublic)
+                console.log('Updating visibility to:', isPublic)
+                const visResponse = await updateVisibility(isPublic)
+                console.log('Visibility updated:', visResponse.data)
                 setOriginalIsPublic(isPublic)
             }
 
@@ -163,9 +167,12 @@ function Settings() {
             setTimeout(() => setSaveSuccess(false), 3000)
         } catch (err) {
             console.error('Save error:', err)
+            console.error('Error response:', err.response?.data)
             toast.dismiss(loadingId)
-            toast.error('Failed to save settings')
-            setError('Failed to save settings. Please try again.')
+
+            const errorMessage = err.response?.data?.error || err.message || 'Failed to save settings'
+            toast.error(errorMessage)
+            setError(errorMessage)
         } finally {
             setSaving(false)
         }

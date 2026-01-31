@@ -33,13 +33,14 @@ function ResumeUpload() {
         setStatus('uploading')
 
         const uploadToastId = toast.upload('Uploading your resume...')
+        let processingToastId = null
 
         try {
             // Upload to Cloudinary
             const { url } = await upload(file)
 
             toast.dismiss(uploadToastId)
-            toast.processing('Analyzing your resume with AI...')
+            processingToastId = toast.processing('Analyzing your resume with AI...')
 
             setStatus('parsing')
             setParsingMessage('Analyzing your resume with AI...')
@@ -58,6 +59,8 @@ function ResumeUpload() {
             setStatus('success')
             setParsingMessage('Done! Redirecting to editor...')
 
+            // Dismiss processing toast before showing success
+            if (processingToastId) toast.dismiss(processingToastId)
             toast.success('Resume analyzed successfully!')
 
             // Redirect to profile editor
@@ -65,6 +68,10 @@ function ResumeUpload() {
                 navigate('/editor')
             }, 1500)
         } catch (err) {
+            // Dismiss any active toasts
+            toast.dismiss(uploadToastId)
+            if (processingToastId) toast.dismiss(processingToastId)
+
             toast.error(err.response?.data?.error || err.message || 'Upload failed')
             setError(err.response?.data?.error || err.message || 'Upload failed')
             setStatus('error')

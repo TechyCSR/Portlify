@@ -89,13 +89,13 @@ export function ToastProvider({ children }) {
 
     // Convenience methods
     const toast = {
-        success: (msg, duration) => addToast(msg, 'success', duration),
+        success: (msg, duration) => addToast(msg, 'success', duration ?? 3000),
         error: (msg, duration) => addToast(msg, 'error', duration ?? 5000),
-        info: (msg, duration) => addToast(msg, 'info', duration),
-        loading: (msg) => addToast(msg, 'loading', 0), // No auto-dismiss
-        saved: (msg, duration) => addToast(msg, 'saved', duration),
-        upload: (msg, duration) => addToast(msg, 'upload', duration),
-        processing: (msg) => addToast(msg, 'processing', 0),
+        info: (msg, duration) => addToast(msg, 'info', duration ?? 3000),
+        loading: (msg) => addToast(msg, 'loading', 0), // No auto-dismiss - must call dismiss
+        saved: (msg, duration) => addToast(msg, 'saved', duration ?? 3000),
+        upload: (msg, duration) => addToast(msg, 'upload', duration ?? 0), // No auto-dismiss by default
+        processing: (msg, duration) => addToast(msg, 'processing', duration ?? 0), // No auto-dismiss by default
         dismiss: removeToast,
         update: updateToast
     }
