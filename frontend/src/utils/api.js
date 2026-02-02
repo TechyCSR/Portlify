@@ -11,14 +11,25 @@ const api = axios.create({
 
 // Add auth token to requests
 api.interceptors.request.use(async (config) => {
-    // Get token from Clerk if available
-    if (window.Clerk?.session) {
-        const token = await window.Clerk.session.getToken()
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`
+    try {
+        // Wait for Clerk to be fully loaded
+        const clerk = window.Clerk
+        if (clerk) {
+            // Try to get token from active session
+            const session = clerk.session
+            if (session) {
+                const token = await session.getToken()
+                if (token) {
+                    config.headers.Authorization = `Bearer ${token}`
+                }
+            }
         }
+    } catch (error) {
+        console.error('Error getting auth token:', error)
     }
     return config
+}, (error) => {
+    return Promise.reject(error)
 })
 
 // Auth APIs

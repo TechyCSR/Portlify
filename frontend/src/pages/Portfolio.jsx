@@ -30,6 +30,46 @@ const AcademicIcon = () => (
     </svg>
 )
 
+// Portfolio theme color palettes
+const portfolioThemes = {
+    modern: {
+        primary: '#6366f1',
+        secondary: '#a855f7',
+        bg: '#0f172a',
+        surface: '#1e293b',
+        text: '#f8fafc',
+        border: '#334155',
+        accent: 'linear-gradient(135deg, #6366f1, #a855f7)'
+    },
+    minimal: {
+        primary: '#18181b',
+        secondary: '#71717a',
+        bg: '#ffffff',
+        surface: '#f4f4f5',
+        text: '#18181b',
+        border: '#e4e4e7',
+        accent: 'linear-gradient(135deg, #18181b, #71717a)'
+    },
+    creative: {
+        primary: '#ec4899',
+        secondary: '#f472b6',
+        bg: '#1f1f1f',
+        surface: '#2d2d2d',
+        text: '#ffffff',
+        border: '#404040',
+        accent: 'linear-gradient(135deg, #ec4899, #f472b6)'
+    },
+    professional: {
+        primary: '#0f766e',
+        secondary: '#14b8a6',
+        bg: '#f0fdfa',
+        surface: '#ffffff',
+        text: '#134e4a',
+        border: '#99f6e4',
+        accent: 'linear-gradient(135deg, #0f766e, #14b8a6)'
+    }
+}
+
 function Portfolio() {
     const { username } = useParams()
     const { theme, toggleTheme } = useTheme()
@@ -37,12 +77,18 @@ function Portfolio() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
     const [activeTab, setActiveTab] = useState('about')
+    const [portfolioTheme, setPortfolioTheme] = useState('modern')
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
                 const { data } = await getPublicProfile(username)
                 setProfile(data)
+
+                // Set the portfolio theme from profile
+                if (data.theme) {
+                    setPortfolioTheme(data.theme)
+                }
 
                 // Track the view (fire and forget)
                 try {
@@ -63,6 +109,9 @@ function Portfolio() {
         }
         fetchProfile()
     }, [username])
+
+    // Get the current portfolio theme colors
+    const themeColors = portfolioThemes[portfolioTheme] || portfolioThemes.modern
 
     if (loading) {
         return (
