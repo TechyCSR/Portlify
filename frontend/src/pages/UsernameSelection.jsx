@@ -67,11 +67,8 @@ function UsernameSelection() {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        if (!isSubmitting) return
-        if (!isAvailable) {
-            setError('Username is not available')
-            return
-        }
+        if (!isAvailable || isSubmitting) return
+
         setIsSubmitting(true)
         setError('')
 
@@ -90,7 +87,7 @@ function UsernameSelection() {
     }
 
     const handleUsernameChange = (e) => {
-        const value = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '')
+        const value = e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, '')
         if (value.length <= MAX_USERNAME_LENGTH) {
             setUsername(value)
         }
@@ -158,7 +155,7 @@ function UsernameSelection() {
 
                             {/* Character info */}
                             <p className="mt-2 text-xs text-muted">
-                                3-8 characters · Lowercase letters, numbers, and underscore only
+                                3-8 characters · Lowercase letters, numbers, underscore, hyphen
                             </p>
 
                             {/* Status message */}
