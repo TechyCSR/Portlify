@@ -67,8 +67,11 @@ function UsernameSelection() {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        if (!isAvailable || isSubmitting) return
-
+        if (!isSubmitting) return
+        if (!isAvailable) {
+            setError('Username is not available')
+            return
+        }
         setIsSubmitting(true)
         setError('')
 

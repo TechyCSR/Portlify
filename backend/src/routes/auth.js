@@ -53,10 +53,10 @@ router.post('/register', authMiddleware, getUserFromAuth, async (req, res) => {
         }
 
         // Validate username format
-        const usernameRegex = /^[a-z0-9_-]{3,7}$/;
+        const usernameRegex = /^[a-z0-9_-]{3,8}$/;
         if (!usernameRegex.test(username.toLowerCase())) {
             return res.status(400).json({
-                error: 'Username must be 3-7 characters, lowercase letters, numbers, underscores, or hyphens only'
+                error: 'Username must be 3-8 characters, lowercase letters, numbers, underscores, or hyphens only'
             });
         }
 
