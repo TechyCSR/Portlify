@@ -15,12 +15,12 @@ router.get('/check-username', async (req, res) => {
             return res.status(400).json({ error: 'Username is required' });
         }
 
-        // Validate username format - max 7 characters
-        const usernameRegex = /^[a-z0-9_-]{3,7}$/;
+        // Validate username format - max 8 characters
+        const usernameRegex = /^[a-z0-9_-]{3,8}$/;
         if (!usernameRegex.test(username.toLowerCase())) {
             return res.status(400).json({
                 available: false,
-                error: 'Username must be 3-7 characters, lowercase letters, numbers, underscores, or hyphens only'
+                error: 'Username must be 3-8 characters, lowercase letters, numbers, underscores, or hyphens only'
             });
         }
 

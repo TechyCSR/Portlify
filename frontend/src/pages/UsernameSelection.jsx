@@ -4,7 +4,7 @@ import { useUser } from '@clerk/clerk-react'
 import { motion } from 'framer-motion'
 import { checkUsername, registerUser, getCurrentUser } from '../utils/api'
 
-const MAX_USERNAME_LENGTH = 7
+const MAX_USERNAME_LENGTH = 8
 
 function UsernameSelection() {
     const { user, isLoaded, isSignedIn } = useUser()
@@ -130,7 +130,7 @@ function UsernameSelection() {
                                     type="text"
                                     value={username}
                                     onChange={handleUsernameChange}
-                                    placeholder="techpro"
+                                    placeholder="techycsr"
                                     className="input-field pr-20"
                                     maxLength={MAX_USERNAME_LENGTH}
                                 />
@@ -155,7 +155,7 @@ function UsernameSelection() {
 
                             {/* Character info */}
                             <p className="mt-2 text-xs text-muted">
-                                3-7 characters · Lowercase letters, numbers, underscore, hyphen
+                                3-8 characters · Lowercase letters, numbers, underscore, hyphen
                             </p>
 
                             {/* Status message */}
