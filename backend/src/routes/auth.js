@@ -195,9 +195,13 @@ router.put('/preferences', authMiddleware, getUserFromAuth, async (req, res) => 
     try {
         const { portfolioType, experienceLevel, themePreference } = req.body;
 
+        console.log('Updating preferences for user:', req.clerkUserId);
+        console.log('Request body:', req.body);
+
         const user = await User.findOne({ clerkId: req.clerkUserId });
 
         if (!user) {
+            console.log('User not found for clerkId:', req.clerkUserId);
             return res.status(404).json({ error: 'User not found', needsRegistration: true });
         }
 
@@ -207,13 +211,20 @@ router.put('/preferences', authMiddleware, getUserFromAuth, async (req, res) => 
         if (themePreference) {
             user.preferences.themePreference = themePreference;
             // Also update profile theme
-            await Profile.findOneAndUpdate(
-                { userId: user._id },
-                { theme: themePreference }
-            );
+            try {
+                await Profile.findOneAndUpdate(
+                    { userId: user._id },
+                    { theme: themePreference }
+                );
+            } catch (profileError) {
+                console.error('Error updating profile theme:', profileError);
+                // Continue with saving user preferences even if profile update fails
+            }
         }
 
         await user.save();
+
+        console.log('Preferences updated successfully for user:', user.username);
 
         res.json({
             message: 'Preferences updated successfully',
@@ -221,7 +232,7 @@ router.put('/preferences', authMiddleware, getUserFromAuth, async (req, res) => 
         });
     } catch (error) {
         console.error('Update preferences error:', error);
-        res.status(500).json({ error: 'Server error' });
+        res.status(500).json({ error: error.message || 'Failed to update preferences' });
     }
 });
 
