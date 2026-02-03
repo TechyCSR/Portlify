@@ -12,11 +12,14 @@
     "dependencies": {
         "@clerk/clerk-react": "^5.0.0",
         "axios": "^1.6.0",
+        "clsx": "^2.1.1",
         "framer-motion": "^11.0.0",
+        "lucide-react": "^0.563.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
+        "react-dropzone": "^14.2.0",
         "react-router-dom": "^6.21.0",
-        "react-dropzone": "^14.2.0"
+        "tailwind-merge": "^3.4.0"
     },
     "devDependencies": {
         "@types/react": "^18.2.0",

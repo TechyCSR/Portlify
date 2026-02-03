@@ -5,6 +5,13 @@ import { motion } from 'framer-motion'
 import { createProfile, updateProfile, getCurrentUser, getMyProfile } from '../utils/api'
 import { useCloudinaryUpload } from '../hooks/useCloudinaryUpload'
 import { useToast } from '../context/ToastContext'
+import {
+    User, Briefcase, GraduationCap, Code, Award,
+    Share2, FileText, Globe, BookOpen, Heart,
+    Users, Plus, Trash2, Save, ChevronLeft,
+    Camera, MapPin, Mail, Phone, Link as LinkIcon,
+    Linkedin, Github, Twitter
+} from 'lucide-react'
 
 function ProfileEditor() {
     const navigate = useNavigate()
@@ -39,6 +46,10 @@ function ProfileEditor() {
         education: [],
         projects: [],
         achievements: [],
+        certifications: [],
+        publications: [],
+        volunteering: [],
+        references: [],
         extraCurricular: [],
         socialLinks: {
             linkedin: '',
@@ -87,6 +98,10 @@ function ProfileEditor() {
                         education: parsed.education || [],
                         projects: parsed.projects || [],
                         achievements: parsed.achievements || [],
+                        certifications: parsed.certifications || [],
+                        publications: parsed.publications || [],
+                        volunteering: parsed.volunteering || [],
+                        references: parsed.references || [],
                         extraCurricular: parsed.extraCurricular || [],
                         socialLinks: { ...prev.socialLinks, ...parsed.socialLinks },
                         customSections: parsed.customSections || []
@@ -115,6 +130,10 @@ function ProfileEditor() {
                         education: profileData.education || [],
                         projects: profileData.projects || [],
                         achievements: profileData.achievements || [],
+                        certifications: profileData.certifications || [],
+                        publications: profileData.publications || [],
+                        volunteering: profileData.volunteering || [],
+                        references: profileData.references || [],
                         extraCurricular: profileData.extraCurricular || [],
                         socialLinks: { ...prev.socialLinks, ...profileData.socialLinks },
                         customSections: profileData.customSections || []
@@ -239,14 +258,19 @@ function ProfileEditor() {
     }
 
     const sections = [
-        { id: 'basic', label: 'Basic Info', icon: '👤' },
-        { id: 'skills', label: 'Skills', icon: '⚡' },
-        { id: 'experience', label: 'Experience', icon: '💼' },
-        { id: 'education', label: 'Education', icon: '🎓' },
-        { id: 'projects', label: 'Projects', icon: '🚀' },
-        { id: 'achievements', label: 'Achievements', icon: '🏆' },
-        { id: 'extra', label: 'Extra Curricular', icon: '🎯' },
-        { id: 'social', label: 'Social Links', icon: '🔗' }
+        { id: 'basic', label: 'Basic Info', icon: <User size={18} /> },
+        { id: 'skills', label: 'Skills', icon: <Code size={18} /> },
+        { id: 'experience', label: 'Experience', icon: <Briefcase size={18} /> },
+        { id: 'education', label: 'Education', icon: <GraduationCap size={18} /> },
+        { id: 'projects', label: 'Projects', icon: <Globe size={18} /> },
+        { id: 'achievements', label: 'Achievements', icon: <Award size={18} /> },
+        { id: 'certifications', label: 'Certifications', icon: <FileText size={18} /> },
+        { id: 'publications', label: 'Publications', icon: <BookOpen size={18} /> },
+        { id: 'volunteering', label: 'Volunteering', icon: <Heart size={18} /> },
+        { id: 'references', label: 'References', icon: <Users size={18} /> },
+        { id: 'extra', label: 'Extra Curricular', icon: <Share2 size={18} /> },
+        { id: 'custom', label: 'Custom Sections', icon: <Plus size={18} /> },
+        { id: 'social', label: 'Social Links', icon: <LinkIcon size={18} /> }
     ]
 
     // Show loading spinner while fetching data
@@ -343,11 +367,8 @@ function ProfileEditor() {
                                                     </span>
                                                 )}
                                             </div>
-                                            <label className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center cursor-pointer hover:bg-primary-400 transition-colors">
-                                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                </svg>
+                                            <label className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center cursor-pointer hover:bg-primary-400 transition-colors shadow-lg">
+                                                <Camera size={14} className="text-white" />
                                                 <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} disabled={photoUploading} />
                                             </label>
                                         </div>
@@ -703,6 +724,292 @@ function ProfileEditor() {
                                 </div>
                             )}
 
+                            {/* Certifications Section */}
+                            {activeSection === 'certifications' && (
+                                <div className="space-y-6">
+                                    <div className="flex justify-between items-center mb-6">
+                                        <h2 className="text-xl font-bold text-primary">Certifications</h2>
+                                        <button
+                                            onClick={() => addArrayItem('certifications', { name: '', issuer: '', date: '', url: '' })}
+                                            className="px-4 py-2 rounded-xl bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors text-sm flex items-center gap-2"
+                                        >
+                                            <Plus size={16} /> Add Certification
+                                        </button>
+                                    </div>
+
+                                    {formData.certifications.map((cert, index) => (
+                                        <div key={index} className="p-4 rounded-xl bg-surface border border-border space-y-4 relative group">
+                                            <div className="flex justify-between items-start">
+                                                <span className="text-secondary text-sm">Certification {index + 1}</span>
+                                                <button onClick={() => removeArrayItem('certifications', index)} className="text-red-400 hover:text-red-300 transition-colors bg-red-500/10 p-1.5 rounded-lg">
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                            <div className="grid md:grid-cols-2 gap-4">
+                                                <input
+                                                    type="text"
+                                                    value={cert.name}
+                                                    onChange={(e) => updateArrayItem('certifications', index, { name: e.target.value })}
+                                                    className="input-field md:col-span-2"
+                                                    placeholder="Certification Name (e.g. AWS Solutions Architect)"
+                                                />
+                                                <input
+                                                    type="text"
+                                                    value={cert.issuer}
+                                                    onChange={(e) => updateArrayItem('certifications', index, { issuer: e.target.value })}
+                                                    className="input-field"
+                                                    placeholder="Issuing Organization"
+                                                />
+                                                <input
+                                                    type="text"
+                                                    value={cert.date}
+                                                    onChange={(e) => updateArrayItem('certifications', index, { date: e.target.value })}
+                                                    className="input-field"
+                                                    placeholder="Date Issued"
+                                                />
+                                                <input
+                                                    type="url"
+                                                    value={cert.url}
+                                                    onChange={(e) => updateArrayItem('certifications', index, { url: e.target.value })}
+                                                    className="input-field md:col-span-2"
+                                                    placeholder="Credential URL"
+                                                />
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {formData.certifications.length === 0 && (
+                                        <p className="text-tertiary text-center py-8">No certifications added. Showcase your credentials!</p>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Publications Section */}
+                            {activeSection === 'publications' && (
+                                <div className="space-y-6">
+                                    <div className="flex justify-between items-center mb-6">
+                                        <h2 className="text-xl font-bold text-primary">Publications</h2>
+                                        <button
+                                            onClick={() => addArrayItem('publications', { title: '', publisher: '', date: '', url: '' })}
+                                            className="px-4 py-2 rounded-xl bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors text-sm flex items-center gap-2"
+                                        >
+                                            <Plus size={16} /> Add Publication
+                                        </button>
+                                    </div>
+
+                                    {formData.publications.map((pub, index) => (
+                                        <div key={index} className="p-4 rounded-xl bg-surface border border-border space-y-4 relative group">
+                                            <div className="flex justify-between items-start">
+                                                <span className="text-secondary text-sm">Publication {index + 1}</span>
+                                                <button onClick={() => removeArrayItem('publications', index)} className="text-red-400 hover:text-red-300 transition-colors bg-red-500/10 p-1.5 rounded-lg">
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                            <div className="grid md:grid-cols-2 gap-4">
+                                                <input
+                                                    type="text"
+                                                    value={pub.title}
+                                                    onChange={(e) => updateArrayItem('publications', index, { title: e.target.value })}
+                                                    className="input-field md:col-span-2"
+                                                    placeholder="Paper/Article Title"
+                                                />
+                                                <input
+                                                    type="text"
+                                                    value={pub.publisher}
+                                                    onChange={(e) => updateArrayItem('publications', index, { publisher: e.target.value })}
+                                                    className="input-field"
+                                                    placeholder="Publisher / Journal"
+                                                />
+                                                <input
+                                                    type="text"
+                                                    value={pub.date}
+                                                    onChange={(e) => updateArrayItem('publications', index, { date: e.target.value })}
+                                                    className="input-field"
+                                                    placeholder="Publication Date"
+                                                />
+                                                <input
+                                                    type="url"
+                                                    value={pub.url}
+                                                    onChange={(e) => updateArrayItem('publications', index, { url: e.target.value })}
+                                                    className="input-field md:col-span-2"
+                                                    placeholder="Link to Publication"
+                                                />
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {formData.publications.length === 0 && (
+                                        <p className="text-tertiary text-center py-8">No publications added yet.</p>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Volunteering Section */}
+                            {activeSection === 'volunteering' && (
+                                <div className="space-y-6">
+                                    <div className="flex justify-between items-center mb-6">
+                                        <h2 className="text-xl font-bold text-primary">Volunteering</h2>
+                                        <button
+                                            onClick={() => addArrayItem('volunteering', { role: '', organization: '', date: '', description: '' })}
+                                            className="px-4 py-2 rounded-xl bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors text-sm flex items-center gap-2"
+                                        >
+                                            <Plus size={16} /> Add Experience
+                                        </button>
+                                    </div>
+
+                                    {formData.volunteering.map((vol, index) => (
+                                        <div key={index} className="p-4 rounded-xl bg-surface border border-border space-y-4 relative group">
+                                            <div className="flex justify-between items-start">
+                                                <span className="text-secondary text-sm">Volunteering {index + 1}</span>
+                                                <button onClick={() => removeArrayItem('volunteering', index)} className="text-red-400 hover:text-red-300 transition-colors bg-red-500/10 p-1.5 rounded-lg">
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                            <div className="grid md:grid-cols-2 gap-4">
+                                                <input
+                                                    type="text"
+                                                    value={vol.role}
+                                                    onChange={(e) => updateArrayItem('volunteering', index, { role: e.target.value })}
+                                                    className="input-field"
+                                                    placeholder="Role (e.g. Mentor)"
+                                                />
+                                                <input
+                                                    type="text"
+                                                    value={vol.organization}
+                                                    onChange={(e) => updateArrayItem('volunteering', index, { organization: e.target.value })}
+                                                    className="input-field"
+                                                    placeholder="Organization"
+                                                />
+                                                <input
+                                                    type="text"
+                                                    value={vol.date}
+                                                    onChange={(e) => updateArrayItem('volunteering', index, { date: e.target.value })}
+                                                    className="input-field md:col-span-2"
+                                                    placeholder="Dates"
+                                                />
+                                                <textarea
+                                                    value={vol.description}
+                                                    onChange={(e) => updateArrayItem('volunteering', index, { description: e.target.value })}
+                                                    className="input-field md:col-span-2 resize-none"
+                                                    rows={3}
+                                                    placeholder="Describe your volunteering contribution..."
+                                                />
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {formData.volunteering.length === 0 && (
+                                        <p className="text-tertiary text-center py-8">No volunteering experience added.</p>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* References Section */}
+                            {activeSection === 'references' && (
+                                <div className="space-y-6">
+                                    <div className="flex justify-between items-center mb-6">
+                                        <h2 className="text-xl font-bold text-primary">References</h2>
+                                        <button
+                                            onClick={() => addArrayItem('references', { name: '', relationship: '', contact: '' })}
+                                            className="px-4 py-2 rounded-xl bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors text-sm flex items-center gap-2"
+                                        >
+                                            <Plus size={16} /> Add Reference
+                                        </button>
+                                    </div>
+
+                                    {formData.references.map((ref, index) => (
+                                        <div key={index} className="p-4 rounded-xl bg-surface border border-border space-y-4 relative group">
+                                            <div className="flex justify-between items-start">
+                                                <span className="text-secondary text-sm">Reference {index + 1}</span>
+                                                <button onClick={() => removeArrayItem('references', index)} className="text-red-400 hover:text-red-300 transition-colors bg-red-500/10 p-1.5 rounded-lg">
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                            <div className="grid md:grid-cols-2 gap-4">
+                                                <input
+                                                    type="text"
+                                                    value={ref.name}
+                                                    onChange={(e) => updateArrayItem('references', index, { name: e.target.value })}
+                                                    className="input-field"
+                                                    placeholder="Reference Name"
+                                                />
+                                                <input
+                                                    type="text"
+                                                    value={ref.relationship}
+                                                    onChange={(e) => updateArrayItem('references', index, { relationship: e.target.value })}
+                                                    className="input-field"
+                                                    placeholder="Relationship (e.g. Former Manager)"
+                                                />
+                                                <input
+                                                    type="text"
+                                                    value={ref.contact}
+                                                    onChange={(e) => updateArrayItem('references', index, { contact: e.target.value })}
+                                                    className="input-field md:col-span-2"
+                                                    placeholder="Contact Info (Email or Phone)"
+                                                />
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {formData.references.length === 0 && (
+                                        <p className="text-tertiary text-center py-8">No references added.</p>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Custom Sections */}
+                            {activeSection === 'custom' && (
+                                <div className="space-y-6">
+                                    <div className="flex justify-between items-center mb-6">
+                                        <h2 className="text-xl font-bold text-primary">Custom Sections</h2>
+                                        <button
+                                            onClick={() => addArrayItem('customSections', { title: 'New Section', content: '' })}
+                                            className="px-4 py-2 rounded-xl bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors text-sm flex items-center gap-2"
+                                        >
+                                            <Plus size={16} /> Add Custom Section
+                                        </button>
+                                    </div>
+
+                                    <div className="bg-primary-500/10 border border-primary-500/20 rounded-xl p-4 mb-6">
+                                        <div className="flex items-start gap-3 text-sm text-secondary">
+                                            <BookOpen size={16} className="mt-0.5 text-primary-400" />
+                                            <p>Use custom sections for anything else! Hobbies, Teaching, Languages (extended), or specific domain knowledge. Markdown is supported.</p>
+                                        </div>
+                                    </div>
+
+                                    {formData.customSections.map((sec, index) => (
+                                        <div key={index} className="p-4 rounded-xl bg-surface border border-border space-y-4 relative group">
+                                            <div className="flex justify-between items-start">
+                                                <span className="text-secondary text-sm">Custom Section {index + 1}</span>
+                                                <button onClick={() => removeArrayItem('customSections', index)} className="text-red-400 hover:text-red-300 transition-colors bg-red-500/10 p-1.5 rounded-lg">
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <label className="block text-secondary text-sm font-medium mb-2">Section Title</label>
+                                                    <input
+                                                        type="text"
+                                                        value={sec.title}
+                                                        onChange={(e) => updateArrayItem('customSections', index, { title: e.target.value })}
+                                                        className="input-field font-bold"
+                                                        placeholder="e.g. Speaking Engagements"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-secondary text-sm font-medium mb-2">Content</label>
+                                                    <textarea
+                                                        value={sec.content}
+                                                        onChange={(e) => updateArrayItem('customSections', index, { content: e.target.value })}
+                                                        className="input-field resize-none h-40"
+                                                        placeholder="Describe your achievements in this area..."
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {formData.customSections.length === 0 && (
+                                        <p className="text-tertiary text-center py-8">No custom sections added.</p>
+                                    )}
+                                </div>
+                            )}
+
                             {/* Extra Curricular Section */}
                             {activeSection === 'extra' && (
                                 <div className="space-y-6">
@@ -760,14 +1067,14 @@ function ProfileEditor() {
                                     <h2 className="text-xl font-bold text-primary mb-6">Social Links</h2>
 
                                     {[
-                                        { key: 'linkedin', label: 'LinkedIn', icon: '💼', placeholder: 'https://linkedin.com/in/username' },
-                                        { key: 'github', label: 'GitHub', icon: '💻', placeholder: 'https://github.com/username' },
-                                        { key: 'twitter', label: 'Twitter / X', icon: '🐦', placeholder: 'https://twitter.com/username' },
-                                        { key: 'website', label: 'Personal Website', icon: '🌐', placeholder: 'https://yourwebsite.com' },
-                                        { key: 'email', label: 'Email', icon: '📧', placeholder: 'email@example.com' }
+                                        { key: 'linkedin', label: 'LinkedIn', icon: <Linkedin size={20} />, placeholder: 'https://linkedin.com/in/username' },
+                                        { key: 'github', label: 'GitHub', icon: <Github size={20} />, placeholder: 'https://github.com/username' },
+                                        { key: 'twitter', label: 'Twitter / X', icon: <Twitter size={20} />, placeholder: 'https://twitter.com/username' },
+                                        { key: 'website', label: 'Personal Website', icon: <Globe size={20} />, placeholder: 'https://yourwebsite.com' },
+                                        { key: 'email', label: 'Email', icon: <Mail size={20} />, placeholder: 'email@example.com' }
                                     ].map(social => (
                                         <div key={social.key} className="flex items-center gap-4">
-                                            <span className="text-2xl w-10">{social.icon}</span>
+                                            <span className="text-primary opacity-80">{social.icon}</span>
                                             <div className="flex-1">
                                                 <label className="block text-secondary text-sm font-medium mb-2">{social.label}</label>
                                                 <input

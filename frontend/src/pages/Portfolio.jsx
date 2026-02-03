@@ -4,31 +4,12 @@ import { motion } from 'framer-motion'
 import { getPublicProfile, trackPortfolioView } from '../utils/api'
 import { useTheme } from '../context/ThemeContext'
 
-// SVG Icons for tabs
-const UserIcon = () => (
-    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-    </svg>
-)
-
-const BriefcaseIcon = () => (
-    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-    </svg>
-)
-
-const RocketIcon = () => (
-    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
-    </svg>
-)
-
-const AcademicIcon = () => (
-    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-    </svg>
-)
+import {
+    User, Briefcase, Rocket, GraduationCap,
+    Award, BookOpen, Heart, Share2,
+    Github, Linkedin, Twitter, Globe, Mail,
+    MapPin, ExternalLink, Code
+} from 'lucide-react'
 
 // Portfolio theme color palettes
 const portfolioThemes = {
@@ -152,18 +133,47 @@ function Portfolio() {
         )
     }
 
-    const { basicDetails, skills, experience, education, projects, socialLinks } = profile
+    const {
+        basicDetails, skills, experience, education, projects,
+        socialLinks, achievements, certifications, publications,
+        volunteering, references, customSections
+    } = profile
+
+    // Inject theme variables
+    const themeStyle = {
+        '--color-bg-primary': themeColors.bg,
+        '--color-surface': themeColors.surface,
+        '--color-text-primary': themeColors.text,
+        '--color-text-secondary': themeColors.text === '#ffffff' ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
+        '--color-text-tertiary': themeColors.text === '#ffffff' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
+        '--color-border': themeColors.border,
+        '--color-primary-500': themeColors.primary,
+        '--gradient-primary': themeColors.accent,
+        // Override global backgrounds to ensure full page coverage
+        backgroundColor: themeColors.bg,
+        color: themeColors.text
+    }
+
     const allSkills = [...(skills?.technical || []), ...(skills?.tools || []), ...(skills?.soft || [])]
 
     const tabs = [
-        { id: 'about', label: 'About', icon: <UserIcon /> },
-        { id: 'experience', label: 'Experience', icon: <BriefcaseIcon />, count: experience?.length },
-        { id: 'projects', label: 'Projects', icon: <RocketIcon />, count: projects?.length },
-        { id: 'education', label: 'Education', icon: <AcademicIcon />, count: education?.length },
-    ].filter(t => !t.count || t.count > 0 || t.id === 'about')
+        { id: 'about', label: 'About', icon: <User size={18} /> },
+        { id: 'experience', label: 'Experience', icon: <Briefcase size={18} />, count: experience?.length },
+        { id: 'projects', label: 'Projects', icon: <Rocket size={18} />, count: projects?.length },
+        { id: 'education', label: 'Education', icon: <GraduationCap size={18} />, count: education?.length },
+        { id: 'certifications', label: 'Certifications', icon: <Award size={18} />, count: certifications?.length },
+        { id: 'publications', label: 'Publications', icon: <BookOpen size={18} />, count: publications?.length },
+        { id: 'volunteering', label: 'Volunteering', icon: <Heart size={18} />, count: volunteering?.length },
+        { id: 'references', label: 'References', icon: <Share2 size={18} />, count: references?.length },
+        ...(customSections || []).map((s, i) => ({
+            id: `custom-${i}`,
+            label: s.title,
+            icon: <Code size={18} />
+        }))
+    ].filter(t => !t.count || t.count > 0 || t.id.startsWith('custom') || t.id === 'about')
 
     return (
-        <div className="min-h-screen bg-primary">
+        <div className="min-h-screen transition-colors duration-500" style={themeStyle}>
             {/* Theme toggle - floating */}
             <motion.button
                 initial={{ opacity: 0, scale: 0.8 }}
@@ -564,16 +574,12 @@ function Portfolio() {
                                     initial={{ opacity: 0, x: -20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: index * 0.1 }}
-                                    className="rounded-2xl p-6 border"
+                                    className="rounded-2xl p-6 border group"
                                     style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
                                 >
                                     <div className="flex items-start gap-4">
-                                        <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                                            style={{ background: 'rgba(99, 102, 241, 0.15)' }}>
-                                            <svg className="w-6 h-6 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-                                            </svg>
+                                        <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-primary-500/10 text-primary-400 group-hover:scale-110 transition-transform">
+                                            <GraduationCap size={24} />
                                         </div>
                                         <div className="flex-1">
                                             <h3 className="text-xl font-bold text-primary mb-1">{edu.degree}</h3>
@@ -586,6 +592,157 @@ function Portfolio() {
                                     </div>
                                 </motion.div>
                             ))}
+                        </motion.div>
+                    )}
+
+                    {/* Certifications Tab */}
+                    {activeTab === 'certifications' && certifications?.length > 0 && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="grid md:grid-cols-2 gap-6"
+                        >
+                            {certifications.map((cert, index) => (
+                                <motion.div
+                                    key={index}
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: index * 0.1 }}
+                                    whileHover={{ y: -5 }}
+                                    className="rounded-2xl p-6 border group relative overflow-hidden"
+                                    style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+                                >
+                                    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity transform rotate-12">
+                                        <Award size={80} />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-primary mb-2 pr-8 relative z-10">{cert.name}</h3>
+                                    <p className="font-medium heading-gradient mb-1 relative z-10">{cert.issuer}</p>
+                                    <p className="text-muted text-sm relative z-10">{cert.date}</p>
+                                    {cert.url && (
+                                        <a href={cert.url} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary-400 hover:text-primary-300 relative z-10">
+                                            View Credential <ExternalLink size={14} />
+                                        </a>
+                                    )}
+                                </motion.div>
+                            ))}
+                        </motion.div>
+                    )}
+
+                    {/* Publications Tab */}
+                    {activeTab === 'publications' && publications?.length > 0 && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="space-y-6"
+                        >
+                            {publications.map((pub, index) => (
+                                <motion.div
+                                    key={index}
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: index * 0.1 }}
+                                    className="rounded-2xl p-6 border group hover:border-primary-500/50 transition-colors"
+                                    style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+                                >
+                                    <div className="flex gap-4 items-start">
+                                        <div className="p-3 rounded-lg bg-primary-500/10 text-primary-400">
+                                            <BookOpen size={24} />
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="text-xl font-bold text-primary mb-2 group-hover:heading-gradient transition-all">
+                                                {pub.title}
+                                            </h3>
+                                            <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-secondary mb-3">
+                                                <span className="font-medium text-primary">{pub.publisher}</span>
+                                                <span className="text-tertiary">•</span>
+                                                <span>{pub.date}</span>
+                                            </div>
+                                            {pub.url && (
+                                                <a href={pub.url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-primary-400 hover:text-primary-300 flex items-center gap-1">
+                                                    Read Paper <ExternalLink size={14} />
+                                                </a>
+                                            )}
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </motion.div>
+                    )}
+
+                    {/* Volunteering Tab */}
+                    {activeTab === 'volunteering' && volunteering?.length > 0 && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="space-y-8"
+                        >
+                            {volunteering.map((vol, index) => (
+                                <motion.div
+                                    key={index}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: index * 0.1 }}
+                                    className="rounded-2xl p-8 border relative overflow-hidden"
+                                    style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+                                >
+                                    <div className="absolute top-0 left-0 w-1 h-full" style={{ background: 'var(--gradient-primary)' }} />
+                                    <div className="md:flex justify-between items-start gap-4 mb-4">
+                                        <div>
+                                            <h3 className="text-xl font-bold text-primary">{vol.role}</h3>
+                                            <p className="text-lg text-secondary">{vol.organization}</p>
+                                        </div>
+                                        <span className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-primary-500/10 text-primary-400 mt-2 md:mt-0">
+                                            {vol.date}
+                                        </span>
+                                    </div>
+                                    <p className="text-secondary leading-relaxed">{vol.description}</p>
+                                </motion.div>
+                            ))}
+                        </motion.div>
+                    )}
+
+                    {/* References Tab */}
+                    {activeTab === 'references' && references?.length > 0 && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="grid md:grid-cols-2 gap-6"
+                        >
+                            {references.map((ref, index) => (
+                                <div key={index} className="rounded-2xl p-6 border flex items-center gap-4 hover:border-primary-500/50 transition-colors"
+                                    style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+                                    <div className="w-12 h-12 rounded-full bg-primary-500/20 flex items-center justify-center text-primary-400">
+                                        <User size={24} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-primary">{ref.name}</h3>
+                                        <p className="text-sm text-secondary">{ref.relationship}</p>
+                                        {ref.contact && (
+                                            <p className="text-xs text-tertiary mt-1">{ref.contact}</p>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </motion.div>
+                    )}
+
+                    {/* Custom Sections Tabs */}
+                    {activeTab.startsWith('custom-') && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="rounded-2xl p-8 border"
+                            style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+                        >
+                            <div className="flex items-center gap-3 mb-6">
+                                <Code className="text-primary-400" size={24} />
+                                <h2 className="text-2xl font-bold text-primary">
+                                    {customSections[parseInt(activeTab.split('-')[1])].title}
+                                </h2>
+                            </div>
+                            <div className="prose prose-invert max-w-none text-secondary whitespace-pre-wrap leading-relaxed">
+                                {customSections[parseInt(activeTab.split('-')[1])].content}
+                            </div>
                         </motion.div>
                     )}
                 </div>

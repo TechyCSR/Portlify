@@ -1,5 +1,6 @@
 import { Ollama } from 'ollama';
 import axios from 'axios';
+import { extractTextWithLinks } from './pdfLinkExtractor.js';
 
 // Initialize Ollama with cloud API
 const ollama = new Ollama({
@@ -18,12 +19,12 @@ const RESUME_PARSER_PROMPT = `You are an expert resume parser. Analyze the resum
 CRITICAL RULES:
 1. Return ONLY valid JSON - no markdown, no explanations, no code blocks
 2. If a section doesn't exist in the resume, return an empty array [] or empty string ""
-3. Preserve ALL URLs and links found exactly as they appear
+3. Preserve ALL URLs and links found. The text might contain "[Link: URL]" annotations - use these!
 4. For any section you find that doesn't fit standard categories, add to customSections
-5. Be thorough - extract every piece of relevant information
+5. Look for predicted sections: Publications, Volunteering, References, Patents, Certifications
 6. Skills should be categorized: technical (programming languages, frameworks), soft (communication, leadership), tools (software, platforms), languages (spoken/written)
 7. For projects, always try to find demo URLs and GitHub links
-8. Extract achievements, certifications, awards into the achievements section
+8. Extract achievements, awards into the achievements section
 9. Parse dates in readable format (e.g., "Jan 2023 - Present" or "2020 - 2024")
 
 Return this EXACT JSON structure:
@@ -69,6 +70,29 @@ Return this EXACT JSON structure:
     "description": "Description",
     "date": "2023"
   }],
+  "certifications": [{
+    "name": "Cert Name",
+    "issuer": "Issuer",
+    "date": "2023",
+    "url": "https://cert.com"
+  }],
+  "publications": [{
+    "title": "Paper Title",
+    "publisher": "Journal/Conf",
+    "date": "2023",
+    "url": "https://paper.com"
+  }],
+  "volunteering": [{
+    "role": "Role",
+    "organization": "Org Name",
+    "description": "Description",
+    "date": "2023"
+  }],
+  "references": [{
+    "name": "Ref Name",
+    "contact": "Contact Info",
+    "relationship": "Manager"
+  }],
   "extraCurricular": [{
     "activity": "Club Name",
     "role": "Position",
@@ -83,7 +107,7 @@ Return this EXACT JSON structure:
   },
   "customSections": [{
     "title": "Section Title",
-    "content": "Content"
+    "content": "Content string or markdown list"
   }]
 }
 
@@ -104,11 +128,10 @@ export async function parseResumeWithAI(pdfUrl) {
       timeout: 30000
     });
 
-    const pdfParse = (await import('pdf-parse')).default;
-    const data = await pdfParse(Buffer.from(response.data));
-    const text = data.text;
+    // Extract text AND hidden links using our custom extractor
+    const text = await extractTextWithLinks(response.data);
 
-    console.log(`Extracted ${text.length} characters from ${data.numpages} page(s)`);
+    console.log(`Extracted text with links, length: ${text.length}`);
 
     if (!text || text.trim().length < 50) {
       throw new Error('Could not extract sufficient text from PDF');
@@ -181,6 +204,10 @@ function sanitizeAndValidate(data) {
       website: '',
       email: ''
     },
+    certifications: [],
+    publications: [],
+    volunteering: [],
+    references: [],
     customSections: []
   };
 
@@ -199,6 +226,10 @@ function sanitizeAndValidate(data) {
     achievements: Array.isArray(data.achievements) ? data.achievements.map(sanitizeAchievement) : [],
     extraCurricular: Array.isArray(data.extraCurricular) ? data.extraCurricular.map(sanitizeExtraCurricular) : [],
     socialLinks: { ...defaultData.socialLinks, ...data.socialLinks },
+    certifications: Array.isArray(data.certifications) ? data.certifications : [],
+    publications: Array.isArray(data.publications) ? data.publications : [],
+    volunteering: Array.isArray(data.volunteering) ? data.volunteering : [],
+    references: Array.isArray(data.references) ? data.references : [],
     customSections: Array.isArray(data.customSections) ? data.customSections : []
   };
 
