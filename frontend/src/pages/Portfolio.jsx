@@ -1,56 +1,258 @@
-import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { useState, useEffect, useMemo } from 'react'
+import { useParams } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { getPublicProfile, trackPortfolioView } from '../utils/api'
 import { useTheme } from '../context/ThemeContext'
-
 import {
     User, Briefcase, Rocket, GraduationCap,
-    Award, BookOpen, Heart, Share2,
+    Award, BookOpen, Heart, Users,
     Github, Linkedin, Twitter, Globe, Mail,
-    MapPin, ExternalLink, Code
+    MapPin, ExternalLink, Code, Calendar,
+    Building, ChevronRight, Sparkles, Moon, Sun
 } from 'lucide-react'
 
-// Portfolio theme color palettes
+// ==================== THEME PALETTES ====================
 const portfolioThemes = {
     modern: {
         primary: '#6366f1',
         secondary: '#a855f7',
-        bg: '#0f172a',
-        surface: '#1e293b',
+        bg: '#030712',
+        surface: 'rgba(15, 23, 42, 0.8)',
+        surfaceSolid: '#0f172a',
         text: '#f8fafc',
-        border: '#334155',
-        accent: 'linear-gradient(135deg, #6366f1, #a855f7)'
+        textSecondary: '#94a3b8',
+        border: 'rgba(99, 102, 241, 0.2)',
+        glow: 'rgba(99, 102, 241, 0.4)',
+        accent: 'linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%)'
     },
     minimal: {
         primary: '#18181b',
-        secondary: '#71717a',
-        bg: '#ffffff',
-        surface: '#f4f4f5',
+        secondary: '#52525b',
+        bg: '#fafafa',
+        surface: 'rgba(255, 255, 255, 0.9)',
+        surfaceSolid: '#ffffff',
         text: '#18181b',
-        border: '#e4e4e7',
-        accent: 'linear-gradient(135deg, #18181b, #71717a)'
+        textSecondary: '#71717a',
+        border: 'rgba(0, 0, 0, 0.08)',
+        glow: 'rgba(0, 0, 0, 0.1)',
+        accent: 'linear-gradient(135deg, #18181b, #52525b)'
     },
     creative: {
         primary: '#ec4899',
-        secondary: '#f472b6',
-        bg: '#1f1f1f',
-        surface: '#2d2d2d',
-        text: '#ffffff',
-        border: '#404040',
-        accent: 'linear-gradient(135deg, #ec4899, #f472b6)'
+        secondary: '#8b5cf6',
+        bg: '#0a0a0a',
+        surface: 'rgba(31, 31, 31, 0.9)',
+        surfaceSolid: '#1a1a1a',
+        text: '#fafafa',
+        textSecondary: '#a1a1aa',
+        border: 'rgba(236, 72, 153, 0.2)',
+        glow: 'rgba(236, 72, 153, 0.4)',
+        accent: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #06b6d4 100%)'
     },
     professional: {
-        primary: '#0f766e',
-        secondary: '#14b8a6',
+        primary: '#0d9488',
+        secondary: '#0891b2',
         bg: '#f0fdfa',
-        surface: '#ffffff',
+        surface: 'rgba(255, 255, 255, 0.95)',
+        surfaceSolid: '#ffffff',
         text: '#134e4a',
-        border: '#99f6e4',
-        accent: 'linear-gradient(135deg, #0f766e, #14b8a6)'
+        textSecondary: '#5eead4',
+        border: 'rgba(13, 148, 136, 0.15)',
+        glow: 'rgba(13, 148, 136, 0.3)',
+        accent: 'linear-gradient(135deg, #0d9488, #0891b2)'
     }
 }
 
+// ==================== ANIMATION VARIANTS ====================
+const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.1 } }
+}
+
+const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100, damping: 15 } }
+}
+
+const cardHover = {
+    rest: { scale: 1, rotateX: 0, rotateY: 0 },
+    hover: { scale: 1.02, transition: { type: 'spring', stiffness: 400, damping: 17 } }
+}
+
+// ==================== GLASSMORPHIC CARD COMPONENT ====================
+const GlassCard = ({ children, className = '', hover = true, style = {} }) => (
+    <motion.div
+        variants={hover ? cardHover : undefined}
+        initial="rest"
+        whileHover={hover ? "hover" : undefined}
+        className={`relative backdrop-blur-xl rounded-2xl border transition-all duration-300 ${className}`}
+        style={{
+            background: 'var(--surface)',
+            borderColor: 'var(--border)',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
+            ...style
+        }}
+    >
+        {children}
+        {hover && (
+            <div
+                className="absolute inset-0 rounded-2xl opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                style={{
+                    boxShadow: `0 0 40px var(--glow), inset 0 1px 0 rgba(255,255,255,0.1)`,
+                    border: '1px solid var(--glow)'
+                }}
+            />
+        )}
+    </motion.div>
+)
+
+// ==================== SKILL BAR COMPONENT ====================
+const SkillChip = ({ skill, index }) => (
+    <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: index * 0.03 }}
+        className="group relative px-4 py-2 rounded-full backdrop-blur-sm border cursor-default"
+        style={{
+            background: 'var(--surface)',
+            borderColor: 'var(--border)'
+        }}
+    >
+        <span style={{ color: 'var(--text)' }} className="text-sm font-medium">
+            {skill}
+        </span>
+        <div
+            className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+            style={{ background: 'var(--accent)', opacity: 0.1 }}
+        />
+    </motion.div>
+)
+
+// ==================== TIMELINE ITEM COMPONENT ====================
+const TimelineItem = ({ item, type, index, isLast }) => (
+    <motion.div
+        variants={itemVariants}
+        className="relative pl-8 pb-8"
+    >
+        {/* Timeline connector */}
+        {!isLast && (
+            <div
+                className="absolute left-[11px] top-8 bottom-0 w-px"
+                style={{ background: `linear-gradient(to bottom, var(--primary), transparent)` }}
+            />
+        )}
+
+        {/* Timeline dot */}
+        <div
+            className="absolute left-0 top-1 w-6 h-6 rounded-full flex items-center justify-center"
+            style={{ background: 'var(--accent)', boxShadow: `0 0 20px var(--glow)` }}
+        >
+            <div className="w-2 h-2 bg-white rounded-full" />
+        </div>
+
+        <GlassCard className="p-5">
+            <div className="flex flex-wrap items-start justify-between gap-2 mb-3">
+                <div>
+                    <h3 className="text-lg font-semibold" style={{ color: 'var(--text)' }}>
+                        {type === 'experience' ? item.title : item.degree}
+                    </h3>
+                    <div className="flex items-center gap-2 mt-1" style={{ color: 'var(--textSecondary)' }}>
+                        <Building size={14} />
+                        <span className="text-sm">
+                            {type === 'experience' ? item.company : item.institution}
+                        </span>
+                    </div>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium"
+                    style={{ background: 'var(--surface)', color: 'var(--primary)' }}>
+                    <Calendar size={12} />
+                    {type === 'experience' ? item.duration : item.year}
+                </div>
+            </div>
+
+            {item.location && (
+                <div className="flex items-center gap-2 mb-3 text-sm" style={{ color: 'var(--textSecondary)' }}>
+                    <MapPin size={14} />
+                    {item.location}
+                </div>
+            )}
+
+            {item.description && (
+                <p className="text-sm leading-relaxed" style={{ color: 'var(--textSecondary)' }}>
+                    {item.description}
+                </p>
+            )}
+
+            {item.achievements?.length > 0 && (
+                <ul className="mt-3 space-y-2">
+                    {item.achievements.map((achievement, i) => (
+                        <li key={i} className="flex items-start gap-2 text-sm" style={{ color: 'var(--textSecondary)' }}>
+                            <ChevronRight size={14} style={{ color: 'var(--primary)' }} className="mt-0.5 flex-shrink-0" />
+                            {achievement}
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </GlassCard>
+    </motion.div>
+)
+
+// ==================== PROJECT CARD COMPONENT ====================
+const ProjectCard = ({ project, index }) => (
+    <motion.div
+        variants={itemVariants}
+        className="group"
+        style={{ perspective: '1000px' }}
+    >
+        <GlassCard className="p-6 h-full">
+            <div className="flex items-start justify-between mb-4">
+                <div
+                    className="w-12 h-12 rounded-xl flex items-center justify-center"
+                    style={{ background: 'var(--accent)' }}
+                >
+                    <Rocket size={24} className="text-white" />
+                </div>
+                <div className="flex gap-2">
+                    {project.githubUrl && (
+                        <a href={project.githubUrl} target="_blank" rel="noopener noreferrer"
+                            className="p-2 rounded-lg transition-colors hover:bg-white/10"
+                            style={{ color: 'var(--textSecondary)' }}>
+                            <Github size={18} />
+                        </a>
+                    )}
+                    {project.demoUrl && (
+                        <a href={project.demoUrl} target="_blank" rel="noopener noreferrer"
+                            className="p-2 rounded-lg transition-colors hover:bg-white/10"
+                            style={{ color: 'var(--textSecondary)' }}>
+                            <ExternalLink size={18} />
+                        </a>
+                    )}
+                </div>
+            </div>
+
+            <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text)' }}>
+                {project.title}
+            </h3>
+
+            <p className="text-sm leading-relaxed mb-4" style={{ color: 'var(--textSecondary)' }}>
+                {project.description}
+            </p>
+
+            {project.techStack?.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-auto">
+                    {project.techStack.map((tech, i) => (
+                        <span key={i} className="px-2 py-1 text-xs rounded-md font-medium"
+                            style={{ background: 'var(--surface)', color: 'var(--primary)' }}>
+                            {tech}
+                        </span>
+                    ))}
+                </div>
+            )}
+        </GlassCard>
+    </motion.div>
+)
+
+// ==================== MAIN PORTFOLIO COMPONENT ====================
 function Portfolio() {
     const { username } = useParams()
     const { theme, toggleTheme } = useTheme()
@@ -65,25 +267,14 @@ function Portfolio() {
             try {
                 const { data } = await getPublicProfile(username)
                 setProfile(data)
+                if (data.theme) setPortfolioTheme(data.theme)
 
-                // Set the portfolio theme from profile
-                if (data.theme) {
-                    setPortfolioTheme(data.theme)
-                }
-
-                // Track the view (fire and forget)
+                // Track view
                 try {
-                    const referrer = document.referrer || 'direct'
-                    trackPortfolioView(username, referrer)
-                } catch (e) {
-                    // Silently fail - analytics shouldn't break the page
-                }
+                    trackPortfolioView(username, document.referrer || 'direct')
+                } catch (e) { /* silent */ }
             } catch (err) {
-                if (err.response?.status === 404) {
-                    setError('Profile not found')
-                } else {
-                    setError('Failed to load profile')
-                }
+                setError(err.response?.status === 404 ? 'Profile not found' : 'Failed to load profile')
             } finally {
                 setLoading(false)
             }
@@ -91,373 +282,329 @@ function Portfolio() {
         fetchProfile()
     }, [username])
 
-    // Get the current portfolio theme colors
-    const themeColors = portfolioThemes[portfolioTheme] || portfolioThemes.modern
+    const colors = portfolioThemes[portfolioTheme] || portfolioThemes.modern
 
+    // Extract profile data
+    const { basicDetails, skills, experience, education, projects,
+        certifications, publications, volunteering, socialLinks, customSections } = profile || {}
+
+    const allSkills = useMemo(() => [
+        ...(skills?.technical || []),
+        ...(skills?.tools || []),
+        ...(skills?.soft || [])
+    ], [skills])
+
+    // Build tabs only for sections with data
+    const tabs = useMemo(() => {
+        const tabConfig = [
+            { id: 'about', label: 'About', icon: User, show: true },
+            { id: 'experience', label: 'Experience', icon: Briefcase, show: experience?.length > 0 },
+            { id: 'projects', label: 'Projects', icon: Rocket, show: projects?.length > 0 },
+            { id: 'education', label: 'Education', icon: GraduationCap, show: education?.length > 0 },
+            { id: 'certifications', label: 'Certifications', icon: Award, show: certifications?.length > 0 },
+            { id: 'publications', label: 'Publications', icon: BookOpen, show: publications?.length > 0 },
+            { id: 'volunteering', label: 'Volunteering', icon: Heart, show: volunteering?.length > 0 }
+        ]
+
+        // Add custom sections
+        const customTabs = (customSections || [])
+            .filter(s => s.title && s.content)
+            .map((s, i) => ({
+                id: `custom-${i}`,
+                label: s.title,
+                icon: Code,
+                show: true,
+                content: s.content
+            }))
+
+        return [...tabConfig.filter(t => t.show), ...customTabs]
+    }, [experience, projects, education, certifications, publications, volunteering, customSections])
+
+    // CSS Variables injection
+    const cssVars = {
+        '--primary': colors.primary,
+        '--secondary': colors.secondary,
+        '--bg': colors.bg,
+        '--surface': colors.surface,
+        '--surfaceSolid': colors.surfaceSolid,
+        '--text': colors.text,
+        '--textSecondary': colors.textSecondary,
+        '--border': colors.border,
+        '--glow': colors.glow,
+        '--accent': colors.accent
+    }
+
+    // Loading state
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-primary">
+            <div className="min-h-screen flex items-center justify-center" style={{ background: colors.bg }}>
                 <motion.div
                     animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                    className="w-12 h-12 rounded-full border-4 border-t-transparent"
-                    style={{ borderColor: 'var(--color-border)', borderTopColor: 'var(--color-primary-500)' }}
+                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                    className="w-12 h-12 rounded-full border-2 border-t-transparent"
+                    style={{ borderColor: colors.primary, borderTopColor: 'transparent' }}
                 />
             </div>
         )
     }
 
+    // Error state
     if (error) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-primary px-4">
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="text-center"
-                >
-                    <div className="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center"
-                        style={{ background: 'var(--color-bg-secondary)' }}>
-                        <svg className="w-12 h-12 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+            <div className="min-h-screen flex items-center justify-center" style={{ background: colors.bg }}>
+                <GlassCard className="p-8 text-center max-w-md" style={cssVars}>
+                    <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
+                        style={{ background: 'rgba(239, 68, 68, 0.1)' }}>
+                        <User size={32} className="text-red-400" />
                     </div>
-                    <h1 className="text-2xl font-bold text-primary mb-2">{error}</h1>
-                    <p className="text-secondary mb-6">
-                        The portfolio you're looking for doesn't exist.
-                    </p>
-                    <Link to="/" className="btn-primary">
-                        Go Home
-                    </Link>
-                </motion.div>
+                    <h2 className="text-xl font-semibold mb-2" style={{ color: colors.text }}>{error}</h2>
+                    <p style={{ color: colors.textSecondary }}>The portfolio you're looking for doesn't exist.</p>
+                </GlassCard>
             </div>
         )
     }
 
-    const {
-        basicDetails, skills, experience, education, projects,
-        socialLinks, achievements, certifications, publications,
-        volunteering, references, customSections
-    } = profile
-
-    // Inject theme variables
-    const themeStyle = {
-        '--color-bg-primary': themeColors.bg,
-        '--color-surface': themeColors.surface,
-        '--color-text-primary': themeColors.text,
-        '--color-text-secondary': themeColors.text === '#ffffff' ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
-        '--color-text-tertiary': themeColors.text === '#ffffff' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
-        '--color-border': themeColors.border,
-        '--color-primary-500': themeColors.primary,
-        '--gradient-primary': themeColors.accent,
-        // Override global backgrounds to ensure full page coverage
-        backgroundColor: themeColors.bg,
-        color: themeColors.text
-    }
-
-    const allSkills = [...(skills?.technical || []), ...(skills?.tools || []), ...(skills?.soft || [])]
-
-    const tabs = [
-        { id: 'about', label: 'About', icon: <User size={18} /> },
-        { id: 'experience', label: 'Experience', icon: <Briefcase size={18} />, count: experience?.length },
-        { id: 'projects', label: 'Projects', icon: <Rocket size={18} />, count: projects?.length },
-        { id: 'education', label: 'Education', icon: <GraduationCap size={18} />, count: education?.length },
-        { id: 'certifications', label: 'Certifications', icon: <Award size={18} />, count: certifications?.length },
-        { id: 'publications', label: 'Publications', icon: <BookOpen size={18} />, count: publications?.length },
-        { id: 'volunteering', label: 'Volunteering', icon: <Heart size={18} />, count: volunteering?.length },
-        { id: 'references', label: 'References', icon: <Share2 size={18} />, count: references?.length },
-        ...(customSections || []).map((s, i) => ({
-            id: `custom-${i}`,
-            label: s.title,
-            icon: <Code size={18} />
-        }))
-    ].filter(t => !t.count || t.count > 0 || t.id.startsWith('custom') || t.id === 'about')
-
     return (
-        <div className="min-h-screen transition-colors duration-500" style={themeStyle}>
-            {/* Theme toggle - floating */}
+        <div className="min-h-screen transition-colors duration-500" style={{ ...cssVars, background: colors.bg }}>
+            {/* Animated Background */}
+            <div className="fixed inset-0 overflow-hidden pointer-events-none">
+                <motion.div
+                    animate={{ x: [0, 100, 0], y: [0, -50, 0] }}
+                    transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+                    className="absolute -top-40 -right-40 w-80 h-80 rounded-full blur-3xl opacity-20"
+                    style={{ background: colors.primary }}
+                />
+                <motion.div
+                    animate={{ x: [0, -80, 0], y: [0, 80, 0] }}
+                    transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
+                    className="absolute -bottom-40 -left-40 w-96 h-96 rounded-full blur-3xl opacity-15"
+                    style={{ background: colors.secondary }}
+                />
+            </div>
+
+            {/* Theme Toggle */}
             <motion.button
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 whileHover={{ scale: 1.1 }}
                 onClick={toggleTheme}
-                className="fixed top-6 right-6 z-50 p-3 rounded-xl glass"
-                aria-label="Toggle theme"
+                className="fixed top-6 right-6 z-50 p-3 rounded-xl backdrop-blur-xl border"
+                style={{ background: colors.surface, borderColor: colors.border }}
             >
-                {theme === 'dark' ? (
-                    <svg className="w-5 h-5" style={{ color: 'var(--color-primary-400)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                    </svg>
-                ) : (
-                    <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                    </svg>
-                )}
+                {theme === 'dark' ? <Sun size={20} style={{ color: colors.text }} /> : <Moon size={20} style={{ color: colors.text }} />}
             </motion.button>
 
             {/* Hero Section */}
-            <section className="relative pt-20 pb-16 overflow-hidden">
-                {/* Background gradient */}
-                <div className="absolute inset-0 opacity-20" style={{ background: 'var(--gradient-primary)' }} />
-
-                {/* Grid pattern */}
-                <div className="absolute inset-0 bg-[linear-gradient(rgba(99,102,241,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(99,102,241,0.03)_1px,transparent_1px)] bg-[size:48px_48px]" />
-
-                <div className="relative max-w-4xl mx-auto px-4 text-center">
+            <section className="relative pt-24 pb-16 px-4">
+                <div className="max-w-4xl mx-auto text-center">
+                    {/* Avatar with 3D effect */}
                     <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
+                        initial={{ scale: 0.8, opacity: 0, rotateY: -15 }}
+                        animate={{ scale: 1, opacity: 1, rotateY: 0 }}
+                        transition={{ type: 'spring', stiffness: 100 }}
+                        className="inline-block mb-8"
+                        style={{ perspective: '1000px' }}
                     >
-                        {/* Avatar - Clean design without badge */}
-                        <motion.div
-                            initial={{ scale: 0.8, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            transition={{ delay: 0.1 }}
-                            className="inline-block mb-8"
+                        <div
+                            className="relative w-36 h-36 rounded-3xl p-1"
+                            style={{
+                                background: colors.accent,
+                                boxShadow: `0 20px 50px ${colors.glow}`
+                            }}
                         >
-                            <div className="w-36 h-36 rounded-3xl p-1 shadow-2xl"
-                                style={{ background: 'var(--gradient-primary)', boxShadow: 'var(--shadow-glow)' }}>
-                                <div className="w-full h-full rounded-[22px] flex items-center justify-center overflow-hidden"
-                                    style={{ background: 'var(--color-bg-primary)' }}>
-                                    {basicDetails?.profilePhoto ? (
-                                        <img src={basicDetails.profilePhoto} alt={basicDetails.name} className="w-full h-full object-cover" />
-                                    ) : (
-                                        <span className="text-5xl font-bold heading-gradient">
-                                            {basicDetails?.name?.charAt(0)?.toUpperCase() || username?.charAt(0)?.toUpperCase()}
-                                        </span>
-                                    )}
-                                </div>
+                            <div
+                                className="w-full h-full rounded-[22px] overflow-hidden flex items-center justify-center"
+                                style={{ background: colors.surfaceSolid }}
+                            >
+                                {basicDetails?.profilePhoto ? (
+                                    <img src={basicDetails.profilePhoto} alt={basicDetails.name}
+                                        className="w-full h-full object-cover" />
+                                ) : (
+                                    <span className="text-5xl font-bold" style={{
+                                        background: colors.accent,
+                                        WebkitBackgroundClip: 'text',
+                                        WebkitTextFillColor: 'transparent'
+                                    }}>
+                                        {basicDetails?.name?.charAt(0)?.toUpperCase() || username?.charAt(0)?.toUpperCase()}
+                                    </span>
+                                )}
                             </div>
-                        </motion.div>
+                            {/* Glow ring */}
+                            <div className="absolute inset-0 rounded-3xl animate-pulse"
+                                style={{ boxShadow: `0 0 60px ${colors.glow}` }} />
+                        </div>
+                    </motion.div>
 
-                        {/* Name & Headline */}
-                        <motion.h1
+                    {/* Name */}
+                    <motion.h1
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="text-4xl md:text-5xl font-bold mb-4"
+                        style={{
+                            background: colors.accent,
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent'
+                        }}
+                    >
+                        {basicDetails?.name || username}
+                    </motion.h1>
+
+                    {/* Headline */}
+                    {basicDetails?.headline && (
+                        <motion.p
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.2 }}
-                            className="text-4xl md:text-5xl font-display font-bold heading-gradient mb-4"
+                            transition={{ delay: 0.3 }}
+                            className="text-xl mb-4"
+                            style={{ color: colors.textSecondary }}
                         >
-                            {basicDetails?.name || username}
-                        </motion.h1>
+                            {basicDetails.headline}
+                        </motion.p>
+                    )}
 
-                        {basicDetails?.headline && (
-                            <motion.p
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.3 }}
-                                className="text-xl text-secondary mb-4"
-                            >
-                                {basicDetails.headline}
-                            </motion.p>
-                        )}
+                    {/* Location */}
+                    {basicDetails?.location && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.4 }}
+                            className="flex items-center justify-center gap-2 mb-6"
+                            style={{ color: colors.textSecondary }}
+                        >
+                            <MapPin size={16} />
+                            <span>{basicDetails.location}</span>
+                        </motion.div>
+                    )}
 
-                        {basicDetails?.location && (
-                            <motion.p
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ delay: 0.4 }}
-                                className="text-tertiary flex items-center justify-center gap-2 mb-6"
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                                {basicDetails.location}
-                            </motion.p>
-                        )}
-
-                        {/* Social Links */}
-                        {socialLinks && Object.values(socialLinks).some(v => v) && (
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.5 }}
-                                className="flex justify-center gap-3"
-                            >
-                                {socialLinks.linkedin && (
-                                    <a href={socialLinks.linkedin.startsWith('http') ? socialLinks.linkedin : `https://${socialLinks.linkedin}`}
-                                        target="_blank" rel="noopener noreferrer"
-                                        className="w-11 h-11 rounded-xl bg-surface border flex items-center justify-center hover:scale-110 hover:border-primary-500/50 transition-all"
-                                        style={{ borderColor: 'var(--color-border)' }}>
-                                        <svg className="w-5 h-5 text-secondary" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
-                                        </svg>
-                                    </a>
-                                )}
-                                {socialLinks.github && (
-                                    <a href={socialLinks.github.startsWith('http') ? socialLinks.github : `https://${socialLinks.github}`}
-                                        target="_blank" rel="noopener noreferrer"
-                                        className="w-11 h-11 rounded-xl bg-surface border flex items-center justify-center hover:scale-110 hover:border-primary-500/50 transition-all"
-                                        style={{ borderColor: 'var(--color-border)' }}>
-                                        <svg className="w-5 h-5 text-secondary" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-                                        </svg>
-                                    </a>
-                                )}
-                                {socialLinks.twitter && (
-                                    <a href={socialLinks.twitter.startsWith('http') ? socialLinks.twitter : `https://${socialLinks.twitter}`}
-                                        target="_blank" rel="noopener noreferrer"
-                                        className="w-11 h-11 rounded-xl bg-surface border flex items-center justify-center hover:scale-110 hover:border-primary-500/50 transition-all"
-                                        style={{ borderColor: 'var(--color-border)' }}>
-                                        <svg className="w-5 h-5 text-secondary" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                                        </svg>
-                                    </a>
-                                )}
-                                {socialLinks.website && (
-                                    <a href={socialLinks.website.startsWith('http') ? socialLinks.website : `https://${socialLinks.website}`}
-                                        target="_blank" rel="noopener noreferrer"
-                                        className="w-11 h-11 rounded-xl bg-surface border flex items-center justify-center hover:scale-110 hover:border-primary-500/50 transition-all"
-                                        style={{ borderColor: 'var(--color-border)' }}>
-                                        <svg className="w-5 h-5 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                                        </svg>
-                                    </a>
-                                )}
-                                {(socialLinks.email || basicDetails?.email) && (
-                                    <a href={`mailto:${socialLinks.email || basicDetails?.email}`}
-                                        className="w-11 h-11 rounded-xl bg-surface border flex items-center justify-center hover:scale-110 hover:border-primary-500/50 transition-all"
-                                        style={{ borderColor: 'var(--color-border)' }}>
-                                        <svg className="w-5 h-5 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                        </svg>
-                                    </a>
-                                )}
-                            </motion.div>
-                        )}
-                    </motion.div>
+                    {/* Social Links */}
+                    {socialLinks && Object.values(socialLinks).some(v => v) && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.5 }}
+                            className="flex items-center justify-center gap-3 flex-wrap"
+                        >
+                            {socialLinks.github && (
+                                <a href={socialLinks.github} target="_blank" rel="noopener noreferrer"
+                                    className="p-3 rounded-xl backdrop-blur-sm border transition-all hover:scale-110"
+                                    style={{ background: colors.surface, borderColor: colors.border }}>
+                                    <Github size={20} style={{ color: colors.text }} />
+                                </a>
+                            )}
+                            {socialLinks.linkedin && (
+                                <a href={socialLinks.linkedin} target="_blank" rel="noopener noreferrer"
+                                    className="p-3 rounded-xl backdrop-blur-sm border transition-all hover:scale-110"
+                                    style={{ background: colors.surface, borderColor: colors.border }}>
+                                    <Linkedin size={20} style={{ color: colors.text }} />
+                                </a>
+                            )}
+                            {socialLinks.twitter && (
+                                <a href={socialLinks.twitter} target="_blank" rel="noopener noreferrer"
+                                    className="p-3 rounded-xl backdrop-blur-sm border transition-all hover:scale-110"
+                                    style={{ background: colors.surface, borderColor: colors.border }}>
+                                    <Twitter size={20} style={{ color: colors.text }} />
+                                </a>
+                            )}
+                            {socialLinks.website && (
+                                <a href={socialLinks.website} target="_blank" rel="noopener noreferrer"
+                                    className="p-3 rounded-xl backdrop-blur-sm border transition-all hover:scale-110"
+                                    style={{ background: colors.surface, borderColor: colors.border }}>
+                                    <Globe size={20} style={{ color: colors.text }} />
+                                </a>
+                            )}
+                            {(socialLinks.email || basicDetails?.email) && (
+                                <a href={`mailto:${socialLinks.email || basicDetails.email}`}
+                                    className="p-3 rounded-xl backdrop-blur-sm border transition-all hover:scale-110"
+                                    style={{ background: colors.surface, borderColor: colors.border }}>
+                                    <Mail size={20} style={{ color: colors.text }} />
+                                </a>
+                            )}
+                        </motion.div>
+                    )}
                 </div>
             </section>
 
-            {/* Skills Bar - animated scroll */}
-            {allSkills.length > 0 && (
-                <motion.section
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.6 }}
-                    className="py-6 overflow-hidden"
-                    style={{ borderTop: '1px solid var(--color-border)', borderBottom: '1px solid var(--color-border)' }}
+            {/* Floating Navigation */}
+            <nav className="sticky top-4 z-40 px-4 mb-8">
+                <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="max-w-3xl mx-auto"
                 >
-                    <div className="flex gap-4 animate-scroll">
-                        {[...allSkills, ...allSkills].map((skill, i) => (
-                            <span
-                                key={i}
-                                className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap border"
-                                style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)', color: 'var(--color-text-secondary)' }}
-                            >
-                                {skill}
-                            </span>
-                        ))}
+                    <div
+                        className="flex items-center gap-1 p-1.5 rounded-2xl backdrop-blur-xl border overflow-x-auto scrollbar-hide"
+                        style={{ background: colors.surface, borderColor: colors.border }}
+                    >
+                        {tabs.map((tab) => {
+                            const Icon = tab.icon
+                            const isActive = activeTab === tab.id
+                            return (
+                                <motion.button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className="relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-colors"
+                                    style={{ color: isActive ? colors.text : colors.textSecondary }}
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                >
+                                    {isActive && (
+                                        <motion.div
+                                            layoutId="activeTab"
+                                            className="absolute inset-0 rounded-xl"
+                                            style={{ background: colors.accent }}
+                                            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                                        />
+                                    )}
+                                    <span className="relative z-10 flex items-center gap-2">
+                                        <Icon size={16} />
+                                        <span className="hidden sm:inline">{tab.label}</span>
+                                    </span>
+                                </motion.button>
+                            )
+                        })}
                     </div>
-                </motion.section>
-            )}
+                </motion.div>
+            </nav>
 
-            {/* Tab Navigation */}
-            <section className="py-8 px-4">
-                <div className="max-w-4xl mx-auto">
-                    <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar">
-                        {tabs.map(tab => (
-                            <motion.button
-                                key={tab.id}
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`px-5 py-2.5 rounded-xl font-medium transition-all whitespace-nowrap flex items-center gap-2 ${activeTab === tab.id
-                                    ? 'text-white'
-                                    : 'bg-surface border text-secondary hover:border-primary-500/50'
-                                    }`}
-                                style={activeTab === tab.id
-                                    ? { background: 'var(--gradient-primary)' }
-                                    : { borderColor: 'var(--color-border)' }}
-                            >
-                                {tab.icon}
-                                {tab.label}
-                                {tab.count !== undefined && <span className="opacity-70">({tab.count})</span>}
-                            </motion.button>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* Content */}
-            <section className="px-4 pb-16">
-                <div className="max-w-4xl mx-auto">
+            {/* Content Section */}
+            <main className="max-w-4xl mx-auto px-4 pb-20">
+                <AnimatePresence mode="wait">
                     {/* About Tab */}
                     {activeTab === 'about' && (
                         <motion.div
+                            key="about"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="space-y-8"
+                            exit={{ opacity: 0, y: -20 }}
+                            variants={containerVariants}
                         >
+                            {/* About Text */}
                             {basicDetails?.about && (
-                                <div className="rounded-2xl p-8 border" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
-                                    <h2 className="text-2xl font-bold text-primary mb-4">About Me</h2>
-                                    <p className="text-secondary leading-relaxed text-lg">{basicDetails.about}</p>
-                                </div>
+                                <GlassCard className="p-6 mb-6">
+                                    <h2 className="text-xl font-semibold mb-4 flex items-center gap-2" style={{ color: colors.text }}>
+                                        <User size={20} style={{ color: colors.primary }} />
+                                        About
+                                    </h2>
+                                    <p className="leading-relaxed whitespace-pre-wrap" style={{ color: colors.textSecondary }}>
+                                        {basicDetails.about}
+                                    </p>
+                                </GlassCard>
                             )}
 
-                            {/* Skills Grid */}
+                            {/* Skills */}
                             {allSkills.length > 0 && (
-                                <div className="rounded-2xl p-8 border" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
-                                    <h2 className="text-2xl font-bold text-primary mb-6">Skills & Expertise</h2>
-                                    <div className="grid md:grid-cols-2 gap-6">
-                                        {skills?.technical?.length > 0 && (
-                                            <div>
-                                                <h3 className="text-sm font-semibold mb-3 uppercase tracking-wide text-primary-400">
-                                                    Technical
-                                                </h3>
-                                                <div className="flex flex-wrap gap-2">
-                                                    {skills.technical.map((skill, i) => (
-                                                        <span key={i} className="px-3 py-1.5 rounded-lg text-sm font-medium"
-                                                            style={{ background: 'rgba(99, 102, 241, 0.15)', color: 'var(--color-primary-400)' }}>
-                                                            {skill}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-                                        {skills?.tools?.length > 0 && (
-                                            <div>
-                                                <h3 className="text-sm font-semibold mb-3 uppercase tracking-wide text-purple-400">
-                                                    Tools & Platforms
-                                                </h3>
-                                                <div className="flex flex-wrap gap-2">
-                                                    {skills.tools.map((skill, i) => (
-                                                        <span key={i} className="px-3 py-1.5 rounded-lg text-sm font-medium"
-                                                            style={{ background: 'rgba(168, 85, 247, 0.15)', color: 'rgb(192, 132, 252)' }}>
-                                                            {skill}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-                                        {skills?.soft?.length > 0 && (
-                                            <div>
-                                                <h3 className="text-sm font-semibold text-emerald-400 mb-3 uppercase tracking-wide">Soft Skills</h3>
-                                                <div className="flex flex-wrap gap-2">
-                                                    {skills.soft.map((skill, i) => (
-                                                        <span key={i} className="px-3 py-1.5 rounded-lg text-sm font-medium"
-                                                            style={{ background: 'rgba(16, 185, 129, 0.15)', color: 'rgb(52, 211, 153)' }}>
-                                                            {skill}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-                                        {skills?.languages?.length > 0 && (
-                                            <div>
-                                                <h3 className="text-sm font-semibold text-amber-400 mb-3 uppercase tracking-wide">Languages</h3>
-                                                <div className="flex flex-wrap gap-2">
-                                                    {skills.languages.map((skill, i) => (
-                                                        <span key={i} className="px-3 py-1.5 rounded-lg text-sm font-medium"
-                                                            style={{ background: 'rgba(245, 158, 11, 0.15)', color: 'rgb(251, 191, 36)' }}>
-                                                            {skill}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
+                                <GlassCard className="p-6">
+                                    <h2 className="text-xl font-semibold mb-4 flex items-center gap-2" style={{ color: colors.text }}>
+                                        <Sparkles size={20} style={{ color: colors.primary }} />
+                                        Skills
+                                    </h2>
+                                    <div className="flex flex-wrap gap-2">
+                                        {allSkills.map((skill, i) => (
+                                            <SkillChip key={i} skill={skill} index={i} />
+                                        ))}
                                     </div>
-                                </div>
+                                </GlassCard>
                             )}
                         </motion.div>
                     )}
@@ -465,306 +612,243 @@ function Portfolio() {
                     {/* Experience Tab */}
                     {activeTab === 'experience' && experience?.length > 0 && (
                         <motion.div
+                            key="experience"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="space-y-6"
+                            exit={{ opacity: 0, y: -20 }}
+                            variants={containerVariants}
                         >
-                            {experience.map((exp, index) => (
-                                <motion.div
-                                    key={index}
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: index * 0.1 }}
-                                    className="rounded-2xl p-6 border relative overflow-hidden"
-                                    style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-                                >
-                                    <div className="absolute top-0 left-0 w-1 h-full" style={{ background: 'var(--gradient-primary)' }} />
-                                    <div className="pl-4">
-                                        <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
-                                            <h3 className="text-xl font-bold text-primary">{exp.title}</h3>
-                                            <span className="text-muted text-sm px-3 py-1 rounded-full" style={{ background: 'var(--color-bg-tertiary)' }}>
-                                                {exp.duration}
-                                            </span>
-                                        </div>
-                                        <p className="font-medium heading-gradient mb-1">{exp.company}</p>
-                                        {exp.location && <p className="text-muted text-sm mb-3">{exp.location}</p>}
-                                        {exp.description && <p className="text-secondary">{exp.description}</p>}
-                                    </div>
-                                </motion.div>
-                            ))}
+                            <h2 className="text-2xl font-semibold mb-6 flex items-center gap-3" style={{ color: colors.text }}>
+                                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: colors.accent }}>
+                                    <Briefcase size={20} className="text-white" />
+                                </div>
+                                Work Experience
+                            </h2>
+                            <div>
+                                {experience.map((exp, i) => (
+                                    <TimelineItem
+                                        key={i}
+                                        item={exp}
+                                        type="experience"
+                                        index={i}
+                                        isLast={i === experience.length - 1}
+                                    />
+                                ))}
+                            </div>
                         </motion.div>
                     )}
 
                     {/* Projects Tab */}
                     {activeTab === 'projects' && projects?.length > 0 && (
                         <motion.div
+                            key="projects"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="grid md:grid-cols-2 gap-6"
+                            exit={{ opacity: 0, y: -20 }}
+                            variants={containerVariants}
                         >
-                            {projects.map((proj, index) => (
-                                <motion.div
-                                    key={index}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: index * 0.1 }}
-                                    whileHover={{ y: -5, scale: 1.02 }}
-                                    className="rounded-2xl p-6 border group transition-all"
-                                    style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-                                >
-                                    <h3 className="text-xl font-bold text-primary mb-2 group-hover:heading-gradient transition-colors">
-                                        {proj.title}
-                                    </h3>
-                                    <p className="text-tertiary mb-4 line-clamp-3">{proj.description}</p>
-
-                                    {proj.techStack?.length > 0 && (
-                                        <div className="flex flex-wrap gap-2 mb-4">
-                                            {proj.techStack.map((tech, i) => (
-                                                <span key={i} className="px-2 py-1 rounded-md text-xs font-medium"
-                                                    style={{ background: 'var(--color-bg-tertiary)', color: 'var(--color-text-tertiary)' }}>
-                                                    {tech}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    <div className="flex gap-4">
-                                        {proj.demoUrl && (
-                                            <a
-                                                href={proj.demoUrl.startsWith('http') ? proj.demoUrl : `https://${proj.demoUrl}`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="flex items-center gap-2 text-sm font-medium text-primary-400 hover:text-primary-300 transition-colors"
-                                            >
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                                </svg>
-                                                Live Demo
-                                            </a>
-                                        )}
-                                        {proj.githubUrl && (
-                                            <a
-                                                href={proj.githubUrl.startsWith('http') ? proj.githubUrl : `https://${proj.githubUrl}`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="flex items-center gap-2 text-tertiary hover:text-primary text-sm font-medium transition-colors"
-                                            >
-                                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-                                                </svg>
-                                                Code
-                                            </a>
-                                        )}
-                                    </div>
-                                </motion.div>
-                            ))}
+                            <h2 className="text-2xl font-semibold mb-6 flex items-center gap-3" style={{ color: colors.text }}>
+                                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: colors.accent }}>
+                                    <Rocket size={20} className="text-white" />
+                                </div>
+                                Projects
+                            </h2>
+                            <div className="grid md:grid-cols-2 gap-4">
+                                {projects.map((project, i) => (
+                                    <ProjectCard key={i} project={project} index={i} />
+                                ))}
+                            </div>
                         </motion.div>
                     )}
 
                     {/* Education Tab */}
                     {activeTab === 'education' && education?.length > 0 && (
                         <motion.div
+                            key="education"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="space-y-6"
+                            exit={{ opacity: 0, y: -20 }}
+                            variants={containerVariants}
                         >
-                            {education.map((edu, index) => (
-                                <motion.div
-                                    key={index}
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: index * 0.1 }}
-                                    className="rounded-2xl p-6 border group"
-                                    style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-                                >
-                                    <div className="flex items-start gap-4">
-                                        <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-primary-500/10 text-primary-400 group-hover:scale-110 transition-transform">
-                                            <GraduationCap size={24} />
-                                        </div>
-                                        <div className="flex-1">
-                                            <h3 className="text-xl font-bold text-primary mb-1">{edu.degree}</h3>
-                                            <p className="font-medium heading-gradient">{edu.institution}</p>
-                                            <div className="flex items-center gap-4 mt-2 text-muted text-sm">
-                                                {edu.year && <span>{edu.year}</span>}
-                                                {edu.gpa && <span>• {edu.gpa}</span>}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </motion.div>
-                            ))}
+                            <h2 className="text-2xl font-semibold mb-6 flex items-center gap-3" style={{ color: colors.text }}>
+                                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: colors.accent }}>
+                                    <GraduationCap size={20} className="text-white" />
+                                </div>
+                                Education
+                            </h2>
+                            <div>
+                                {education.map((edu, i) => (
+                                    <TimelineItem
+                                        key={i}
+                                        item={edu}
+                                        type="education"
+                                        index={i}
+                                        isLast={i === education.length - 1}
+                                    />
+                                ))}
+                            </div>
                         </motion.div>
                     )}
 
                     {/* Certifications Tab */}
                     {activeTab === 'certifications' && certifications?.length > 0 && (
                         <motion.div
+                            key="certifications"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="grid md:grid-cols-2 gap-6"
+                            exit={{ opacity: 0, y: -20 }}
+                            variants={containerVariants}
                         >
-                            {certifications.map((cert, index) => (
-                                <motion.div
-                                    key={index}
-                                    initial={{ opacity: 0, scale: 0.9 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    transition={{ delay: index * 0.1 }}
-                                    whileHover={{ y: -5 }}
-                                    className="rounded-2xl p-6 border group relative overflow-hidden"
-                                    style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-                                >
-                                    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity transform rotate-12">
-                                        <Award size={80} />
-                                    </div>
-                                    <h3 className="text-xl font-bold text-primary mb-2 pr-8 relative z-10">{cert.name}</h3>
-                                    <p className="font-medium heading-gradient mb-1 relative z-10">{cert.issuer}</p>
-                                    <p className="text-muted text-sm relative z-10">{cert.date}</p>
-                                    {cert.url && (
-                                        <a href={cert.url} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary-400 hover:text-primary-300 relative z-10">
-                                            View Credential <ExternalLink size={14} />
-                                        </a>
-                                    )}
-                                </motion.div>
-                            ))}
+                            <h2 className="text-2xl font-semibold mb-6 flex items-center gap-3" style={{ color: colors.text }}>
+                                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: colors.accent }}>
+                                    <Award size={20} className="text-white" />
+                                </div>
+                                Certifications
+                            </h2>
+                            <div className="grid md:grid-cols-2 gap-4">
+                                {certifications.map((cert, i) => (
+                                    <GlassCard key={i} className="p-5">
+                                        <h3 className="font-semibold mb-2" style={{ color: colors.text }}>{cert.name}</h3>
+                                        <p className="text-sm mb-2" style={{ color: colors.textSecondary }}>{cert.issuer}</p>
+                                        {cert.date && (
+                                            <div className="flex items-center gap-2 text-sm" style={{ color: colors.textSecondary }}>
+                                                <Calendar size={14} />
+                                                {cert.date}
+                                            </div>
+                                        )}
+                                        {cert.credentialUrl && (
+                                            <a href={cert.credentialUrl} target="_blank" rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-1 mt-3 text-sm font-medium"
+                                                style={{ color: colors.primary }}>
+                                                View Credential <ExternalLink size={14} />
+                                            </a>
+                                        )}
+                                    </GlassCard>
+                                ))}
+                            </div>
                         </motion.div>
                     )}
 
                     {/* Publications Tab */}
                     {activeTab === 'publications' && publications?.length > 0 && (
                         <motion.div
+                            key="publications"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="space-y-6"
+                            exit={{ opacity: 0, y: -20 }}
+                            variants={containerVariants}
                         >
-                            {publications.map((pub, index) => (
-                                <motion.div
-                                    key={index}
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: index * 0.1 }}
-                                    className="rounded-2xl p-6 border group hover:border-primary-500/50 transition-colors"
-                                    style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-                                >
-                                    <div className="flex gap-4 items-start">
-                                        <div className="p-3 rounded-lg bg-primary-500/10 text-primary-400">
-                                            <BookOpen size={24} />
-                                        </div>
-                                        <div className="flex-1">
-                                            <h3 className="text-xl font-bold text-primary mb-2 group-hover:heading-gradient transition-all">
-                                                {pub.title}
-                                            </h3>
-                                            <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-secondary mb-3">
-                                                <span className="font-medium text-primary">{pub.publisher}</span>
-                                                <span className="text-tertiary">•</span>
-                                                <span>{pub.date}</span>
-                                            </div>
-                                            {pub.url && (
-                                                <a href={pub.url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-primary-400 hover:text-primary-300 flex items-center gap-1">
-                                                    Read Paper <ExternalLink size={14} />
-                                                </a>
-                                            )}
-                                        </div>
-                                    </div>
-                                </motion.div>
-                            ))}
+                            <h2 className="text-2xl font-semibold mb-6 flex items-center gap-3" style={{ color: colors.text }}>
+                                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: colors.accent }}>
+                                    <BookOpen size={20} className="text-white" />
+                                </div>
+                                Publications
+                            </h2>
+                            <div className="space-y-4">
+                                {publications.map((pub, i) => (
+                                    <GlassCard key={i} className="p-5">
+                                        <h3 className="font-semibold mb-2" style={{ color: colors.text }}>{pub.title}</h3>
+                                        <p className="text-sm mb-2" style={{ color: colors.textSecondary }}>
+                                            {pub.publisher} {pub.date && `• ${pub.date}`}
+                                        </p>
+                                        {pub.description && (
+                                            <p className="text-sm" style={{ color: colors.textSecondary }}>{pub.description}</p>
+                                        )}
+                                        {pub.url && (
+                                            <a href={pub.url} target="_blank" rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-1 mt-3 text-sm font-medium"
+                                                style={{ color: colors.primary }}>
+                                                Read Publication <ExternalLink size={14} />
+                                            </a>
+                                        )}
+                                    </GlassCard>
+                                ))}
+                            </div>
                         </motion.div>
                     )}
 
                     {/* Volunteering Tab */}
                     {activeTab === 'volunteering' && volunteering?.length > 0 && (
                         <motion.div
+                            key="volunteering"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="space-y-8"
+                            exit={{ opacity: 0, y: -20 }}
+                            variants={containerVariants}
                         >
-                            {volunteering.map((vol, index) => (
-                                <motion.div
-                                    key={index}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: index * 0.1 }}
-                                    className="rounded-2xl p-8 border relative overflow-hidden"
-                                    style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-                                >
-                                    <div className="absolute top-0 left-0 w-1 h-full" style={{ background: 'var(--gradient-primary)' }} />
-                                    <div className="md:flex justify-between items-start gap-4 mb-4">
-                                        <div>
-                                            <h3 className="text-xl font-bold text-primary">{vol.role}</h3>
-                                            <p className="text-lg text-secondary">{vol.organization}</p>
-                                        </div>
-                                        <span className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-primary-500/10 text-primary-400 mt-2 md:mt-0">
-                                            {vol.date}
-                                        </span>
-                                    </div>
-                                    <p className="text-secondary leading-relaxed">{vol.description}</p>
-                                </motion.div>
-                            ))}
-                        </motion.div>
-                    )}
-
-                    {/* References Tab */}
-                    {activeTab === 'references' && references?.length > 0 && (
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="grid md:grid-cols-2 gap-6"
-                        >
-                            {references.map((ref, index) => (
-                                <div key={index} className="rounded-2xl p-6 border flex items-center gap-4 hover:border-primary-500/50 transition-colors"
-                                    style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
-                                    <div className="w-12 h-12 rounded-full bg-primary-500/20 flex items-center justify-center text-primary-400">
-                                        <User size={24} />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-lg font-bold text-primary">{ref.name}</h3>
-                                        <p className="text-sm text-secondary">{ref.relationship}</p>
-                                        {ref.contact && (
-                                            <p className="text-xs text-tertiary mt-1">{ref.contact}</p>
-                                        )}
-                                    </div>
+                            <h2 className="text-2xl font-semibold mb-6 flex items-center gap-3" style={{ color: colors.text }}>
+                                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: colors.accent }}>
+                                    <Heart size={20} className="text-white" />
                                 </div>
-                            ))}
+                                Volunteering
+                            </h2>
+                            <div className="space-y-4">
+                                {volunteering.map((vol, i) => (
+                                    <GlassCard key={i} className="p-5">
+                                        <h3 className="font-semibold mb-1" style={{ color: colors.text }}>{vol.role}</h3>
+                                        <p className="text-sm mb-2" style={{ color: colors.primary }}>{vol.organization}</p>
+                                        {vol.duration && (
+                                            <div className="flex items-center gap-2 text-sm mb-2" style={{ color: colors.textSecondary }}>
+                                                <Calendar size={14} />
+                                                {vol.duration}
+                                            </div>
+                                        )}
+                                        {vol.description && (
+                                            <p className="text-sm" style={{ color: colors.textSecondary }}>{vol.description}</p>
+                                        )}
+                                    </GlassCard>
+                                ))}
+                            </div>
                         </motion.div>
                     )}
 
-                    {/* Custom Sections Tabs */}
+                    {/* Custom Sections */}
                     {activeTab.startsWith('custom-') && (
                         <motion.div
+                            key={activeTab}
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="rounded-2xl p-8 border"
-                            style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+                            exit={{ opacity: 0, y: -20 }}
                         >
-                            <div className="flex items-center gap-3 mb-6">
-                                <Code className="text-primary-400" size={24} />
-                                <h2 className="text-2xl font-bold text-primary">
-                                    {customSections[parseInt(activeTab.split('-')[1])].title}
-                                </h2>
-                            </div>
-                            <div className="prose prose-invert max-w-none text-secondary whitespace-pre-wrap leading-relaxed">
-                                {customSections[parseInt(activeTab.split('-')[1])].content}
-                            </div>
+                            {(() => {
+                                const customTab = tabs.find(t => t.id === activeTab)
+                                if (!customTab) return null
+                                return (
+                                    <GlassCard className="p-6">
+                                        <h2 className="text-2xl font-semibold mb-6 flex items-center gap-3" style={{ color: colors.text }}>
+                                            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: colors.accent }}>
+                                                <Code size={20} className="text-white" />
+                                            </div>
+                                            {customTab.label}
+                                        </h2>
+                                        <p className="leading-relaxed whitespace-pre-wrap" style={{ color: colors.textSecondary }}>
+                                            {customTab.content}
+                                        </p>
+                                    </GlassCard>
+                                )
+                            })()}
                         </motion.div>
                     )}
-                </div>
-            </section>
+                </AnimatePresence>
+            </main>
 
             {/* Footer */}
-            <footer className="py-8 text-center" style={{ borderTop: '1px solid var(--color-border)' }}>
-                <p className="text-muted text-sm">
-                    Built with <span className="heading-gradient font-medium">Portlify</span>
-                </p>
+            <footer className="relative py-8 px-4 border-t" style={{ borderColor: colors.border }}>
+                <div className="max-w-4xl mx-auto text-center">
+                    <p className="text-sm" style={{ color: colors.textSecondary }}>
+                        Built with{' '}
+                        <a
+                            href="https://portlify.techycsr.dev"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-medium hover:underline"
+                            style={{ color: colors.primary }}
+                        >
+                            Portlify
+                        </a>
+                    </p>
+                </div>
             </footer>
-
-            {/* Custom CSS for animations */}
-            <style>{`
-                @keyframes scroll {
-                    0% { transform: translateX(0); }
-                    100% { transform: translateX(-50%); }
-                }
-                .animate-scroll {
-                    animation: scroll 30s linear infinite;
-                }
-            `}</style>
         </div>
     )
 }
