@@ -375,15 +375,13 @@ function Settings() {
                                                 />
                                                 <p className="text-center font-medium text-primary">{theme.name}</p>
 
-                                                {preferences.themePreference === theme.id && (
-                                                    <motion.div
-                                                        initial={{ scale: 0 }}
-                                                        animate={{ scale: 1 }}
-                                                        className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center text-white"
-                                                    >
-                                                        {icons.check}
-                                                    </motion.div>
-                                                )}
+                                                <motion.div
+                                                    initial={{ scale: 0 }}
+                                                    animate={{ scale: 1 }}
+                                                    className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center text-white"
+                                                >
+                                                    {icons.check}
+                                                </motion.div>
                                             </motion.button>
                                         ))}
                                     </div>

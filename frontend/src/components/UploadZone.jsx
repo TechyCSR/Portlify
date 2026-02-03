@@ -28,7 +28,7 @@ function UploadZone({ onFileSelect, uploading, progress, accept = { 'application
           transition-all duration-300 cursor-pointer
           ${isDragActive
                         ? 'border-primary-400 bg-primary-500/10'
-                        : 'border-dark-600 hover:border-primary-500/50 bg-dark-800/30'
+                        : 'border-border hover:border-primary-500/50 bg-surface'
                     }
           ${uploading ? 'pointer-events-none opacity-70' : ''}
         `}
@@ -66,23 +66,23 @@ function UploadZone({ onFileSelect, uploading, progress, accept = { 'application
                     {/* Text */}
                     {uploading ? (
                         <>
-                            <p className="text-lg font-medium text-white mb-2">Uploading...</p>
-                            <p className="text-dark-400">{progress}% complete</p>
+                            <p className="text-lg font-medium text-primary mb-2">Uploading...</p>
+                            <p className="text-secondary">{progress}% complete</p>
                         </>
                     ) : isDragActive ? (
                         <>
                             <p className="text-lg font-medium text-primary-300 mb-2">Drop your resume here</p>
-                            <p className="text-dark-400">Release to upload</p>
+                            <p className="text-secondary">Release to upload</p>
                         </>
                     ) : (
                         <>
-                            <p className="text-lg font-medium text-white mb-2">
+                            <p className="text-lg font-medium text-primary mb-2">
                                 Drag & drop your resume
                             </p>
-                            <p className="text-dark-400 mb-4">
+                            <p className="text-secondary mb-4">
                                 or click to browse
                             </p>
-                            <p className="text-sm text-dark-500">
+                            <p className="text-sm text-tertiary">
                                 PDF files only, max 10MB
                             </p>
                         </>

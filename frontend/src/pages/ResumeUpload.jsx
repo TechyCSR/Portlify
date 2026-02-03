@@ -86,10 +86,10 @@ function ResumeUpload() {
                     animate={{ opacity: 1, y: 0 }}
                     className="text-center mb-10"
                 >
-                    <h1 className="text-3xl font-display font-bold text-white mb-3">
+                    <h1 className="text-3xl font-display font-bold text-primary mb-3">
                         Upload Your Resume
                     </h1>
-                    <p className="text-dark-400">
+                    <p className="text-secondary">
                         Our AI will analyze your resume and extract all the important details
                     </p>
                 </motion.div>
@@ -108,10 +108,10 @@ function ResumeUpload() {
                     ) : status === 'uploading' ? (
                         <div className="glass-card rounded-2xl p-12 text-center">
                             <div className="spinner mx-auto mb-6" />
-                            <h3 className="text-xl font-semibold text-white mb-2">
+                            <h3 className="text-xl font-semibold text-primary mb-2">
                                 Uploading Resume...
                             </h3>
-                            <p className="text-dark-400">{progress}% complete</p>
+                            <p className="text-secondary">{progress}% complete</p>
                         </div>
                     ) : status === 'parsing' ? (
                         <div className="glass-card rounded-2xl p-12 text-center">
@@ -120,10 +120,10 @@ function ResumeUpload() {
                                 transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                                 className="w-16 h-16 mx-auto mb-6 rounded-full border-4 border-primary-500/30 border-t-primary-500"
                             />
-                            <h3 className="text-xl font-semibold text-white mb-2">
+                            <h3 className="text-xl font-semibold text-primary mb-2">
                                 AI Processing...
                             </h3>
-                            <p className="text-dark-400">
+                            <p className="text-secondary">
                                 {parsingMessage}
                             </p>
                             <div className="mt-6 flex justify-center gap-2">
@@ -151,10 +151,10 @@ function ResumeUpload() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                 </svg>
                             </div>
-                            <h3 className="text-xl font-semibold text-white mb-2">
+                            <h3 className="text-xl font-semibold text-primary mb-2">
                                 Resume Analyzed!
                             </h3>
-                            <p className="text-dark-400 mb-4">
+                            <p className="text-secondary mb-4">
                                 {parsingMessage}
                             </p>
                             <div className="flex justify-center gap-2 flex-wrap">
@@ -201,7 +201,7 @@ function ResumeUpload() {
                     transition={{ delay: 0.3 }}
                     className="mt-12 glass rounded-2xl p-6"
                 >
-                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+                    <h3 className="text-lg font-semibold text-primary mb-4 flex items-center">
                         <span className="w-8 h-8 rounded-lg bg-primary-500/20 flex items-center justify-center mr-3">
                             <svg className="w-4 h-4 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -209,7 +209,7 @@ function ResumeUpload() {
                         </span>
                         Tips for Best Results
                     </h3>
-                    <ul className="space-y-3 text-dark-400">
+                    <ul className="space-y-3 text-secondary">
                         <li className="flex items-start">
                             <svg className="w-5 h-5 text-primary-400 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />

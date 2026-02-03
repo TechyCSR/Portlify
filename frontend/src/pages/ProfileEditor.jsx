@@ -329,7 +329,7 @@ function ProfileEditor() {
                             {/* Basic Info Section */}
                             {activeSection === 'basic' && (
                                 <div className="space-y-6">
-                                    <h2 className="text-xl font-bold text-white mb-6">Basic Information</h2>
+                                    <h2 className="text-xl font-bold text-primary mb-6">Basic Information</h2>
 
                                     {/* Profile Photo */}
                                     <div className="flex items-center gap-6 mb-8">
@@ -338,7 +338,7 @@ function ProfileEditor() {
                                                 {formData.basicDetails.profilePhoto ? (
                                                     <img src={formData.basicDetails.profilePhoto} alt="Profile" className="w-full h-full object-cover" />
                                                 ) : (
-                                                    <span className="text-3xl font-bold text-white">
+                                                    <span className="text-3xl font-bold text-primary">
                                                         {formData.basicDetails.name?.charAt(0)?.toUpperCase() || '?'}
                                                     </span>
                                                 )}
@@ -352,14 +352,14 @@ function ProfileEditor() {
                                             </label>
                                         </div>
                                         <div>
-                                            <p className="text-white font-medium">Profile Photo</p>
-                                            <p className="text-dark-400 text-sm">Click the camera to upload</p>
+                                            <p className="text-primary font-medium">Profile Photo</p>
+                                            <p className="text-secondary text-sm">Click the camera to upload</p>
                                         </div>
                                     </div>
 
                                     <div className="grid md:grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-dark-300 text-sm font-medium mb-2">Full Name</label>
+                                            <label className="block text-secondary text-sm font-medium mb-2">Full Name</label>
                                             <input
                                                 type="text"
                                                 value={formData.basicDetails.name}
@@ -369,7 +369,7 @@ function ProfileEditor() {
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-dark-300 text-sm font-medium mb-2">Headline</label>
+                                            <label className="block text-secondary text-sm font-medium mb-2">Headline</label>
                                             <input
                                                 type="text"
                                                 value={formData.basicDetails.headline}
@@ -379,7 +379,7 @@ function ProfileEditor() {
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-dark-300 text-sm font-medium mb-2">Email</label>
+                                            <label className="block text-secondary text-sm font-medium mb-2">Email</label>
                                             <input
                                                 type="email"
                                                 value={formData.basicDetails.email}
@@ -389,7 +389,7 @@ function ProfileEditor() {
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-dark-300 text-sm font-medium mb-2">Phone</label>
+                                            <label className="block text-secondary text-sm font-medium mb-2">Phone</label>
                                             <input
                                                 type="tel"
                                                 value={formData.basicDetails.phone}
@@ -399,7 +399,7 @@ function ProfileEditor() {
                                             />
                                         </div>
                                         <div className="md:col-span-2">
-                                            <label className="block text-dark-300 text-sm font-medium mb-2">Location</label>
+                                            <label className="block text-secondary text-sm font-medium mb-2">Location</label>
                                             <input
                                                 type="text"
                                                 value={formData.basicDetails.location}
@@ -409,7 +409,7 @@ function ProfileEditor() {
                                             />
                                         </div>
                                         <div className="md:col-span-2">
-                                            <label className="block text-dark-300 text-sm font-medium mb-2">About</label>
+                                            <label className="block text-secondary text-sm font-medium mb-2">About</label>
                                             <textarea
                                                 value={formData.basicDetails.about}
                                                 onChange={(e) => handleBasicChange('about', e.target.value)}
@@ -425,7 +425,7 @@ function ProfileEditor() {
                             {/* Skills Section */}
                             {activeSection === 'skills' && (
                                 <div className="space-y-6">
-                                    <h2 className="text-xl font-bold text-white mb-6">Skills</h2>
+                                    <h2 className="text-xl font-bold text-primary mb-6">Skills</h2>
 
                                     {[
                                         { key: 'technical', label: 'Technical Skills', placeholder: 'React, Node.js, Python...' },
@@ -434,7 +434,7 @@ function ProfileEditor() {
                                         { key: 'languages', label: 'Languages', placeholder: 'English, Spanish...' }
                                     ].map(category => (
                                         <div key={category.key}>
-                                            <label className="block text-dark-300 text-sm font-medium mb-2">{category.label}</label>
+                                            <label className="block text-secondary text-sm font-medium mb-2">{category.label}</label>
                                             <div className="flex flex-wrap gap-2 mb-3">
                                                 {formData.skills[category.key].map((skill, i) => (
                                                     <span key={i} className="px-3 py-1.5 rounded-full bg-primary-500/20 text-primary-300 text-sm flex items-center gap-2">
@@ -475,7 +475,7 @@ function ProfileEditor() {
                             {activeSection === 'experience' && (
                                 <div className="space-y-6">
                                     <div className="flex justify-between items-center mb-6">
-                                        <h2 className="text-xl font-bold text-white">Experience</h2>
+                                        <h2 className="text-xl font-bold text-primary">Experience</h2>
                                         <button
                                             onClick={() => addArrayItem('experience', { title: '', company: '', duration: '', location: '', description: '', achievements: [] })}
                                             className="px-4 py-2 rounded-xl bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors text-sm"
@@ -485,9 +485,9 @@ function ProfileEditor() {
                                     </div>
 
                                     {formData.experience.map((exp, index) => (
-                                        <div key={index} className="p-4 rounded-xl bg-dark-800/50 border border-dark-700 space-y-4">
+                                        <div key={index} className="p-4 rounded-xl bg-surface border border-border space-y-4">
                                             <div className="flex justify-between items-start">
-                                                <span className="text-dark-400 text-sm">Experience {index + 1}</span>
+                                                <span className="text-secondary text-sm">Experience {index + 1}</span>
                                                 <button onClick={() => removeArrayItem('experience', index)} className="text-red-400 hover:text-red-300 text-sm">Remove</button>
                                             </div>
                                             <div className="grid md:grid-cols-2 gap-4">
@@ -531,7 +531,7 @@ function ProfileEditor() {
                                     ))}
 
                                     {formData.experience.length === 0 && (
-                                        <p className="text-dark-500 text-center py-8">No experience added yet. Click "Add Experience" to start.</p>
+                                        <p className="text-tertiary text-center py-8">No experience added yet. Click "Add Experience" to start.</p>
                                     )}
                                 </div>
                             )}
@@ -540,7 +540,7 @@ function ProfileEditor() {
                             {activeSection === 'education' && (
                                 <div className="space-y-6">
                                     <div className="flex justify-between items-center mb-6">
-                                        <h2 className="text-xl font-bold text-white">Education</h2>
+                                        <h2 className="text-xl font-bold text-primary">Education</h2>
                                         <button
                                             onClick={() => addArrayItem('education', { degree: '', institution: '', year: '', gpa: '', coursework: [] })}
                                             className="px-4 py-2 rounded-xl bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors text-sm"
@@ -550,9 +550,9 @@ function ProfileEditor() {
                                     </div>
 
                                     {formData.education.map((edu, index) => (
-                                        <div key={index} className="p-4 rounded-xl bg-dark-800/50 border border-dark-700 space-y-4">
+                                        <div key={index} className="p-4 rounded-xl bg-surface border border-border space-y-4">
                                             <div className="flex justify-between items-start">
-                                                <span className="text-dark-400 text-sm">Education {index + 1}</span>
+                                                <span className="text-secondary text-sm">Education {index + 1}</span>
                                                 <button onClick={() => removeArrayItem('education', index)} className="text-red-400 hover:text-red-300 text-sm">Remove</button>
                                             </div>
                                             <div className="grid md:grid-cols-2 gap-4">
@@ -589,7 +589,7 @@ function ProfileEditor() {
                                     ))}
 
                                     {formData.education.length === 0 && (
-                                        <p className="text-dark-500 text-center py-8">No education added yet.</p>
+                                        <p className="text-tertiary text-center py-8">No education added yet.</p>
                                     )}
                                 </div>
                             )}
@@ -598,7 +598,7 @@ function ProfileEditor() {
                             {activeSection === 'projects' && (
                                 <div className="space-y-6">
                                     <div className="flex justify-between items-center mb-6">
-                                        <h2 className="text-xl font-bold text-white">Projects</h2>
+                                        <h2 className="text-xl font-bold text-primary">Projects</h2>
                                         <button
                                             onClick={() => addArrayItem('projects', { title: '', description: '', techStack: [], demoUrl: '', githubUrl: '' })}
                                             className="px-4 py-2 rounded-xl bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors text-sm"
@@ -608,9 +608,9 @@ function ProfileEditor() {
                                     </div>
 
                                     {formData.projects.map((proj, index) => (
-                                        <div key={index} className="p-4 rounded-xl bg-dark-800/50 border border-dark-700 space-y-4">
+                                        <div key={index} className="p-4 rounded-xl bg-surface border border-border space-y-4">
                                             <div className="flex justify-between items-start">
-                                                <span className="text-dark-400 text-sm">Project {index + 1}</span>
+                                                <span className="text-secondary text-sm">Project {index + 1}</span>
                                                 <button onClick={() => removeArrayItem('projects', index)} className="text-red-400 hover:text-red-300 text-sm">Remove</button>
                                             </div>
                                             <div className="grid md:grid-cols-2 gap-4">
@@ -647,7 +647,7 @@ function ProfileEditor() {
                                     ))}
 
                                     {formData.projects.length === 0 && (
-                                        <p className="text-dark-500 text-center py-8">No projects added yet.</p>
+                                        <p className="text-tertiary text-center py-8">No projects added yet.</p>
                                     )}
                                 </div>
                             )}
@@ -656,7 +656,7 @@ function ProfileEditor() {
                             {activeSection === 'achievements' && (
                                 <div className="space-y-6">
                                     <div className="flex justify-between items-center mb-6">
-                                        <h2 className="text-xl font-bold text-white">Achievements</h2>
+                                        <h2 className="text-xl font-bold text-primary">Achievements</h2>
                                         <button
                                             onClick={() => addArrayItem('achievements', { title: '', description: '', date: '' })}
                                             className="px-4 py-2 rounded-xl bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors text-sm"
@@ -666,9 +666,9 @@ function ProfileEditor() {
                                     </div>
 
                                     {formData.achievements.map((ach, index) => (
-                                        <div key={index} className="p-4 rounded-xl bg-dark-800/50 border border-dark-700 space-y-4">
+                                        <div key={index} className="p-4 rounded-xl bg-surface border border-border space-y-4">
                                             <div className="flex justify-between items-start">
-                                                <span className="text-dark-400 text-sm">Achievement {index + 1}</span>
+                                                <span className="text-secondary text-sm">Achievement {index + 1}</span>
                                                 <button onClick={() => removeArrayItem('achievements', index)} className="text-red-400 hover:text-red-300 text-sm">Remove</button>
                                             </div>
                                             <div className="grid md:grid-cols-2 gap-4">
@@ -698,7 +698,7 @@ function ProfileEditor() {
                                     ))}
 
                                     {formData.achievements.length === 0 && (
-                                        <p className="text-dark-500 text-center py-8">No achievements added yet.</p>
+                                        <p className="text-tertiary text-center py-8">No achievements added yet.</p>
                                     )}
                                 </div>
                             )}
@@ -707,7 +707,7 @@ function ProfileEditor() {
                             {activeSection === 'extra' && (
                                 <div className="space-y-6">
                                     <div className="flex justify-between items-center mb-6">
-                                        <h2 className="text-xl font-bold text-white">Extra Curricular</h2>
+                                        <h2 className="text-xl font-bold text-primary">Extra Curricular</h2>
                                         <button
                                             onClick={() => addArrayItem('extraCurricular', { activity: '', role: '', description: '' })}
                                             className="px-4 py-2 rounded-xl bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors text-sm"
@@ -717,9 +717,9 @@ function ProfileEditor() {
                                     </div>
 
                                     {formData.extraCurricular.map((extra, index) => (
-                                        <div key={index} className="p-4 rounded-xl bg-dark-800/50 border border-dark-700 space-y-4">
+                                        <div key={index} className="p-4 rounded-xl bg-surface border border-border space-y-4">
                                             <div className="flex justify-between items-start">
-                                                <span className="text-dark-400 text-sm">Activity {index + 1}</span>
+                                                <span className="text-secondary text-sm">Activity {index + 1}</span>
                                                 <button onClick={() => removeArrayItem('extraCurricular', index)} className="text-red-400 hover:text-red-300 text-sm">Remove</button>
                                             </div>
                                             <div className="grid md:grid-cols-2 gap-4">
@@ -749,7 +749,7 @@ function ProfileEditor() {
                                     ))}
 
                                     {formData.extraCurricular.length === 0 && (
-                                        <p className="text-dark-500 text-center py-8">No activities added yet.</p>
+                                        <p className="text-tertiary text-center py-8">No activities added yet.</p>
                                     )}
                                 </div>
                             )}
@@ -757,7 +757,7 @@ function ProfileEditor() {
                             {/* Social Links Section */}
                             {activeSection === 'social' && (
                                 <div className="space-y-6">
-                                    <h2 className="text-xl font-bold text-white mb-6">Social Links</h2>
+                                    <h2 className="text-xl font-bold text-primary mb-6">Social Links</h2>
 
                                     {[
                                         { key: 'linkedin', label: 'LinkedIn', icon: '💼', placeholder: 'https://linkedin.com/in/username' },
@@ -769,7 +769,7 @@ function ProfileEditor() {
                                         <div key={social.key} className="flex items-center gap-4">
                                             <span className="text-2xl w-10">{social.icon}</span>
                                             <div className="flex-1">
-                                                <label className="block text-dark-300 text-sm font-medium mb-2">{social.label}</label>
+                                                <label className="block text-secondary text-sm font-medium mb-2">{social.label}</label>
                                                 <input
                                                     type={social.key === 'email' ? 'email' : 'url'}
                                                     value={formData.socialLinks[social.key]}
