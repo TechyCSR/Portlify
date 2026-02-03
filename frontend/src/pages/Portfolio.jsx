@@ -11,55 +11,39 @@ import {
     Building, ChevronRight, Sparkles, Moon, Sun
 } from 'lucide-react'
 
-// ==================== THEME PALETTES ====================
-const portfolioThemes = {
-    modern: {
-        primary: '#6366f1',
-        secondary: '#a855f7',
-        bg: '#030712',
-        surface: 'rgba(15, 23, 42, 0.8)',
-        surfaceSolid: '#0f172a',
-        text: '#f8fafc',
-        textSecondary: '#94a3b8',
-        border: 'rgba(99, 102, 241, 0.2)',
-        glow: 'rgba(99, 102, 241, 0.4)',
-        accent: 'linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%)'
-    },
-    minimal: {
-        primary: '#18181b',
-        secondary: '#52525b',
-        bg: '#fafafa',
-        surface: 'rgba(255, 255, 255, 0.9)',
-        surfaceSolid: '#ffffff',
-        text: '#18181b',
-        textSecondary: '#71717a',
-        border: 'rgba(0, 0, 0, 0.08)',
-        glow: 'rgba(0, 0, 0, 0.1)',
-        accent: 'linear-gradient(135deg, #18181b, #52525b)'
-    },
-    creative: {
-        primary: '#ec4899',
-        secondary: '#8b5cf6',
-        bg: '#0a0a0a',
-        surface: 'rgba(31, 31, 31, 0.9)',
-        surfaceSolid: '#1a1a1a',
-        text: '#fafafa',
-        textSecondary: '#a1a1aa',
-        border: 'rgba(236, 72, 153, 0.2)',
-        glow: 'rgba(236, 72, 153, 0.4)',
-        accent: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #06b6d4 100%)'
-    },
-    professional: {
-        primary: '#0d9488',
-        secondary: '#0891b2',
-        bg: '#f0fdfa',
-        surface: 'rgba(255, 255, 255, 0.95)',
-        surfaceSolid: '#ffffff',
-        text: '#134e4a',
-        textSecondary: '#5eead4',
-        border: 'rgba(13, 148, 136, 0.15)',
-        glow: 'rgba(13, 148, 136, 0.3)',
-        accent: 'linear-gradient(135deg, #0d9488, #0891b2)'
+// ==================== THEME UTILS ====================
+const hexToRgb = (hex) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '0, 0, 0';
+}
+
+const getThemeColors = (themeName, mode) => {
+    const palettes = {
+        modern: { primary: '#6366f1', secondary: '#a855f7', accent: 'linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%)' },
+        minimal: { primary: '#18181b', secondary: '#52525b', accent: 'linear-gradient(135deg, #18181b, #52525b)' },
+        creative: { primary: '#ec4899', secondary: '#8b5cf6', accent: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #06b6d4 100%)' },
+        professional: { primary: '#0d9488', secondary: '#0891b2', accent: 'linear-gradient(135deg, #0d9488, #0891b2)' }
+    }
+
+    const palette = palettes[themeName] || palettes.modern
+    const isDark = mode === 'dark'
+
+    // Adjust minimal theme primary for dark mode
+    if (themeName === 'minimal' && isDark) {
+        palette.primary = '#f8fafc'
+        palette.secondary = '#94a3b8'
+        palette.accent = 'linear-gradient(135deg, #f8fafc, #94a3b8)'
+    }
+
+    return {
+        ...palette,
+        bg: isDark ? '#030712' : '#ffffff',
+        surface: isDark ? 'rgba(15, 23, 42, 0.8)' : 'rgba(255, 255, 255, 0.85)',
+        surfaceSolid: isDark ? '#0f172a' : '#f8fafc',
+        text: isDark ? '#f8fafc' : '#0f172a',
+        textSecondary: isDark ? '#94a3b8' : '#475569',
+        border: isDark ? `rgba(${hexToRgb(palette.primary)}, 0.2)` : `rgba(${hexToRgb(palette.primary)}, 0.1)`,
+        glow: isDark ? `rgba(${hexToRgb(palette.primary)}, 0.4)` : `rgba(${hexToRgb(palette.primary)}, 0.15)`
     }
 }
 
@@ -255,20 +239,14 @@ const ProjectCard = ({ project, index }) => (
 // ==================== MAIN PORTFOLIO COMPONENT ====================
 function Portfolio() {
     const { username } = useParams()
-    const { theme } = useTheme()
+    const { theme, toggleTheme } = useTheme()
     const [profile, setProfile] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
     const [activeTab, setActiveTab] = useState('about')
     const [portfolioTheme, setPortfolioTheme] = useState('modern')
 
-    // Cycle through portfolio themes
-    const themeOrder = ['modern', 'minimal', 'creative', 'professional']
-    const cycleTheme = () => {
-        const currentIndex = themeOrder.indexOf(portfolioTheme)
-        const nextIndex = (currentIndex + 1) % themeOrder.length
-        setPortfolioTheme(themeOrder[nextIndex])
-    }
+
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -293,7 +271,7 @@ function Portfolio() {
         fetchProfile()
     }, [username])
 
-    const colors = portfolioThemes[portfolioTheme] || portfolioThemes.modern
+    const colors = useMemo(() => getThemeColors(portfolioTheme, theme), [portfolioTheme, theme])
 
     // Extract profile data
     const { basicDetails, skills, experience, education, projects,
@@ -393,21 +371,46 @@ function Portfolio() {
                 />
             </div>
 
-            {/* Theme Toggle */}
+            {/* Theme Toggle - 3D Switch */}
             <motion.button
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={cycleTheme}
-                className="fixed top-6 right-6 z-50 px-4 py-2.5 rounded-xl backdrop-blur-xl border flex items-center gap-2"
-                style={{ background: colors.surface, borderColor: colors.border }}
-                title={`Theme: ${portfolioTheme}`}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={toggleTheme}
+                className="fixed top-6 right-6 z-50 p-2 rounded-2xl backdrop-blur-xl border flex items-center justify-center overflow-hidden group"
+                style={{
+                    background: colors.surface,
+                    borderColor: colors.border,
+                    boxShadow: `0 10px 30px -10px ${colors.glow}`
+                }}
             >
-                <Sparkles size={18} style={{ color: colors.primary }} />
-                <span className="text-sm font-medium capitalize hidden sm:inline" style={{ color: colors.text }}>
-                    {portfolioTheme}
-                </span>
+                <div className="relative w-12 h-6 rounded-full bg-black/10 dark:bg-white/10 p-1 transition-colors">
+                    <motion.div
+                        layout
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                        className="w-4 h-4 rounded-full shadow-lg flex items-center justify-center"
+                        style={{
+                            background: theme === 'dark' ? colors.primary : '#fbbf24',
+                            x: theme === 'dark' ? 24 : 0
+                        }}
+                    >
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={theme}
+                                initial={{ opacity: 0, scale: 0 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0 }}
+                            >
+                                {theme === 'dark' ? (
+                                    <Moon size={10} className="text-white" />
+                                ) : (
+                                    <Sun size={10} className="text-white" />
+                                )}
+                            </motion.div>
+                        </AnimatePresence>
+                    </motion.div>
+                </div>
             </motion.button>
 
             {/* Hero Section */}
