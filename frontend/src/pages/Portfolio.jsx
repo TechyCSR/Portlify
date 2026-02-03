@@ -255,12 +255,20 @@ const ProjectCard = ({ project, index }) => (
 // ==================== MAIN PORTFOLIO COMPONENT ====================
 function Portfolio() {
     const { username } = useParams()
-    const { theme, toggleTheme } = useTheme()
+    const { theme } = useTheme()
     const [profile, setProfile] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
     const [activeTab, setActiveTab] = useState('about')
     const [portfolioTheme, setPortfolioTheme] = useState('modern')
+
+    // Cycle through portfolio themes
+    const themeOrder = ['modern', 'minimal', 'creative', 'professional']
+    const cycleTheme = () => {
+        const currentIndex = themeOrder.indexOf(portfolioTheme)
+        const nextIndex = (currentIndex + 1) % themeOrder.length
+        setPortfolioTheme(themeOrder[nextIndex])
+    }
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -269,10 +277,13 @@ function Portfolio() {
                 setProfile(data)
                 if (data.theme) setPortfolioTheme(data.theme)
 
-                // Track view
-                try {
-                    trackPortfolioView(username, document.referrer || 'direct')
-                } catch (e) { /* silent */ }
+                // Track view using fetch to avoid auth interceptor issues
+                const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+                fetch(`${API_URL}/api/analytics/track/${encodeURIComponent(username)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ referrer: document.referrer || 'direct' })
+                }).catch(() => { /* silent */ })
             } catch (err) {
                 setError(err.response?.status === 404 ? 'Profile not found' : 'Failed to load profile')
             } finally {
@@ -386,12 +397,17 @@ function Portfolio() {
             <motion.button
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                whileHover={{ scale: 1.1 }}
-                onClick={toggleTheme}
-                className="fixed top-6 right-6 z-50 p-3 rounded-xl backdrop-blur-xl border"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={cycleTheme}
+                className="fixed top-6 right-6 z-50 px-4 py-2.5 rounded-xl backdrop-blur-xl border flex items-center gap-2"
                 style={{ background: colors.surface, borderColor: colors.border }}
+                title={`Theme: ${portfolioTheme}`}
             >
-                {theme === 'dark' ? <Sun size={20} style={{ color: colors.text }} /> : <Moon size={20} style={{ color: colors.text }} />}
+                <Sparkles size={18} style={{ color: colors.primary }} />
+                <span className="text-sm font-medium capitalize hidden sm:inline" style={{ color: colors.text }}>
+                    {portfolioTheme}
+                </span>
             </motion.button>
 
             {/* Hero Section */}

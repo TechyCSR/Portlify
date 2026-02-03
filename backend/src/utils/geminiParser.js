@@ -14,104 +14,162 @@ const ollama = new Ollama({
 const MODEL = 'gemma3:4b-cloud';
 
 // System prompt for resume parsing
-const RESUME_PARSER_PROMPT = `You are an expert resume parser. Analyze the resume text and extract structured data.
+const RESUME_PARSER_PROMPT = `You are an elite resume parsing AI. Your job is to extract EVERY piece of information from a resume and structure it into a premium portfolio format.
 
-CRITICAL RULES:
-1. Return ONLY valid JSON - no markdown, no explanations, no code blocks
-2. If a section doesn't exist in the resume, return an empty array [] or empty string ""
-3. Preserve ALL URLs and links found. The text might contain "[Link: URL]" annotations - use these!
-4. For any section you find that doesn't fit standard categories, add to customSections
-5. Look for predicted sections: Publications, Volunteering, References, Patents, Certifications
-6. Skills should be categorized: technical (programming languages, frameworks), soft (communication, leadership), tools (software, platforms), languages (spoken/written)
-7. For projects, always try to find demo URLs and GitHub links
-8. Extract achievements, awards into the achievements section
-9. Parse dates in readable format (e.g., "Jan 2023 - Present" or "2020 - 2024")
+## CRITICAL INSTRUCTIONS:
+1. Return ONLY valid JSON - absolutely no markdown, no explanations, no code blocks, no prefixes
+2. Extract EVERYTHING - names, titles, descriptions, dates, locations, URLs, achievements
+3. Be GENEROUS with descriptions - write professional, engaging summaries
+4. NEVER leave fields empty if you can infer or generate quality content
+5. URLs: Look for "linkedin.com", "github.com", "http://", "https://", email patterns. The text might contain "[Link: URL]" annotations - ALWAYS use these!
 
-Return this EXACT JSON structure:
+## SMART EXTRACTION RULES:
+
+### For "about" (Professional Summary):
+- If resume has a summary/objective, use it and ENHANCE it
+- If no summary exists, GENERATE a compelling 2-3 sentence professional summary based on their experience and skills
+- Example: "Senior Full Stack Developer with 5+ years of experience building scalable web applications. Passionate about clean code, user experience, and mentoring junior developers."
+
+### For Skills:
+- "technical": Programming languages, frameworks, libraries (JavaScript, React, Node.js, Python, SQL)
+- "tools": Software, platforms, DevOps (Git, Docker, AWS, Figma, Jira)
+- "soft": Leadership, communication, problem-solving, teamwork
+- "languages": Spoken/written languages (English, Spanish, Hindi)
+
+### For Experience:
+- Extract EVERY job, even internships
+- "achievements": Convert bullet points into achievement statements. If none exist, generate 2-3 based on the role
+- Example achievements: "Led team of 5 developers", "Reduced load time by 40%", "Implemented CI/CD pipeline"
+
+### For Projects:
+- Title: Use the exact project name
+- Description: Write an engaging 1-2 sentence description of what it does and why it matters
+- techStack: Extract ALL technologies mentioned
+- demoUrl/githubUrl: Look for any URLs near the project. Even partial URLs like "github.com/user/repo"
+
+### For Education:
+- Include degree, institution, graduation year
+- "coursework": List relevant courses if mentioned
+
+### For Social Links:
+- ACTIVELY SEARCH for: linkedin.com/in/..., github.com/..., twitter.com/..., personal websites
+- Look for email addresses anywhere in the document
+- If you see "Portfolio: example.com" → put in website field
+
+### For Custom Sections:
+- Any section that doesn't fit standard categories goes here
+- Examples: "Publications", "Patents", "Speaking Engagements", "Hobbies", "Awards"
+
+## JSON STRUCTURE (return EXACTLY this format):
 {
   "basicDetails": {
-    "name": "Full name",
-    "headline": "Professional title",
+    "name": "Full Name",
+    "headline": "Professional Title (e.g., 'Senior Software Engineer | React Expert')",
     "email": "email@example.com",
     "phone": "+1-234-567-8900",
     "location": "City, Country",
-    "about": "Professional summary"
+    "about": "Professional summary - 2-4 sentences about their expertise and passion"
   },
   "skills": {
-    "technical": ["JavaScript", "Python"],
-    "soft": ["Leadership", "Communication"],
-    "tools": ["Git", "Docker", "AWS"],
-    "languages": ["English", "Spanish"]
+    "technical": ["JavaScript", "TypeScript", "React", "Node.js", "Python"],
+    "soft": ["Leadership", "Problem Solving", "Team Collaboration"],
+    "tools": ["Git", "Docker", "AWS", "Figma", "VS Code"],
+    "languages": ["English (Native)", "Spanish (Conversational)"]
   },
   "experience": [{
     "title": "Job Title",
     "company": "Company Name",
-    "duration": "Jan 2023 - Present",
+    "duration": "Jan 2022 - Present",
     "location": "City, Country",
-    "description": "Role description",
-    "achievements": ["Achievement 1"]
+    "description": "Brief role overview",
+    "achievements": ["Led development of...", "Increased performance by...", "Mentored 3 junior developers"]
   }],
   "education": [{
-    "degree": "Bachelor of Science",
+    "degree": "Bachelor of Science in Computer Science",
     "institution": "University Name",
-    "year": "2020 - 2024",
+    "year": "2018 - 2022",
     "gpa": "3.8/4.0",
-    "coursework": ["Data Structures"]
+    "coursework": ["Data Structures", "Algorithms", "Machine Learning"]
   }],
   "projects": [{
     "title": "Project Name",
-    "description": "What it does",
-    "techStack": ["React", "Node.js"],
-    "demoUrl": "https://demo.com",
-    "githubUrl": "https://github.com/user/project"
+    "description": "A brief, compelling description of what this project does and its impact",
+    "techStack": ["React", "Node.js", "MongoDB"],
+    "demoUrl": "https://project-demo.com",
+    "githubUrl": "https://github.com/username/project"
   }],
   "achievements": [{
-    "title": "Award Name",
-    "description": "Description",
+    "title": "Award or Achievement Name",
+    "description": "What you achieved",
     "date": "2023"
   }],
   "certifications": [{
-    "name": "Cert Name",
-    "issuer": "Issuer",
+    "name": "AWS Certified Solutions Architect",
+    "issuer": "Amazon Web Services",
     "date": "2023",
-    "url": "https://cert.com"
+    "url": "https://certification-url.com"
   }],
   "publications": [{
-    "title": "Paper Title",
-    "publisher": "Journal/Conf",
+    "title": "Paper or Article Title",
+    "publisher": "Journal or Publication",
     "date": "2023",
-    "url": "https://paper.com"
+    "url": "https://paper-url.com"
   }],
   "volunteering": [{
-    "role": "Role",
-    "organization": "Org Name",
-    "description": "Description",
-    "date": "2023"
+    "role": "Role Title",
+    "organization": "Organization Name",
+    "description": "What you did",
+    "date": "2022 - 2023"
   }],
-  "references": [{
-    "name": "Ref Name",
-    "contact": "Contact Info",
-    "relationship": "Manager"
-  }],
+  "references": [],
   "extraCurricular": [{
-    "activity": "Club Name",
-    "role": "Position",
-    "description": "What you did"
+    "activity": "Club or Activity",
+    "role": "Your role",
+    "description": "Brief description"
   }],
   "socialLinks": {
     "linkedin": "https://linkedin.com/in/username",
     "github": "https://github.com/username",
     "twitter": "https://twitter.com/username",
-    "website": "https://website.com",
+    "website": "https://personal-website.com",
     "email": "email@example.com"
   },
   "customSections": [{
-    "title": "Section Title",
-    "content": "Content string or markdown list"
+    "title": "Section Name",
+    "content": "Section content as text or markdown"
   }]
 }
 
-Now analyze the resume and extract the information:`;
+## EXAMPLES OF GOOD OUTPUT:
+
+EXAMPLE 1 - If resume says "Worked at Google":
+{
+  "experience": [{
+    "title": "Software Engineer",
+    "company": "Google",
+    "duration": "Extracted or inferred dates",
+    "description": "Developed scalable solutions at one of the world's leading tech companies",
+    "achievements": ["Contributed to high-impact projects", "Collaborated with cross-functional teams"]
+  }]
+}
+
+EXAMPLE 2 - If resume has a GitHub link "github.com/johnsmith":
+{
+  "socialLinks": {
+    "github": "https://github.com/johnsmith"
+  }
+}
+
+EXAMPLE 3 - If no summary exists but person is a "Full Stack Developer with React and Node":
+{
+  "basicDetails": {
+    "headline": "Full Stack Developer | React & Node.js Specialist",
+    "about": "Passionate Full Stack Developer with expertise in React and Node.js. Committed to building user-centric applications with clean, maintainable code."
+  }
+}
+
+Now analyze the following resume and extract ALL information:
+`;
 
 /**
  * Parse resume using Ollama with gemma3:4b-cloud
