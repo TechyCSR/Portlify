@@ -8,9 +8,9 @@ import { useToast } from '../context/ToastContext'
 import {
     User, Briefcase, GraduationCap, Code, Award,
     Share2, FileText, Globe, BookOpen, Heart,
-    Users, Plus, Trash2, Save, ChevronLeft,
+    Users, Plus, Trash2, Save, ChevronLeft, ChevronRight,
     Camera, MapPin, Mail, Phone, Link as LinkIcon,
-    Linkedin, Github, Twitter
+    Linkedin, Github, Twitter, Rocket
 } from 'lucide-react'
 
 function ProfileEditor() {
@@ -1098,27 +1098,65 @@ function ProfileEditor() {
                             </div>
                         )}
 
-                        <div className="mt-6 flex justify-end gap-4">
-                            <button
-                                onClick={() => navigate('/upload')}
-                                className="btn-secondary"
-                            >
-                                ← Back to Upload
-                            </button>
-                            <button
+                        <div className="mt-8 space-y-6">
+                            {/* Section Navigation */}
+                            <div className="flex justify-between items-center pt-6 border-t border-border">
+                                <button
+                                    onClick={() => {
+                                        const currentIndex = sections.findIndex(s => s.id === activeSection)
+                                        if (currentIndex > 0) {
+                                            setActiveSection(sections[currentIndex - 1].id)
+                                            window.scrollTo({ top: 100, behavior: 'smooth' })
+                                        }
+                                    }}
+                                    disabled={activeSection === sections[0].id}
+                                    className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all ${activeSection === sections[0].id
+                                        ? 'text-tertiary cursor-not-allowed opacity-50'
+                                        : 'bg-surface border border-border text-secondary hover:text-primary hover:border-primary/50'
+                                        }`}
+                                >
+                                    <ChevronLeft size={20} />
+                                    Previous Section
+                                </button>
+
+                                {activeSection !== sections[sections.length - 1].id && (
+                                    <button
+                                        onClick={() => {
+                                            const currentIndex = sections.findIndex(s => s.id === activeSection)
+                                            if (currentIndex < sections.length - 1) {
+                                                setActiveSection(sections[currentIndex + 1].id)
+                                                window.scrollTo({ top: 100, behavior: 'smooth' })
+                                            }
+                                        }}
+                                        className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary-500/10 text-primary-400 hover:bg-primary-500/20 transition-all font-medium"
+                                    >
+                                        Next Section
+                                        <ChevronRight size={20} />
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Master Submit Button */}
+                            <motion.button
+                                whileHover={{ scale: 1.01 }}
+                                whileTap={{ scale: 0.99 }}
                                 onClick={handleSave}
                                 disabled={saving}
-                                className="btn-primary"
+                                className="w-full py-4 rounded-xl bg-gradient-to-r from-primary-600 to-accent-600 text-white font-bold text-lg shadow-lg shadow-primary-500/25 border border-white/10 flex items-center justify-center gap-3 relative overflow-hidden group"
                             >
+                                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                                 {saving ? (
-                                    <span className="flex items-center">
-                                        <div className="spinner w-5 h-5 mr-2" />
-                                        Saving...
-                                    </span>
+                                    <>
+                                        <div className="spinner w-6 h-6 border-white/30 border-t-white" />
+                                        Building Your Portfolio...
+                                    </>
                                 ) : (
-                                    'Save & Generate Portfolio →'
+                                    <>
+                                        <Rocket size={24} />
+                                        Save & Build Portfolio
+                                    </>
                                 )}
-                            </button>
+                            </motion.button>
                         </div>
                     </motion.div>
                 </div>
