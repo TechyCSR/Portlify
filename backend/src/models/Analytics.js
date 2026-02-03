@@ -32,8 +32,7 @@ const analyticsSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true,
-        lowercase: true,
-        index: true
+        lowercase: true
     },
 
     // Overall stats
@@ -84,9 +83,7 @@ const analyticsSchema = new mongoose.Schema({
     }
 });
 
-// Index for efficient queries
-analyticsSchema.index({ username: 1 });
-analyticsSchema.index({ profileId: 1 });
+// Indexes are automatically created by unique:true on username and profileId
 
 // Method to record a view
 analyticsSchema.methods.recordView = async function (visitorHash, device, referrer, location) {
