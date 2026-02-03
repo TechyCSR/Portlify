@@ -10,7 +10,7 @@ import {
     Share2, FileText, Globe, BookOpen, Heart,
     Users, Plus, Trash2, Save, ChevronLeft, ChevronRight,
     Camera, MapPin, Mail, Phone, Link as LinkIcon,
-    Linkedin, Github, Twitter, Rocket
+    Linkedin, Github, Twitter, Rocket, Sparkles
 } from 'lucide-react'
 
 function ProfileEditor() {
@@ -1099,9 +1099,11 @@ function ProfileEditor() {
                         )}
 
                         <div className="mt-8 space-y-6">
-                            {/* Section Navigation */}
-                            <div className="flex justify-between items-center pt-6 border-t border-border">
-                                <button
+                            {/* Section Navigation - Glassy Minimalistic */}
+                            <div className="flex justify-between items-center pt-8 mt-8 border-t border-white/5">
+                                <motion.button
+                                    whileHover={{ scale: 1.02, x: -5 }}
+                                    whileTap={{ scale: 0.98 }}
                                     onClick={() => {
                                         const currentIndex = sections.findIndex(s => s.id === activeSection)
                                         if (currentIndex > 0) {
@@ -1110,17 +1112,19 @@ function ProfileEditor() {
                                         }
                                     }}
                                     disabled={activeSection === sections[0].id}
-                                    className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all ${activeSection === sections[0].id
-                                        ? 'text-tertiary cursor-not-allowed opacity-50'
-                                        : 'bg-surface border border-border text-secondary hover:text-primary hover:border-primary/50'
+                                    className={`flex items-center gap-3 px-6 py-3.5 rounded-2xl backdrop-blur-md transition-all duration-300 border ${activeSection === sections[0].id
+                                            ? 'opacity-30 cursor-not-allowed border-transparent text-secondary'
+                                            : 'bg-white/5 hover:bg-white/10 border-white/10 text-secondary hover:text-white hover:border-white/20 hover:shadow-lg hover:shadow-black/5'
                                         }`}
                                 >
-                                    <ChevronLeft size={20} />
-                                    Previous Section
-                                </button>
+                                    <ChevronLeft size={18} />
+                                    <span className="font-medium tracking-wide">Previous</span>
+                                </motion.button>
 
                                 {activeSection !== sections[sections.length - 1].id && (
-                                    <button
+                                    <motion.button
+                                        whileHover={{ scale: 1.02, x: 5 }}
+                                        whileTap={{ scale: 0.98 }}
                                         onClick={() => {
                                             const currentIndex = sections.findIndex(s => s.id === activeSection)
                                             if (currentIndex < sections.length - 1) {
@@ -1128,34 +1132,38 @@ function ProfileEditor() {
                                                 window.scrollTo({ top: 100, behavior: 'smooth' })
                                             }
                                         }}
-                                        className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary-500/10 text-primary-400 hover:bg-primary-500/20 transition-all font-medium"
+                                        className="flex items-center gap-3 px-6 py-3.5 rounded-2xl backdrop-blur-md bg-primary-500/10 hover:bg-primary-500/20 border border-primary-500/20 hover:border-primary-500/30 text-primary-400 hover:text-primary-300 transition-all duration-300 hover:shadow-[0_0_20px_rgba(var(--primary-rgb),0.15)] group"
                                     >
-                                        Next Section
-                                        <ChevronRight size={20} />
-                                    </button>
+                                        <span className="font-medium tracking-wide">Next Step</span>
+                                        <ChevronRight size={18} className="group-hover:translate-x-0.5 transition-transform" />
+                                    </motion.button>
                                 )}
                             </div>
 
-                            {/* Master Submit Button */}
+                            {/* Master Submit Button - Premium Glassy */}
                             <motion.button
-                                whileHover={{ scale: 1.01 }}
+                                whileHover={{ scale: 1.01, y: -2 }}
                                 whileTap={{ scale: 0.99 }}
                                 onClick={handleSave}
                                 disabled={saving}
-                                className="w-full py-4 rounded-xl bg-gradient-to-r from-primary-600 to-accent-600 text-white font-bold text-lg shadow-lg shadow-primary-500/25 border border-white/10 flex items-center justify-center gap-3 relative overflow-hidden group"
+                                className="w-full relative group overflow-hidden rounded-2xl p-[1px]"
                             >
-                                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                                {saving ? (
-                                    <>
-                                        <div className="spinner w-6 h-6 border-white/30 border-t-white" />
-                                        Building Your Portfolio...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Rocket size={24} />
-                                        Save & Build Portfolio
-                                    </>
-                                )}
+                                <div className="absolute inset-0 bg-gradient-to-r from-primary-500 to-accent-500 opacity-80 group-hover:opacity-100 transition-opacity duration-300 blur-sm" />
+                                <div className="relative h-14 flex items-center justify-center gap-3 rounded-2xl bg-[#0a0a0a]/90 backdrop-blur-xl border border-white/10 group-hover:bg-[#0a0a0a]/80 transition-all duration-300">
+                                    {saving ? (
+                                        <>
+                                            <div className="w-5 h-5 rounded-full border-2 border-primary-400 border-t-transparent animate-spin" />
+                                            <span className="text-white font-medium tracking-wide">Building Portfolio...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Sparkles size={20} className="text-primary-400 group-hover:text-primary-300 transition-colors" />
+                                            <span className="bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent font-semibold text-lg tracking-wide group-hover:to-white transition-all">
+                                                Generate Portfolio
+                                            </span>
+                                        </>
+                                    )}
+                                </div>
                             </motion.button>
                         </div>
                     </motion.div>
