@@ -928,21 +928,108 @@ function Portfolio() {
                 </AnimatePresence>
             </main>
 
-            {/* Footer */}
-            <footer className="relative py-8 px-4 border-t" style={{ borderColor: colors.border }}>
-                <div className="max-w-4xl mx-auto text-center">
-                    <p className="text-sm" style={{ color: colors.textSecondary }}>
-                        Built with{' '}
-                        <a
-                            href="https://portlify.techycsr.dev"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="font-medium hover:underline"
-                            style={{ color: colors.primary }}
+            {/* Footer - Glassy Portlify Branding */}
+            <footer className="relative py-12 px-4">
+                {/* Subtle gradient separator */}
+                <div 
+                    className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 max-w-md h-px"
+                    style={{ 
+                        background: `linear-gradient(90deg, transparent, ${colors.primary}40, transparent)` 
+                    }}
+                />
+                
+                <div className="max-w-4xl mx-auto flex justify-center">
+                    <motion.a
+                        href="https://portlify.techycsr.dev"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group relative"
+                        whileHover={{ scale: 1.05, y: -2 }}
+                        whileTap={{ scale: 0.98 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                    >
+                        {/* Glow effect on hover */}
+                        <div 
+                            className="absolute -inset-4 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"
+                            style={{ background: colors.accent }}
+                        />
+                        
+                        {/* Glass card container */}
+                        <div 
+                            className="relative px-6 py-3 rounded-xl backdrop-blur-xl border transition-all duration-300 overflow-hidden"
+                            style={{ 
+                                background: colors.surface,
+                                borderColor: colors.border,
+                                boxShadow: `0 4px 24px rgba(0, 0, 0, 0.1), 0 0 0 1px ${colors.border}`
+                            }}
                         >
-                            Portlify
-                        </a>
-                    </p>
+                            {/* Inner shine effect */}
+                            <div 
+                                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                                style={{
+                                    background: `linear-gradient(135deg, transparent 40%, ${colors.primary}10 50%, transparent 60%)`,
+                                }}
+                            />
+                            
+                            {/* Animated gradient border on hover */}
+                            <div 
+                                className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                style={{ 
+                                    padding: '1px',
+                                    background: colors.accent,
+                                    mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                                    maskComposite: 'xor',
+                                    WebkitMaskComposite: 'xor'
+                                }}
+                            />
+                            
+                            {/* Content */}
+                            <div className="relative flex items-center gap-3">
+                                {/* Logo/Icon */}
+                                <motion.div
+                                    className="relative"
+                                    animate={{ rotate: [0, 5, -5, 0] }}
+                                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                                >
+                                    <div 
+                                        className="w-8 h-8 rounded-lg flex items-center justify-center"
+                                        style={{ 
+                                            background: colors.accent,
+                                            boxShadow: `0 4px 12px ${colors.glow}`
+                                        }}
+                                    >
+                                        <Sparkles size={16} className="text-white" />
+                                    </div>
+                                </motion.div>
+                                
+                                {/* Text */}
+                                <div className="flex items-center gap-2">
+                                    <span 
+                                        className="text-sm"
+                                        style={{ color: colors.textSecondary }}
+                                    >
+                                        Built with
+                                    </span>
+                                    <span 
+                                        className="font-semibold text-sm bg-clip-text text-transparent"
+                                        style={{ 
+                                            backgroundImage: colors.accent,
+                                            WebkitBackgroundClip: 'text'
+                                        }}
+                                    >
+                                        Portlify
+                                    </span>
+                                </div>
+                                
+                                {/* Arrow indicator */}
+                                <ChevronRight 
+                                    size={16} 
+                                    className="opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300"
+                                    style={{ color: colors.primary }}
+                                />
+                            </div>
+                        </div>
+                    </motion.a>
                 </div>
             </footer>
         </div>
