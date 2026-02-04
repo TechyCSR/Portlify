@@ -44,13 +44,63 @@ const generateHTML = (profile, preferences) => {
         </header>
 
         <!-- Skills Section -->
-        ${(skills?.technical?.length || skills?.tools?.length) ? `
+        ${(skills?.programmingLanguages?.length || skills?.frameworks?.length || skills?.databases?.length || skills?.tools?.length || skills?.cloudSystems?.length || skills?.softSkills?.length) ? `
         <section class="section">
             <h2>Skills</h2>
-            <div class="skills-grid">
-                ${skills.technical?.map(s => `<span class="skill-tag">${s}</span>`).join('') || ''}
-                ${skills.tools?.map(s => `<span class="skill-tag">${s}</span>`).join('') || ''}
+            
+            ${skills.programmingLanguages?.length ? `
+            <div class="skill-category">
+                <h3>💻 Programming Languages</h3>
+                <div class="skills-grid">
+                    ${skills.programmingLanguages.map(s => `<span class="skill-tag">${s}</span>`).join('')}
+                </div>
             </div>
+            ` : ''}
+            
+            ${skills.frameworks?.length ? `
+            <div class="skill-category">
+                <h3>🛠️ Frameworks & Libraries</h3>
+                <div class="skills-grid">
+                    ${skills.frameworks.map(s => `<span class="skill-tag">${s}</span>`).join('')}
+                </div>
+            </div>
+            ` : ''}
+            
+            ${skills.databases?.length ? `
+            <div class="skill-category">
+                <h3>🗄️ Databases</h3>
+                <div class="skills-grid">
+                    ${skills.databases.map(s => `<span class="skill-tag">${s}</span>`).join('')}
+                </div>
+            </div>
+            ` : ''}
+            
+            ${skills.tools?.length ? `
+            <div class="skill-category">
+                <h3>🔧 Tools</h3>
+                <div class="skills-grid">
+                    ${skills.tools.map(s => `<span class="skill-tag">${s}</span>`).join('')}
+                </div>
+            </div>
+            ` : ''}
+            
+            ${skills.cloudSystems?.length ? `
+            <div class="skill-category">
+                <h3>☁️ Cloud & Systems</h3>
+                <div class="skills-grid">
+                    ${skills.cloudSystems.map(s => `<span class="skill-tag">${s}</span>`).join('')}
+                </div>
+            </div>
+            ` : ''}
+            
+            ${skills.softSkills?.length ? `
+            <div class="skill-category">
+                <h3>🤝 Soft Skills</h3>
+                <div class="skills-grid">
+                    ${skills.softSkills.map(s => `<span class="skill-tag">${s}</span>`).join('')}
+                </div>
+            </div>
+            ` : ''}
         </section>
         ` : ''}
 

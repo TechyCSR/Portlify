@@ -95,10 +95,12 @@ const profileSchema = new mongoose.Schema({
 
     // Skills (categorized)
     skills: {
-        technical: { type: [String], default: [] },
-        soft: { type: [String], default: [] },
+        programmingLanguages: { type: [String], default: [] },
+        frameworks: { type: [String], default: [] },
+        databases: { type: [String], default: [] },
         tools: { type: [String], default: [] },
-        languages: { type: [String], default: [] }
+        cloudSystems: { type: [String], default: [] },
+        softSkills: { type: [String], default: [] }
     },
 
     // Experience

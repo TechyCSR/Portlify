@@ -277,10 +277,23 @@ function Portfolio() {
     const { basicDetails, skills, experience, education, projects,
         certifications, publications, volunteering, socialLinks, customSections } = profile || {}
 
+    // Skill categories configuration
+    const skillCategories = useMemo(() => [
+        { key: 'programmingLanguages', label: 'Programming Languages', icon: '💻', gradient: 'from-blue-500 to-cyan-500' },
+        { key: 'frameworks', label: 'Frameworks & Libraries', icon: '🛠️', gradient: 'from-purple-500 to-pink-500' },
+        { key: 'databases', label: 'Databases', icon: '🗄️', gradient: 'from-emerald-500 to-teal-500' },
+        { key: 'tools', label: 'Tools', icon: '🔧', gradient: 'from-orange-500 to-amber-500' },
+        { key: 'cloudSystems', label: 'Cloud & Systems', icon: '☁️', gradient: 'from-indigo-500 to-violet-500' },
+        { key: 'softSkills', label: 'Soft Skills', icon: '🤝', gradient: 'from-rose-500 to-pink-500' }
+    ], [])
+
     const allSkills = useMemo(() => [
-        ...(skills?.technical || []),
+        ...(skills?.programmingLanguages || []),
+        ...(skills?.frameworks || []),
+        ...(skills?.databases || []),
         ...(skills?.tools || []),
-        ...(skills?.soft || [])
+        ...(skills?.cloudSystems || []),
+        ...(skills?.softSkills || [])
     ], [skills])
 
     // Build tabs only for sections with data
@@ -611,17 +624,63 @@ function Portfolio() {
                                 </GlassCard>
                             )}
 
-                            {/* Skills */}
+                            {/* Skills - Categorized Display */}
                             {allSkills.length > 0 && (
                                 <GlassCard className="p-6">
-                                    <h2 className="text-xl font-semibold mb-4 flex items-center gap-2" style={{ color: colors.text }}>
+                                    <h2 className="text-xl font-semibold mb-6 flex items-center gap-2" style={{ color: colors.text }}>
                                         <Sparkles size={20} style={{ color: colors.primary }} />
                                         Skills
                                     </h2>
-                                    <div className="flex flex-wrap gap-2">
-                                        {allSkills.map((skill, i) => (
-                                            <SkillChip key={i} skill={skill} index={i} />
-                                        ))}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {skillCategories.map((category, catIndex) => {
+                                            const categorySkills = skills?.[category.key] || []
+                                            if (categorySkills.length === 0) return null
+                                            
+                                            return (
+                                                <motion.div
+                                                    key={category.key}
+                                                    initial={{ opacity: 0, y: 10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    transition={{ delay: catIndex * 0.1 }}
+                                                    className="relative overflow-hidden rounded-xl p-4 backdrop-blur-sm border transition-all duration-300 hover:scale-[1.02] group"
+                                                    style={{
+                                                        background: 'var(--surface)',
+                                                        borderColor: 'var(--border)'
+                                                    }}
+                                                >
+                                                    {/* Glow effect on hover */}
+                                                    <div 
+                                                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-xl"
+                                                        style={{ boxShadow: `inset 0 0 30px var(--glow)` }}
+                                                    />
+                                                    
+                                                    <div className="flex items-center gap-2 mb-3 relative z-10">
+                                                        <span className="text-lg">{category.icon}</span>
+                                                        <h3 className="font-medium text-sm" style={{ color: colors.text }}>
+                                                            {category.label}
+                                                        </h3>
+                                                    </div>
+                                                    <div className="flex flex-wrap gap-2 relative z-10">
+                                                        {categorySkills.map((skill, i) => (
+                                                            <motion.span
+                                                                key={i}
+                                                                initial={{ opacity: 0, scale: 0.8 }}
+                                                                animate={{ opacity: 1, scale: 1 }}
+                                                                transition={{ delay: (catIndex * 0.1) + (i * 0.03) }}
+                                                                className="px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-sm border cursor-default transition-all duration-200 hover:scale-105"
+                                                                style={{
+                                                                    background: `rgba(${colors.primary === '#6366f1' ? '99, 102, 241' : colors.primary === '#ec4899' ? '236, 72, 153' : colors.primary === '#0d9488' ? '13, 148, 136' : '99, 102, 241'}, 0.15)`,
+                                                                    borderColor: 'var(--border)',
+                                                                    color: colors.primary
+                                                                }}
+                                                            >
+                                                                {skill}
+                                                            </motion.span>
+                                                        ))}
+                                                    </div>
+                                                </motion.div>
+                                            )
+                                        })}
                                     </div>
                                 </GlassCard>
                             )}

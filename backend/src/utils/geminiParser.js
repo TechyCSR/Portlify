@@ -30,11 +30,13 @@ const RESUME_PARSER_PROMPT = `You are an elite resume parsing AI. Your job is to
 - If no summary exists, GENERATE a compelling 2-3 sentence professional summary based on their experience and skills
 - Example: "Senior Full Stack Developer with 5+ years of experience building scalable web applications. Passionate about clean code, user experience, and mentoring junior developers."
 
-### For Skills:
-- "technical": Programming languages, frameworks, libraries (JavaScript, React, Node.js, Python, SQL)
-- "tools": Software, platforms, DevOps (Git, Docker, AWS, Figma, Jira)
-- "soft": Leadership, communication, problem-solving, teamwork
-- "languages": Spoken/written languages (English, Spanish, Hindi)
+### For Skills (CATEGORIZE CAREFULLY):
+- "programmingLanguages": Only programming/scripting languages (Python, JavaScript, TypeScript, C++, Java, SQL, Go, Rust, Ruby, PHP, Swift, Kotlin, C#, R)
+- "frameworks": Libraries and frameworks (React, Vue, Angular, Node.js, Express, Django, Flask, TensorFlow, Keras, PyTorch, Scikit-learn, Spring, .NET, Laravel, Next.js)
+- "databases": Database systems (MongoDB, MySQL, PostgreSQL, SQLite, Redis, Firebase, DynamoDB, Cassandra, Oracle, SQL Server)
+- "tools": Development tools (Git, Docker, Postman, VS Code, Figma, Jira, Jenkins, Webpack, npm, Kubernetes, Terraform)
+- "cloudSystems": Cloud platforms and OS (AWS, Azure, GCP, Linux, Windows, macOS, Heroku, Vercel, Netlify, DigitalOcean)
+- "softSkills": Interpersonal skills (Team Collaboration, Leadership, Public Speaking, Communication, Problem Solving, Time Management, Event Management, Critical Thinking)
 
 ### For Experience:
 - Extract EVERY job, even internships
@@ -71,10 +73,12 @@ const RESUME_PARSER_PROMPT = `You are an elite resume parsing AI. Your job is to
     "about": "Professional summary - 2-4 sentences about their expertise and passion"
   },
   "skills": {
-    "technical": ["JavaScript", "TypeScript", "React", "Node.js", "Python"],
-    "soft": ["Leadership", "Problem Solving", "Team Collaboration"],
-    "tools": ["Git", "Docker", "AWS", "Figma", "VS Code"],
-    "languages": ["English (Native)", "Spanish (Conversational)"]
+    "programmingLanguages": ["Python", "JavaScript", "TypeScript", "SQL", "C++"],
+    "frameworks": ["React", "Node.js", "TensorFlow", "Flask", "Scikit-learn"],
+    "databases": ["MongoDB", "MySQL", "PostgreSQL", "Redis"],
+    "tools": ["Git", "Docker", "Postman", "VS Code", "Figma"],
+    "cloudSystems": ["AWS", "Linux", "Heroku", "Vercel"],
+    "softSkills": ["Leadership", "Team Collaboration", "Public Speaking", "Problem Solving"]
   },
   "experience": [{
     "title": "Job Title",

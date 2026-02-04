@@ -172,7 +172,25 @@ function Dashboard() {
     }
 
     const { basicDetails, skills, experience, education, projects } = profile || {}
-    const allSkills = [...(skills?.technical || []), ...(skills?.tools || [])]
+    
+    // New categorized skills structure
+    const skillCategories = [
+        { key: 'programmingLanguages', label: 'Programming Languages', icon: '💻', gradient: 'from-blue-500 to-cyan-500' },
+        { key: 'frameworks', label: 'Frameworks & Libraries', icon: '🛠️', gradient: 'from-purple-500 to-pink-500' },
+        { key: 'databases', label: 'Databases', icon: '🗄️', gradient: 'from-emerald-500 to-teal-500' },
+        { key: 'tools', label: 'Tools', icon: '🔧', gradient: 'from-orange-500 to-amber-500' },
+        { key: 'cloudSystems', label: 'Cloud & Systems', icon: '☁️', gradient: 'from-indigo-500 to-violet-500' },
+        { key: 'softSkills', label: 'Soft Skills', icon: '🤝', gradient: 'from-rose-500 to-pink-500' }
+    ]
+    
+    const allSkills = [
+        ...(skills?.programmingLanguages || []),
+        ...(skills?.frameworks || []),
+        ...(skills?.databases || []),
+        ...(skills?.tools || []),
+        ...(skills?.cloudSystems || []),
+        ...(skills?.softSkills || [])
+    ]
 
     const stats = [
         { label: 'Skills', value: allSkills.length, icon: icons.skills, gradient: 'from-indigo-500 to-purple-500' },
@@ -415,24 +433,48 @@ function Dashboard() {
                             </div>
                         </motion.div>
 
-                        {/* Recent Skills Preview */}
+                        {/* Skills Section - Categorized Display */}
                         {allSkills.length > 0 && (
                             <motion.div variants={itemVariants} className="mt-6">
                                 <h2 className="text-lg font-semibold text-primary mb-4">Your Skills</h2>
-                                <div className="flex flex-wrap gap-2">
-                                    {allSkills.slice(0, 12).map((skill, i) => (
-                                        <span
-                                            key={i}
-                                            className="px-3 py-1.5 rounded-lg bg-surface border border-border text-sm text-secondary"
-                                        >
-                                            {skill}
-                                        </span>
-                                    ))}
-                                    {allSkills.length > 12 && (
-                                        <span className="px-3 py-1.5 rounded-lg bg-indigo-500/20 text-indigo-400 text-sm">
-                                            +{allSkills.length - 12} more
-                                        </span>
-                                    )}
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {skillCategories.map((category) => {
+                                        const categorySkills = skills?.[category.key] || []
+                                        if (categorySkills.length === 0) return null
+                                        
+                                        return (
+                                            <motion.div
+                                                key={category.key}
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                className="glass-card rounded-xl p-4 group hover:scale-[1.02] transition-all duration-300"
+                                            >
+                                                <div className="flex items-center gap-2 mb-3">
+                                                    <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${category.gradient} flex items-center justify-center text-white text-sm`}>
+                                                        {category.icon}
+                                                    </div>
+                                                    <h3 className="font-medium text-primary text-sm">{category.label}</h3>
+                                                </div>
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    {categorySkills.map((skill, i) => (
+                                                        <motion.span
+                                                            key={i}
+                                                            initial={{ opacity: 0, scale: 0.8 }}
+                                                            animate={{ opacity: 1, scale: 1 }}
+                                                            transition={{ delay: i * 0.03 }}
+                                                            className={`px-2.5 py-1 rounded-full text-xs font-medium bg-gradient-to-r ${category.gradient} bg-opacity-10 border border-white/10 backdrop-blur-sm`}
+                                                            style={{
+                                                                background: `linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1))`,
+                                                                color: 'var(--color-primary)'
+                                                            }}
+                                                        >
+                                                            {skill}
+                                                        </motion.span>
+                                                    ))}
+                                                </div>
+                                            </motion.div>
+                                        )
+                                    })}
                                 </div>
                             </motion.div>
                         )}

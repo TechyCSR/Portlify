@@ -37,10 +37,12 @@ function ProfileEditor() {
             about: ''
         },
         skills: {
-            technical: [],
-            soft: [],
+            programmingLanguages: [],
+            frameworks: [],
+            databases: [],
             tools: [],
-            languages: []
+            cloudSystems: [],
+            softSkills: []
         },
         experience: [],
         education: [],
@@ -449,19 +451,31 @@ function ProfileEditor() {
                                     <h2 className="text-xl font-bold text-primary mb-6">Skills</h2>
 
                                     {[
-                                        { key: 'technical', label: 'Technical Skills', placeholder: 'React, Node.js, Python...' },
-                                        { key: 'tools', label: 'Tools & Platforms', placeholder: 'Git, Docker, AWS...' },
-                                        { key: 'soft', label: 'Soft Skills', placeholder: 'Leadership, Communication...' },
-                                        { key: 'languages', label: 'Languages', placeholder: 'English, Spanish...' }
+                                        { key: 'programmingLanguages', label: 'Programming Languages', placeholder: 'Python, JavaScript, SQL, C++...', icon: '💻', gradient: 'from-blue-500 to-cyan-500' },
+                                        { key: 'frameworks', label: 'Frameworks & Libraries', placeholder: 'React, Node.js, TensorFlow, Flask...', icon: '🛠️', gradient: 'from-purple-500 to-pink-500' },
+                                        { key: 'databases', label: 'Databases', placeholder: 'MongoDB, MySQL, PostgreSQL...', icon: '🗄️', gradient: 'from-emerald-500 to-teal-500' },
+                                        { key: 'tools', label: 'Tools', placeholder: 'Git, Docker, Postman, VS Code...', icon: '🔧', gradient: 'from-orange-500 to-amber-500' },
+                                        { key: 'cloudSystems', label: 'Cloud & Systems', placeholder: 'AWS, Linux, Windows, Heroku...', icon: '☁️', gradient: 'from-indigo-500 to-violet-500' },
+                                        { key: 'softSkills', label: 'Soft Skills', placeholder: 'Leadership, Communication, Team Collaboration...', icon: '🤝', gradient: 'from-rose-500 to-pink-500' }
                                     ].map(category => (
-                                        <div key={category.key}>
-                                            <label className="block text-secondary text-sm font-medium mb-2">{category.label}</label>
-                                            <div className="flex flex-wrap gap-2 mb-3">
+                                        <div key={category.key} className="glass-card rounded-xl p-4 border border-border/50">
+                                            <div className="flex items-center gap-2 mb-3">
+                                                <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${category.gradient} flex items-center justify-center text-white text-sm`}>
+                                                    {category.icon}
+                                                </div>
+                                                <label className="text-primary font-medium">{category.label}</label>
+                                            </div>
+                                            <div className="flex flex-wrap gap-2 mb-3 min-h-[2rem]">
                                                 {formData.skills[category.key].map((skill, i) => (
-                                                    <span key={i} className="px-3 py-1.5 rounded-full bg-primary-500/20 text-primary-300 text-sm flex items-center gap-2">
+                                                    <motion.span 
+                                                        key={i} 
+                                                        initial={{ opacity: 0, scale: 0.8 }}
+                                                        animate={{ opacity: 1, scale: 1 }}
+                                                        className={`px-3 py-1.5 rounded-full bg-gradient-to-r ${category.gradient} bg-opacity-20 text-white text-sm flex items-center gap-2 backdrop-blur-sm border border-white/10`}
+                                                    >
                                                         {skill}
-                                                        <button onClick={() => removeSkill(category.key, skill)} className="text-primary-400 hover:text-red-400">×</button>
-                                                    </span>
+                                                        <button onClick={() => removeSkill(category.key, skill)} className="hover:text-red-300 transition-colors">×</button>
+                                                    </motion.span>
                                                 ))}
                                             </div>
                                             <div className="flex gap-2">
@@ -482,7 +496,7 @@ function ProfileEditor() {
                                                         addSkill(category.key, input.value)
                                                         input.value = ''
                                                     }}
-                                                    className="px-4 py-2 rounded-xl bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors"
+                                                    className={`px-4 py-2 rounded-xl bg-gradient-to-r ${category.gradient} text-white hover:opacity-90 transition-opacity`}
                                                 >
                                                     Add
                                                 </button>
