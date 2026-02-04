@@ -217,12 +217,12 @@ function Landing() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.7 }}
-                        className="flex flex-wrap justify-center gap-3 sm:gap-4 md:gap-6 px-2"
+                        className="grid grid-cols-1 xs:grid-cols-2 sm:flex sm:flex-wrap justify-center gap-y-4 gap-x-8 sm:gap-6 px-4 w-fit sm:w-full mx-auto"
                     >
                         {benefits.map((benefit, i) => (
-                            <div key={i} className="flex items-center gap-1.5 sm:gap-2 text-tertiary">
-                                <span className="text-primary-400 w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6">{benefit.icon}</span>
-                                <span className="text-xs sm:text-sm font-medium">{benefit.text}</span>
+                            <div key={i} className="flex items-center gap-3 text-tertiary">
+                                <span className="text-primary-400 w-5 h-5 flex-shrink-0 flex items-center justify-center">{benefit.icon}</span>
+                                <span className="text-sm font-medium text-left leading-tight">{benefit.text}</span>
                             </div>
                         ))}
                     </motion.div>
@@ -433,9 +433,9 @@ function Landing() {
                         </div>
                         <p className="text-muted text-xs sm:text-sm text-center md:text-right">
                             © 2026 Portlify. Built for professionals by{' '}
-                            <a 
-                                href="https://techycsr.dev" 
-                                target="_blank" 
+                            <a
+                                href="https://techycsr.dev"
+                                target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-primary-400 hover:text-primary-300 transition-colors font-medium"
                             >

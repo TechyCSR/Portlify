@@ -100,13 +100,7 @@ function Navbar() {
                     </div>
 
                     {/* Mobile Menu Button */}
-                    <div className="flex md:hidden items-center gap-2">
-                        <SignedIn>
-                            <UserButton
-                                afterSignOutUrl="/"
-                                appearance={userButtonAppearance}
-                            />
-                        </SignedIn>
+                    <div className="flex md:hidden items-center">
                         <button
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                             className="p-2 rounded-lg text-secondary hover:text-primary hover:bg-surface transition-all"
@@ -161,6 +155,14 @@ function Navbar() {
                             </SignedOut>
 
                             <SignedIn>
+                                {/* User Account Section */}
+                                <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/5 mb-2">
+                                    <UserButton
+                                        afterSignOutUrl="/"
+                                        appearance={userButtonAppearance}
+                                    />
+                                    <span className="text-primary text-sm font-medium">My Account</span>
+                                </div>
                                 <Link
                                     to="/dashboard"
                                     onClick={() => setMobileMenuOpen(false)}
