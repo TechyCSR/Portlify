@@ -319,11 +319,11 @@ function ProfileEditor() {
                 </motion.div>
 
                 <div className="flex flex-col lg:flex-row gap-6">
-                    {/* Sidebar Navigation */}
+                    {/* Sidebar Navigation - Desktop */}
                     <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className="lg:w-64 flex-shrink-0"
+                        className="hidden lg:block lg:w-64 flex-shrink-0"
                     >
                         <div className="glass-card rounded-2xl p-4 sticky top-24">
                             <nav className="space-y-1">
@@ -344,6 +344,24 @@ function ProfileEditor() {
                             </nav>
                         </div>
                     </motion.div>
+
+                    {/* Mobile Navigation - Horizontal Scroll */}
+                    <div className="lg:hidden sticky top-20 z-20 bg-background/80 backdrop-blur-md -mx-4 px-4 py-2 border-b border-white/5 mb-6 overflow-x-auto no-scrollbar flex gap-2">
+                        {sections.map(section => (
+                            <button
+                                key={section.id}
+                                onClick={() => setActiveSection(section.id)}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all ${activeSection === section.id
+                                        ? 'text-white shadow-lg shadow-primary-500/25'
+                                        : 'bg-white/5 border border-white/10 text-secondary'
+                                    }`}
+                                style={activeSection === section.id ? { background: 'var(--gradient-primary)' } : {}}
+                            >
+                                <span className="text-base">{section.icon}</span>
+                                {section.label}
+                            </button>
+                        ))}
+                    </div>
 
                     {/* Main Content */}
                     <motion.div
@@ -459,15 +477,15 @@ function ProfileEditor() {
                                         { key: 'cloudSystems', label: 'Cloud & Systems', placeholder: 'AWS, Linux, Windows, Heroku...', icon: Cloud, gradient: 'from-indigo-500 to-violet-500' },
                                         { key: 'softSkills', label: 'Soft Skills', placeholder: 'Leadership, Communication, Team Collaboration...', icon: MessageCircle, gradient: 'from-rose-500 to-pink-500' }
                                     ].map(category => (
-                                        <motion.div 
-                                            key={category.key} 
+                                        <motion.div
+                                            key={category.key}
                                             className="glass-card rounded-xl p-5 border border-border/50 group hover:border-white/20 transition-all duration-300"
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             whileHover={{ scale: 1.01 }}
                                         >
                                             <div className="flex items-center gap-3 mb-4">
-                                                <motion.div 
+                                                <motion.div
                                                     className={`w-10 h-10 rounded-xl bg-gradient-to-br ${category.gradient} flex items-center justify-center shadow-lg`}
                                                     whileHover={{ scale: 1.1, rotate: 5 }}
                                                     transition={{ type: 'spring', stiffness: 400 }}
@@ -478,8 +496,8 @@ function ProfileEditor() {
                                             </div>
                                             <div className="flex flex-wrap gap-2 mb-3 min-h-[2rem]">
                                                 {formData.skills[category.key].map((skill, i) => (
-                                                    <motion.span 
-                                                        key={i} 
+                                                    <motion.span
+                                                        key={i}
                                                         initial={{ opacity: 0, scale: 0.8 }}
                                                         animate={{ opacity: 1, scale: 1 }}
                                                         className={`px-3 py-1.5 rounded-full bg-gradient-to-r ${category.gradient} bg-opacity-20 text-white text-sm flex items-center gap-2 backdrop-blur-sm border border-white/10`}
@@ -1140,8 +1158,8 @@ function ProfileEditor() {
                                     }}
                                     disabled={activeSection === sections[0].id}
                                     className={`flex items-center gap-3 px-6 py-3.5 rounded-2xl backdrop-blur-md transition-all duration-300 border ${activeSection === sections[0].id
-                                            ? 'opacity-30 cursor-not-allowed border-transparent text-secondary'
-                                            : 'bg-white/5 hover:bg-white/10 border-white/10 text-secondary hover:text-white hover:border-white/20 hover:shadow-lg hover:shadow-black/5'
+                                        ? 'opacity-30 cursor-not-allowed border-transparent text-secondary'
+                                        : 'bg-white/5 hover:bg-white/10 border-white/10 text-secondary hover:text-white hover:border-white/20 hover:shadow-lg hover:shadow-black/5'
                                         }`}
                                 >
                                     <ChevronLeft size={18} />

@@ -308,12 +308,12 @@ function Settings() {
 
         try {
             const response = await updateUsername(newUsername)
-            
+
             // Update local state
             setUserData(prev => ({ ...prev, username: response.data.newUsername }))
             setNewUsername('')
             setUsernameAvailable(null)
-            
+
             toast.dismiss(loadingId)
             toast.success(`Username updated to "${response.data.newUsername}"`)
         } catch (err) {
@@ -372,7 +372,8 @@ function Settings() {
 
                 <div className="grid md:grid-cols-[240px,1fr] gap-6">
                     {/* Sidebar */}
-                    <div className="glass-card rounded-2xl p-4">
+                    {/* Sidebar Navigation - Desktop */}
+                    <div className="hidden md:block glass-card rounded-2xl p-4 h-fit sticky top-24">
                         <nav className="space-y-1">
                             {tabs.map((tab) => (
                                 <motion.button
@@ -389,6 +390,23 @@ function Settings() {
                                 </motion.button>
                             ))}
                         </nav>
+                    </div>
+
+                    {/* Mobile Navigation - Horizontal Scroll */}
+                    <div className="md:hidden sticky top-20 z-10 bg-background/80 backdrop-blur-md -mx-4 px-4 py-2 border-b border-white/5 mb-4 overflow-x-auto no-scrollbar flex gap-2">
+                        {tabs.map((tab) => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all ${activeTab === tab.id
+                                        ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-500/25'
+                                        : 'bg-white/5 border border-white/10 text-secondary'
+                                    }`}
+                            >
+                                {tab.icon}
+                                {tab.label}
+                            </button>
+                        ))}
                     </div>
 
                     {/* Content */}
@@ -522,7 +540,7 @@ function Settings() {
                                             <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-pink-500/10" />
                                             <div className="absolute inset-0 backdrop-blur-xl" />
                                             <div className="absolute inset-0 border border-amber-500/20 rounded-2xl" />
-                                            
+
                                             <div className="relative p-6">
                                                 <div className="flex items-start gap-4">
                                                     <motion.div
@@ -554,7 +572,7 @@ function Settings() {
                                     )}
 
                                     {/* Username Update Card */}
-                                    <motion.div 
+                                    <motion.div
                                         className={`relative overflow-hidden rounded-2xl ${!isPremium ? 'opacity-50 pointer-events-none' : ''}`}
                                         initial={{ rotateX: 5 }}
                                         whileHover={isPremium ? { rotateX: 0, scale: 1.01 } : {}}
@@ -572,20 +590,20 @@ function Settings() {
                                                 </div>
                                             </div>
                                         )}
-                                        
+
                                         {/* Animated gradient background */}
                                         <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/10 via-purple-600/5 to-cyan-600/10 animate-gradient-slow" />
                                         <div className="absolute inset-0 backdrop-blur-xl bg-white/[0.02]" />
-                                        
+
                                         {/* Glass border effect */}
                                         <div className="absolute inset-0 rounded-2xl border border-white/10" />
                                         <div className="absolute inset-[1px] rounded-2xl border border-white/5" />
-                                        
+
                                         {/* Content */}
                                         <div className="relative p-6">
                                             <div className="flex items-start gap-5">
                                                 {/* 3D Shield Icon */}
-                                                <motion.div 
+                                                <motion.div
                                                     className="relative"
                                                     whileHover={{ rotateY: 180 }}
                                                     transition={{ type: "spring", stiffness: 200, damping: 15 }}
@@ -593,10 +611,10 @@ function Settings() {
                                                 >
                                                     <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500/30 to-purple-500/30 flex items-center justify-center backdrop-blur-sm border border-white/10 shadow-lg shadow-indigo-500/20">
                                                         <motion.div
-                                                            animate={{ 
+                                                            animate={{
                                                                 rotateZ: [0, 5, -5, 0],
                                                             }}
-                                                            transition={{ 
+                                                            transition={{
                                                                 duration: 4,
                                                                 repeat: Infinity,
                                                                 ease: "easeInOut"
@@ -620,7 +638,7 @@ function Settings() {
                                             </div>
 
                                             {/* Current Username Display */}
-                                            <motion.div 
+                                            <motion.div
                                                 className="mt-6 relative overflow-hidden rounded-xl"
                                                 whileHover={{ scale: 1.01 }}
                                                 transition={{ type: "spring", stiffness: 400 }}
@@ -633,7 +651,7 @@ function Settings() {
                                                                 <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
                                                                 Current Username
                                                             </p>
-                                                            <motion.p 
+                                                            <motion.p
                                                                 className="text-primary font-mono font-semibold text-xl tracking-tight"
                                                                 initial={{ opacity: 0, x: -10 }}
                                                                 animate={{ opacity: 1, x: 0 }}
@@ -657,16 +675,16 @@ function Settings() {
                                             {/* New Username Input */}
                                             <div className="space-y-4">
                                                 <label className="block text-secondary text-sm font-medium">Choose New Username</label>
-                                                
+
                                                 <div className="flex gap-3">
                                                     {/* Input Container */}
-                                                    <motion.div 
+                                                    <motion.div
                                                         className="relative flex-1 group"
                                                         whileFocus={{ scale: 1.01 }}
                                                     >
                                                         {/* Input glow effect on focus */}
                                                         <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500/50 to-purple-500/50 rounded-xl opacity-0 group-focus-within:opacity-100 blur transition-opacity duration-300" />
-                                                        
+
                                                         <div className="relative flex items-center bg-surface/80 backdrop-blur-sm rounded-xl border border-white/10 group-focus-within:border-indigo-500/50 transition-colors overflow-hidden">
                                                             {/* @ prefix badge */}
                                                             <div className="pl-4 pr-2 py-3 text-indigo-400 font-mono text-lg font-semibold select-none">
@@ -703,10 +721,10 @@ function Settings() {
                                                         {/* Button background */}
                                                         <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 group-hover:from-indigo-500/30 group-hover:to-purple-500/30 transition-colors" />
                                                         <div className="absolute inset-0 border border-indigo-500/30 rounded-xl" />
-                                                        
+
                                                         <span className="relative text-indigo-400">
                                                             {checkingUsername ? (
-                                                                <motion.div 
+                                                                <motion.div
                                                                     className="w-5 h-5 border-2 border-indigo-400/30 border-t-indigo-400 rounded-full"
                                                                     animate={{ rotate: 360 }}
                                                                     transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
@@ -785,16 +803,16 @@ function Settings() {
                                                             >
                                                                 {/* Animated gradient background */}
                                                                 <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_100%] animate-gradient-x" />
-                                                                
+
                                                                 {/* Shine effect */}
                                                                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity">
                                                                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                                                                 </div>
-                                                                
+
                                                                 <span className="relative flex items-center justify-center gap-2">
                                                                     {updatingUsername ? (
                                                                         <>
-                                                                            <motion.div 
+                                                                            <motion.div
                                                                                 className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
                                                                                 animate={{ rotate: 360 }}
                                                                                 transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
@@ -819,7 +837,7 @@ function Settings() {
                                     </motion.div>
 
                                     {/* Info Box */}
-                                    <motion.div 
+                                    <motion.div
                                         className="relative overflow-hidden rounded-xl"
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
@@ -846,7 +864,7 @@ function Settings() {
                                     </motion.div>
 
                                     {/* Custom Branding Card */}
-                                    <motion.div 
+                                    <motion.div
                                         className={`relative overflow-hidden rounded-2xl ${!isPremium ? 'opacity-50 pointer-events-none' : ''}`}
                                         initial={{ rotateX: 5 }}
                                         whileHover={isPremium ? { rotateX: 0, scale: 1.01 } : {}}
@@ -868,16 +886,16 @@ function Settings() {
                                         {/* Animated gradient background */}
                                         <div className="absolute inset-0 bg-gradient-to-br from-pink-600/10 via-purple-600/5 to-indigo-600/10 animate-gradient-slow" />
                                         <div className="absolute inset-0 backdrop-blur-xl bg-white/[0.02]" />
-                                        
+
                                         {/* Glass border effect */}
                                         <div className="absolute inset-0 rounded-2xl border border-white/10" />
                                         <div className="absolute inset-[1px] rounded-2xl border border-white/5" />
-                                        
+
                                         {/* Content */}
                                         <div className="relative p-6">
                                             <div className="flex items-start gap-5 mb-6">
                                                 {/* 3D Tag Icon */}
-                                                <motion.div 
+                                                <motion.div
                                                     className="relative"
                                                     whileHover={{ rotateY: 180 }}
                                                     transition={{ type: "spring", stiffness: 200, damping: 15 }}
@@ -986,7 +1004,7 @@ function Settings() {
                                                         >
                                                             {savingBranding ? (
                                                                 <span className="flex items-center justify-center gap-2">
-                                                                    <motion.div 
+                                                                    <motion.div
                                                                         className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
                                                                         animate={{ rotate: 360 }}
                                                                         transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
