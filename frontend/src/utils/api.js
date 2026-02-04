@@ -95,4 +95,8 @@ export const resetProfile = () =>
 export const updateVisibility = (isPublic) =>
     api.put('/api/profile/visibility', { isPublic })
 
+// Username update API
+export const updateUsername = (newUsername) =>
+    api.put('/api/auth/username', { newUsername })
+
 export default api

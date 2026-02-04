@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { getCurrentUser, getPreferences, updatePreferences, getMyProfile, downloadPortfolio, resetProfile, updateVisibility } from '../utils/api'
+import { getCurrentUser, getPreferences, updatePreferences, getMyProfile, downloadPortfolio, resetProfile, updateVisibility, checkUsername, updateUsername } from '../utils/api'
 import { useToast } from '../context/ToastContext'
 
 // Icons
@@ -52,12 +52,23 @@ const icons = {
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
         </svg>
+    ),
+    shield: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+    ),
+    edit: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        </svg>
     )
 }
 
 const tabs = [
     { id: 'profile', label: 'Profile', icon: icons.user },
     { id: 'appearance', label: 'Appearance', icon: icons.palette },
+    { id: 'security', label: 'Security', icon: icons.shield },
     { id: 'export', label: 'Export', icon: icons.download },
     { id: 'privacy', label: 'Privacy', icon: icons.eye },
     { id: 'data', label: 'Data', icon: icons.trash }
@@ -92,6 +103,13 @@ function Settings() {
     const [error, setError] = useState('')
     const [showResetModal, setShowResetModal] = useState(false)
     const [resetConfirmText, setResetConfirmText] = useState('')
+
+    // Username update states
+    const [newUsername, setNewUsername] = useState('')
+    const [usernameAvailable, setUsernameAvailable] = useState(null)
+    const [checkingUsername, setCheckingUsername] = useState(false)
+    const [updatingUsername, setUpdatingUsername] = useState(false)
+    const [usernameError, setUsernameError] = useState('')
 
     const [userData, setUserData] = useState(null)
     const [preferences, setPreferences] = useState({
@@ -240,6 +258,63 @@ function Settings() {
         }
     }
 
+    // Username availability check
+    const handleCheckUsername = async () => {
+        if (!newUsername || newUsername.length < 3) {
+            setUsernameError('Username must be at least 3 characters')
+            return
+        }
+
+        if (newUsername.toLowerCase() === userData?.username) {
+            setUsernameError('This is your current username')
+            return
+        }
+
+        setCheckingUsername(true)
+        setUsernameError('')
+        setUsernameAvailable(null)
+
+        try {
+            const response = await checkUsername(newUsername)
+            setUsernameAvailable(response.data.available)
+            if (!response.data.available) {
+                setUsernameError(response.data.error || 'Username is not available')
+            }
+        } catch (err) {
+            setUsernameError(err.response?.data?.error || 'Failed to check availability')
+            setUsernameAvailable(false)
+        } finally {
+            setCheckingUsername(false)
+        }
+    }
+
+    // Username update handler
+    const handleUpdateUsername = async () => {
+        if (!usernameAvailable || !newUsername) return
+
+        setUpdatingUsername(true)
+        const loadingId = toast.loading('Updating username...')
+
+        try {
+            const response = await updateUsername(newUsername)
+            
+            // Update local state
+            setUserData(prev => ({ ...prev, username: response.data.newUsername }))
+            setNewUsername('')
+            setUsernameAvailable(null)
+            
+            toast.dismiss(loadingId)
+            toast.success(`Username updated to "${response.data.newUsername}"`)
+        } catch (err) {
+            toast.dismiss(loadingId)
+            const errorMsg = err.response?.data?.error || 'Failed to update username'
+            toast.error(errorMsg)
+            setUsernameError(errorMsg)
+        } finally {
+            setUpdatingUsername(false)
+        }
+    }
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center pt-20">
@@ -384,6 +459,163 @@ function Settings() {
                                                 </motion.div>
                                             </motion.button>
                                         ))}
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {/* Security Tab */}
+                            {activeTab === 'security' && (
+                                <motion.div
+                                    key="security"
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                >
+                                    <h2 className="text-xl font-bold text-primary mb-6">Security Settings</h2>
+
+                                    {/* Username Update Section */}
+                                    <div className="p-6 rounded-2xl bg-gradient-to-br from-slate-500/5 to-indigo-500/5 border border-white/10 backdrop-blur-xl">
+                                        <div className="flex items-start gap-4">
+                                            <motion.div 
+                                                className="p-3 rounded-xl bg-indigo-500/20 text-indigo-400"
+                                                whileHover={{ scale: 1.05, rotateY: 15 }}
+                                                transition={{ type: "spring", stiffness: 300 }}
+                                            >
+                                                {icons.shield}
+                                            </motion.div>
+                                            <div className="flex-1">
+                                                <h3 className="font-bold text-primary mb-2">Update Username</h3>
+                                                <p className="text-secondary text-sm mb-4">
+                                                    Change your portfolio URL. This will update your username across all services.
+                                                </p>
+
+                                                {/* Current Username Display */}
+                                                <div className="mb-4 p-3 rounded-xl bg-surface/50 border border-border">
+                                                    <div className="flex items-center justify-between">
+                                                        <div>
+                                                            <p className="text-xs text-muted uppercase tracking-wider mb-1">Current Username</p>
+                                                            <p className="text-primary font-mono font-medium text-lg">@{userData?.username || '...'}</p>
+                                                        </div>
+                                                        <div className="text-xs text-muted">
+                                                            portlify.techycsr.dev/{userData?.username}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* New Username Input */}
+                                                <div className="space-y-3">
+                                                    <label className="block text-secondary text-sm font-medium">New Username</label>
+                                                    <div className="flex gap-2">
+                                                        <div className="relative flex-1">
+                                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted">@</span>
+                                                            <input
+                                                                type="text"
+                                                                value={newUsername}
+                                                                onChange={(e) => {
+                                                                    const val = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '')
+                                                                    setNewUsername(val.slice(0, 8))
+                                                                    setUsernameAvailable(null)
+                                                                    setUsernameError('')
+                                                                }}
+                                                                placeholder="newusername"
+                                                                className="input-field pl-8 font-mono"
+                                                                maxLength={8}
+                                                            />
+                                                        </div>
+                                                        <motion.button
+                                                            whileHover={{ scale: 1.02 }}
+                                                            whileTap={{ scale: 0.98 }}
+                                                            onClick={handleCheckUsername}
+                                                            disabled={checkingUsername || !newUsername || newUsername.length < 3}
+                                                            className="px-4 py-2.5 rounded-xl bg-surface border border-border text-primary font-medium hover:bg-border/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                                                        >
+                                                            {checkingUsername ? (
+                                                                <div className="w-5 h-5 border-2 border-white/30 border-t-indigo-400 rounded-full animate-spin" />
+                                                            ) : (
+                                                                'Check'
+                                                            )}
+                                                        </motion.button>
+                                                    </div>
+
+                                                    {/* Username Requirements */}
+                                                    <p className="text-xs text-muted">
+                                                        3-8 characters, lowercase letters, numbers, and underscore only
+                                                    </p>
+
+                                                    {/* Availability Status */}
+                                                    <AnimatePresence mode="wait">
+                                                        {usernameAvailable === true && (
+                                                            <motion.div
+                                                                initial={{ opacity: 0, y: -5 }}
+                                                                animate={{ opacity: 1, y: 0 }}
+                                                                exit={{ opacity: 0, y: -5 }}
+                                                                className="flex items-center gap-2 text-green-400 text-sm"
+                                                            >
+                                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                                </svg>
+                                                                Username is available!
+                                                            </motion.div>
+                                                        )}
+                                                        {usernameError && (
+                                                            <motion.div
+                                                                initial={{ opacity: 0, y: -5 }}
+                                                                animate={{ opacity: 1, y: 0 }}
+                                                                exit={{ opacity: 0, y: -5 }}
+                                                                className="flex items-center gap-2 text-red-400 text-sm"
+                                                            >
+                                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                                </svg>
+                                                                {usernameError}
+                                                            </motion.div>
+                                                        )}
+                                                    </AnimatePresence>
+
+                                                    {/* Update Button */}
+                                                    {usernameAvailable && (
+                                                        <motion.div
+                                                            initial={{ opacity: 0, height: 0 }}
+                                                            animate={{ opacity: 1, height: 'auto' }}
+                                                            className="pt-2"
+                                                        >
+                                                            <motion.button
+                                                                whileHover={{ scale: 1.02 }}
+                                                                whileTap={{ scale: 0.98 }}
+                                                                onClick={handleUpdateUsername}
+                                                                disabled={updatingUsername}
+                                                                className="w-full px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all disabled:opacity-50"
+                                                            >
+                                                                {updatingUsername ? (
+                                                                    <span className="flex items-center justify-center gap-2">
+                                                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                                        Updating...
+                                                                    </span>
+                                                                ) : (
+                                                                    <span className="flex items-center justify-center gap-2">
+                                                                        {icons.edit}
+                                                                        Confirm Update to @{newUsername}
+                                                                    </span>
+                                                                )}
+                                                            </motion.button>
+                                                        </motion.div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Info Box */}
+                                    <div className="mt-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                                        <div className="flex items-start gap-3">
+                                            <svg className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            <div className="text-sm text-secondary">
+                                                <p className="font-medium text-amber-400 mb-1">Important Note</p>
+                                                <p>Changing your username will update your portfolio URL. Old links will no longer work after the change.</p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </motion.div>
                             )}

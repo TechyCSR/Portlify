@@ -1,4 +1,5 @@
 import express from 'express';
+import mongoose from 'mongoose';
 import User from '../models/User.js';
 import Profile from '../models/Profile.js';
 import Analytics from '../models/Analytics.js';
@@ -233,6 +234,108 @@ router.put('/preferences', authMiddleware, getUserFromAuth, async (req, res) => 
     } catch (error) {
         console.error('Update preferences error:', error);
         res.status(500).json({ error: error.message || 'Failed to update preferences' });
+    }
+});
+
+// Update username (protected) - atomic update across User, Profile, and Analytics
+router.put('/username', authMiddleware, getUserFromAuth, async (req, res) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        const { newUsername } = req.body;
+
+        if (!newUsername) {
+            return res.status(400).json({ error: 'New username is required' });
+        }
+
+        const normalizedUsername = newUsername.toLowerCase().trim();
+
+        // Validate username format - max 8 characters, only letters, numbers, underscore
+        const usernameRegex = /^[a-z0-9_]{3,8}$/;
+        if (!usernameRegex.test(normalizedUsername)) {
+            return res.status(400).json({
+                error: 'Username must be 3-8 characters, lowercase letters, numbers, and underscore only'
+            });
+        }
+
+        // Check reserved usernames
+        const reserved = ['admin', 'api', 'auth', 'dash', 'login', 'signup', 'user', 'help', 'app'];
+        if (reserved.includes(normalizedUsername)) {
+            return res.status(400).json({ error: 'This username is reserved' });
+        }
+
+        // Get current user
+        const user = await User.findOne({ clerkId: req.clerkUserId }).session(session);
+        if (!user) {
+            await session.abortTransaction();
+            return res.status(404).json({ error: 'User not found', needsRegistration: true });
+        }
+
+        const oldUsername = user.username;
+
+        // Check if username is the same
+        if (oldUsername === normalizedUsername) {
+            await session.abortTransaction();
+            return res.status(400).json({ error: 'New username is the same as current username' });
+        }
+
+        // Check username availability
+        const existingUser = await User.findOne({ username: normalizedUsername }).session(session);
+        if (existingUser) {
+            await session.abortTransaction();
+            return res.status(400).json({ error: 'Username is already taken' });
+        }
+
+        // Update User
+        user.username = normalizedUsername;
+        await user.save({ session });
+
+        // Update Profile
+        const profileUpdate = await Profile.findOneAndUpdate(
+            { userId: user._id },
+            { username: normalizedUsername },
+            { session, new: true }
+        );
+
+        if (!profileUpdate) {
+            await session.abortTransaction();
+            return res.status(500).json({ error: 'Failed to update profile username' });
+        }
+
+        // Update Analytics
+        const analyticsUpdate = await Analytics.findOneAndUpdate(
+            { profileId: profileUpdate._id },
+            { username: normalizedUsername },
+            { session, new: true }
+        );
+
+        // Analytics might not exist for new users, so we don't fail if it doesn't exist
+        if (!analyticsUpdate) {
+            console.log('No analytics record found for user, skipping analytics update');
+        }
+
+        // Commit the transaction
+        await session.commitTransaction();
+
+        console.log(`Username updated successfully: ${oldUsername} -> ${normalizedUsername}`);
+
+        res.json({
+            message: 'Username updated successfully',
+            oldUsername,
+            newUsername: normalizedUsername
+        });
+    } catch (error) {
+        await session.abortTransaction();
+        console.error('Update username error:', error);
+
+        if (error.code === 11000) {
+            return res.status(400).json({ error: 'Username is already taken' });
+        }
+
+        res.status(500).json({ error: error.message || 'Failed to update username' });
+    } finally {
+        session.endSession();
     }
 });
 
