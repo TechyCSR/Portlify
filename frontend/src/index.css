@@ -496,3 +496,33 @@ body {
     display: none;
   }
 }
+
+/* ===== ANIMATED GRADIENTS ===== */
+@keyframes gradient-x {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes gradient-slow {
+  0%, 100% {
+    background-position: 0% 50%;
+    opacity: 0.5;
+  }
+  50% {
+    background-position: 100% 50%;
+    opacity: 0.8;
+  }
+}
+
+.animate-gradient-x {
+  animation: gradient-x 3s ease infinite;
+}
+
+.animate-gradient-slow {
+  animation: gradient-slow 8s ease infinite;
+  background-size: 200% 200%;
+}
