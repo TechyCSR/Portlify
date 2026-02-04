@@ -1,5 +1,6 @@
 import { Ollama } from 'ollama';
 import axios from 'axios';
+import mammoth from 'mammoth';
 import { extractTextWithLinks } from './pdfLinkExtractor.js';
 
 // Initialize Ollama with cloud API
@@ -12,6 +13,36 @@ const ollama = new Ollama({
 
 // Model to use
 const MODEL = 'gemma3:4b-cloud';
+
+/**
+ * Detect file type from URL
+ * @param {string} url - File URL
+ * @returns {string} - 'pdf', 'doc', 'docx', or 'unknown'
+ */
+function getFileTypeFromUrl(url) {
+  const urlLower = url.toLowerCase();
+  if (urlLower.includes('.pdf')) return 'pdf';
+  if (urlLower.includes('.docx')) return 'docx';
+  if (urlLower.includes('.doc')) return 'doc';
+  // Check Cloudinary format parameter
+  if (urlLower.includes('format=pdf')) return 'pdf';
+  return 'unknown';
+}
+
+/**
+ * Extract text from Word document (DOC/DOCX)
+ * @param {Buffer} buffer - File buffer
+ * @returns {Promise<string>} - Extracted text
+ */
+async function extractTextFromWord(buffer) {
+  try {
+    const result = await mammoth.extractRawText({ buffer });
+    return result.value;
+  } catch (error) {
+    console.error('Word extraction error:', error);
+    throw new Error('Failed to extract text from Word document');
+  }
+}
 
 // System prompt for resume parsing
 const RESUME_PARSER_PROMPT = `You are an elite resume parsing AI. Your job is to extract EVERY piece of information from a resume and structure it into a premium portfolio format.
@@ -177,26 +208,40 @@ Now analyze the following resume and extract ALL information:
 
 /**
  * Parse resume using Ollama with gemma3:4b-cloud
- * @param {string} pdfUrl - Cloudinary URL of the PDF
+ * @param {string} fileUrl - Cloudinary URL of the resume (PDF, DOC, or DOCX)
  * @returns {Object} Structured resume data
  */
-export async function parseResumeWithAI(pdfUrl) {
+export async function parseResumeWithAI(fileUrl) {
   try {
-    // Download and extract text from PDF
-    console.log('Downloading PDF from:', pdfUrl);
+    // Detect file type
+    const fileType = getFileTypeFromUrl(fileUrl);
+    console.log(`Detected file type: ${fileType} from URL: ${fileUrl}`);
 
-    const response = await axios.get(pdfUrl, {
+    // Download the file
+    console.log('Downloading resume file...');
+    const response = await axios.get(fileUrl, {
       responseType: 'arraybuffer',
       timeout: 30000
     });
 
-    // Extract text AND hidden links using our custom extractor
-    const text = await extractTextWithLinks(response.data);
+    // Extract text based on file type
+    let text;
+    if (fileType === 'pdf' || fileType === 'unknown') {
+      // Default to PDF extraction (also handles unknown as fallback)
+      console.log('Extracting text from PDF...');
+      text = await extractTextWithLinks(response.data);
+    } else if (fileType === 'doc' || fileType === 'docx') {
+      // Use mammoth for Word documents
+      console.log('Extracting text from Word document...');
+      text = await extractTextFromWord(Buffer.from(response.data));
+    } else {
+      throw new Error(`Unsupported file type: ${fileType}`);
+    }
 
-    console.log(`Extracted text with links, length: ${text.length}`);
+    console.log(`Extracted text, length: ${text.length}`);
 
     if (!text || text.trim().length < 50) {
-      throw new Error('Could not extract sufficient text from PDF');
+      throw new Error('Could not extract sufficient text from resume');
     }
 
     // Send to Ollama
