@@ -11,6 +11,7 @@ import ProfileEditor from './pages/ProfileEditor'
 import Dashboard from './pages/Dashboard'
 import Settings from './pages/Settings'
 import Analytics from './pages/Analytics'
+import Premium from './pages/Premium'
 import Portfolio from './pages/Portfolio'
 import ProtectedRoute from './components/ProtectedRoute'
 
@@ -128,7 +129,8 @@ function AppLayout({ children }) {
         !location.pathname.startsWith('/editor') &&
         !location.pathname.startsWith('/dashboard') &&
         !location.pathname.startsWith('/settings') &&
-        !location.pathname.startsWith('/analytics')
+        !location.pathname.startsWith('/analytics') &&
+        !location.pathname.startsWith('/premium')
 
     const clerkAppearance = getClerkAppearance(theme)
 
@@ -218,6 +220,11 @@ function AppRoutes() {
                 <Route path="/analytics" element={
                     <ProtectedRoute>
                         <Analytics />
+                    </ProtectedRoute>
+                } />
+                <Route path="/premium" element={
+                    <ProtectedRoute>
+                        <Premium />
                     </ProtectedRoute>
                 } />
 

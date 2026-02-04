@@ -99,4 +99,20 @@ export const updateVisibility = (isPublic) =>
 export const updateUsername = (newUsername) =>
     api.put('/api/auth/username', { newUsername })
 
+// Payment & Premium APIs
+export const getPremiumStatus = () =>
+    api.get('/api/payment/status')
+
+export const createPaymentOrder = () =>
+    api.post('/api/payment/create-order')
+
+export const verifyPayment = (paymentData) =>
+    api.post('/api/payment/verify', paymentData)
+
+export const getCustomBranding = () =>
+    api.get('/api/payment/branding')
+
+export const updateCustomBranding = (branding) =>
+    api.put('/api/payment/branding', branding)
+
 export default api

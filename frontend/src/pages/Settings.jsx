@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { getCurrentUser, getPreferences, updatePreferences, getMyProfile, downloadPortfolio, resetProfile, updateVisibility, checkUsername, updateUsername } from '../utils/api'
+import { getCurrentUser, getPreferences, updatePreferences, getMyProfile, downloadPortfolio, resetProfile, updateVisibility, checkUsername, updateUsername, getPremiumStatus, getCustomBranding, updateCustomBranding } from '../utils/api'
 import { useToast } from '../context/ToastContext'
 
 // Icons
@@ -111,6 +111,11 @@ function Settings() {
     const [updatingUsername, setUpdatingUsername] = useState(false)
     const [usernameError, setUsernameError] = useState('')
 
+    // Premium states
+    const [isPremium, setIsPremium] = useState(false)
+    const [customBranding, setCustomBranding] = useState({ enabled: false, text: '', url: '' })
+    const [savingBranding, setSavingBranding] = useState(false)
+
     const [userData, setUserData] = useState(null)
     const [preferences, setPreferences] = useState({
         portfolioType: 'technical',
@@ -129,10 +134,12 @@ function Settings() {
 
         const loadData = async () => {
             try {
-                const [userRes, prefsRes, profileRes] = await Promise.all([
+                const [userRes, prefsRes, profileRes, premiumRes, brandingRes] = await Promise.all([
                     getCurrentUser(),
                     getPreferences(),
-                    getMyProfile()
+                    getMyProfile(),
+                    getPremiumStatus(),
+                    getCustomBranding()
                 ])
                 setUserData(userRes.data)
                 if (prefsRes.data.preferences) {
@@ -141,6 +148,10 @@ function Settings() {
                 const publicStatus = profileRes.data?.isPublic ?? true
                 setIsPublic(publicStatus)
                 setOriginalIsPublic(publicStatus)
+                setIsPremium(premiumRes.data.isPremium)
+                if (brandingRes.data.customBranding) {
+                    setCustomBranding(brandingRes.data.customBranding)
+                }
             } catch (err) {
                 if (err.response?.data?.needsRegistration) {
                     navigate('/username')
@@ -315,6 +326,23 @@ function Settings() {
         }
     }
 
+    // Custom branding save handler
+    const handleSaveBranding = async () => {
+        setSavingBranding(true)
+        const loadingId = toast.loading('Saving custom branding...')
+
+        try {
+            await updateCustomBranding(customBranding)
+            toast.dismiss(loadingId)
+            toast.success('Custom branding updated!')
+        } catch (err) {
+            toast.dismiss(loadingId)
+            toast.error(err.response?.data?.error || 'Failed to save branding')
+        } finally {
+            setSavingBranding(false)
+        }
+    }
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center pt-20">
@@ -472,16 +500,79 @@ function Settings() {
                                     exit={{ opacity: 0, y: -10 }}
                                     className="space-y-6"
                                 >
-                                    <h2 className="text-xl font-bold text-primary mb-6">Security Settings</h2>
+                                    <div className="flex items-center justify-between">
+                                        <h2 className="text-xl font-bold text-primary">Security Settings</h2>
+                                        {isPremium && (
+                                            <div className="px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 text-amber-400 text-xs font-semibold flex items-center gap-1.5">
+                                                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                </svg>
+                                                Premium
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Premium Required Banner */}
+                                    {!isPremium && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: -10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="relative overflow-hidden rounded-2xl"
+                                        >
+                                            <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-pink-500/10" />
+                                            <div className="absolute inset-0 backdrop-blur-xl" />
+                                            <div className="absolute inset-0 border border-amber-500/20 rounded-2xl" />
+                                            
+                                            <div className="relative p-6">
+                                                <div className="flex items-start gap-4">
+                                                    <motion.div
+                                                        animate={{ rotateY: [0, 360] }}
+                                                        transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                                                        className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/25"
+                                                    >
+                                                        <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                        </svg>
+                                                    </motion.div>
+                                                    <div className="flex-1">
+                                                        <h3 className="text-lg font-bold text-primary mb-2">Premium Features</h3>
+                                                        <p className="text-secondary text-sm mb-4">
+                                                            Unlock username changes, custom branding, and more with a one-time payment of just ₹11.
+                                                        </p>
+                                                        <motion.button
+                                                            whileHover={{ scale: 1.02 }}
+                                                            whileTap={{ scale: 0.98 }}
+                                                            onClick={() => navigate('/premium')}
+                                                            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-medium shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 transition-shadow"
+                                                        >
+                                                            Upgrade to Premium
+                                                        </motion.button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    )}
 
                                     {/* Username Update Card */}
                                     <motion.div 
-                                        className="relative overflow-hidden rounded-2xl"
+                                        className={`relative overflow-hidden rounded-2xl ${!isPremium ? 'opacity-50 pointer-events-none' : ''}`}
                                         initial={{ rotateX: 5 }}
-                                        whileHover={{ rotateX: 0, scale: 1.01 }}
+                                        whileHover={isPremium ? { rotateX: 0, scale: 1.01 } : {}}
                                         transition={{ type: "spring", stiffness: 200, damping: 20 }}
                                         style={{ transformStyle: "preserve-3d", perspective: "1000px" }}
                                     >
+                                        {/* Premium lock overlay */}
+                                        {!isPremium && (
+                                            <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/20 backdrop-blur-[2px] rounded-2xl">
+                                                <div className="px-4 py-2 rounded-full bg-surface/90 border border-border text-muted text-sm flex items-center gap-2">
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                    </svg>
+                                                    Premium Required
+                                                </div>
+                                            </div>
+                                        )}
+                                        
                                         {/* Animated gradient background */}
                                         <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/10 via-purple-600/5 to-cyan-600/10 animate-gradient-slow" />
                                         <div className="absolute inset-0 backdrop-blur-xl bg-white/[0.02]" />
@@ -751,6 +842,164 @@ function Settings() {
                                                     <p className="text-secondary leading-relaxed">Changing your username will update your portfolio URL. Old links will no longer work after the change.</p>
                                                 </div>
                                             </div>
+                                        </div>
+                                    </motion.div>
+
+                                    {/* Custom Branding Card */}
+                                    <motion.div 
+                                        className={`relative overflow-hidden rounded-2xl ${!isPremium ? 'opacity-50 pointer-events-none' : ''}`}
+                                        initial={{ rotateX: 5 }}
+                                        whileHover={isPremium ? { rotateX: 0, scale: 1.01 } : {}}
+                                        transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                                        style={{ transformStyle: "preserve-3d", perspective: "1000px" }}
+                                    >
+                                        {/* Premium lock overlay */}
+                                        {!isPremium && (
+                                            <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/20 backdrop-blur-[2px] rounded-2xl">
+                                                <div className="px-4 py-2 rounded-full bg-surface/90 border border-border text-muted text-sm flex items-center gap-2">
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                    </svg>
+                                                    Premium Required
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Animated gradient background */}
+                                        <div className="absolute inset-0 bg-gradient-to-br from-pink-600/10 via-purple-600/5 to-indigo-600/10 animate-gradient-slow" />
+                                        <div className="absolute inset-0 backdrop-blur-xl bg-white/[0.02]" />
+                                        
+                                        {/* Glass border effect */}
+                                        <div className="absolute inset-0 rounded-2xl border border-white/10" />
+                                        <div className="absolute inset-[1px] rounded-2xl border border-white/5" />
+                                        
+                                        {/* Content */}
+                                        <div className="relative p-6">
+                                            <div className="flex items-start gap-5 mb-6">
+                                                {/* 3D Tag Icon */}
+                                                <motion.div 
+                                                    className="relative"
+                                                    whileHover={{ rotateY: 180 }}
+                                                    transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                                                    style={{ transformStyle: "preserve-3d" }}
+                                                >
+                                                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500/30 to-purple-500/30 flex items-center justify-center backdrop-blur-sm border border-white/10 shadow-lg shadow-pink-500/20">
+                                                        <motion.div
+                                                            animate={{ rotateZ: [0, 5, -5, 0] }}
+                                                            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                                                        >
+                                                            <svg className="w-7 h-7 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                                            </svg>
+                                                        </motion.div>
+                                                    </div>
+                                                    {/* Glow effect */}
+                                                    <div className="absolute -inset-2 bg-pink-500/20 rounded-3xl blur-xl opacity-50" />
+                                                </motion.div>
+
+                                                <div className="flex-1 min-w-0">
+                                                    <h3 className="font-bold text-primary text-lg mb-1">Custom Branding</h3>
+                                                    <p className="text-secondary text-sm">
+                                                        Replace the footer with your own text and link
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            {/* Enable Toggle */}
+                                            <div className="p-4 rounded-xl bg-surface/50 border border-white/10 mb-4">
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <p className="font-medium text-primary">Enable Custom Branding</p>
+                                                        <p className="text-xs text-muted mt-1">Show your custom text instead of "Built with Portlify"</p>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => setCustomBranding(prev => ({ ...prev, enabled: !prev.enabled }))}
+                                                        className={`relative w-14 h-8 rounded-full transition-all ${customBranding.enabled ? 'bg-pink-500' : 'bg-gray-600'}`}
+                                                    >
+                                                        <motion.div
+                                                            animate={{ x: customBranding.enabled ? 24 : 4 }}
+                                                            className="absolute top-1 w-6 h-6 rounded-full bg-white shadow-lg"
+                                                        />
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {/* Branding Fields */}
+                                            <AnimatePresence>
+                                                {customBranding.enabled && (
+                                                    <motion.div
+                                                        initial={{ opacity: 0, height: 0 }}
+                                                        animate={{ opacity: 1, height: 'auto' }}
+                                                        exit={{ opacity: 0, height: 0 }}
+                                                        className="space-y-4"
+                                                    >
+                                                        {/* Text Input */}
+                                                        <div>
+                                                            <label className="block text-secondary text-sm font-medium mb-2">Display Text</label>
+                                                            <div className="relative">
+                                                                <input
+                                                                    type="text"
+                                                                    value={customBranding.text}
+                                                                    onChange={(e) => setCustomBranding(prev => ({ ...prev, text: e.target.value }))}
+                                                                    placeholder="Made by John Doe"
+                                                                    className="w-full px-4 py-3 rounded-xl bg-surface/80 backdrop-blur-sm border border-white/10 text-primary placeholder:text-muted/50 focus:outline-none focus:border-pink-500/50 transition-colors"
+                                                                    maxLength={50}
+                                                                />
+                                                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted">
+                                                                    {customBranding.text.length}/50
+                                                                </span>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* URL Input */}
+                                                        <div>
+                                                            <label className="block text-secondary text-sm font-medium mb-2">Link URL (optional)</label>
+                                                            <input
+                                                                type="url"
+                                                                value={customBranding.url}
+                                                                onChange={(e) => setCustomBranding(prev => ({ ...prev, url: e.target.value }))}
+                                                                placeholder="https://yourwebsite.com"
+                                                                className="w-full px-4 py-3 rounded-xl bg-surface/80 backdrop-blur-sm border border-white/10 text-primary placeholder:text-muted/50 focus:outline-none focus:border-pink-500/50 transition-colors"
+                                                            />
+                                                        </div>
+
+                                                        {/* Preview */}
+                                                        <div className="p-4 rounded-xl bg-black/20 border border-white/5">
+                                                            <p className="text-xs text-muted uppercase tracking-wider mb-2">Preview</p>
+                                                            <div className="flex items-center justify-center gap-2 text-sm">
+                                                                <span className="text-secondary">{customBranding.text || 'Made by Your Name'}</span>
+                                                                {customBranding.url && (
+                                                                    <svg className="w-4 h-4 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                                    </svg>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Save Button */}
+                                                        <motion.button
+                                                            whileHover={{ scale: 1.02 }}
+                                                            whileTap={{ scale: 0.98 }}
+                                                            onClick={handleSaveBranding}
+                                                            disabled={savingBranding}
+                                                            className="w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white font-medium shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 transition-shadow disabled:opacity-50"
+                                                        >
+                                                            {savingBranding ? (
+                                                                <span className="flex items-center justify-center gap-2">
+                                                                    <motion.div 
+                                                                        className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
+                                                                        animate={{ rotate: 360 }}
+                                                                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                                                    />
+                                                                    Saving...
+                                                                </span>
+                                                            ) : (
+                                                                'Save Branding'
+                                                            )}
+                                                        </motion.button>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
                                         </div>
                                     </motion.div>
                                 </motion.div>

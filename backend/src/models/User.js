@@ -49,6 +49,17 @@ const userSchema = new mongoose.Schema({
     default: false
   },
 
+  // Premium membership
+  isPremium: {
+    type: Boolean,
+    default: false
+  },
+  premiumDetails: {
+    activatedAt: { type: Date, default: null },
+    paymentId: { type: String, default: '' },
+    orderId: { type: String, default: '' }
+  },
+
   createdAt: {
     type: Date,
     default: Date.now

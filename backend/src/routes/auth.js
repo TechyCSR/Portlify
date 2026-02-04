@@ -237,7 +237,7 @@ router.put('/preferences', authMiddleware, getUserFromAuth, async (req, res) => 
     }
 });
 
-// Update username (protected) - atomic update across User, Profile, and Analytics
+// Update username (protected - PREMIUM ONLY) - atomic update across User, Profile, and Analytics
 router.put('/username', authMiddleware, getUserFromAuth, async (req, res) => {
     const session = await mongoose.startSession();
     session.startTransaction();
@@ -270,6 +270,12 @@ router.put('/username', authMiddleware, getUserFromAuth, async (req, res) => {
         if (!user) {
             await session.abortTransaction();
             return res.status(404).json({ error: 'User not found', needsRegistration: true });
+        }
+
+        // Check premium status
+        if (!user.isPremium) {
+            await session.abortTransaction();
+            return res.status(403).json({ error: 'Premium membership required to change username' });
         }
 
         const oldUsername = user.username;

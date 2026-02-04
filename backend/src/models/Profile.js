@@ -190,6 +190,13 @@ const profileSchema = new mongoose.Schema({
         default: 'modern'
     },
 
+    // Custom branding for premium users
+    customBranding: {
+        enabled: { type: Boolean, default: false },
+        text: { type: String, default: '' },
+        url: { type: String, default: '' }
+    },
+
     // Quick analytics (detailed in Analytics model)
     stats: {
         totalViews: { type: Number, default: 0 },

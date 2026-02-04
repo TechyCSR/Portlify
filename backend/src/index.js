@@ -11,6 +11,7 @@ import cloudinaryRoutes from './routes/cloudinary.js';
 import profileRoutes from './routes/profile.js';
 import analyticsRoutes from './routes/analytics.js';
 import exportRoutes from './routes/export.js';
+import paymentRoutes from './routes/payment.js';
 
 const app = express();
 
@@ -54,6 +55,7 @@ app.use('/api/cloudinary', cloudinaryRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/export', exportRoutes);
+app.use('/api/payment', paymentRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
