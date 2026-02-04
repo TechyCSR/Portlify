@@ -399,8 +399,8 @@ function Settings() {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all ${activeTab === tab.id
-                                        ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-500/25'
-                                        : 'bg-white/5 border border-white/10 text-secondary'
+                                    ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-500/25'
+                                    : 'bg-white/5 border border-white/10 text-secondary'
                                     }`}
                             >
                                 {tab.icon}
@@ -931,7 +931,23 @@ function Settings() {
                                                         <p className="text-xs text-muted mt-1">Show your custom text instead of "Built with Portlify"</p>
                                                     </div>
                                                     <button
-                                                        onClick={() => setCustomBranding(prev => ({ ...prev, enabled: !prev.enabled }))}
+                                                        onClick={async () => {
+                                                            const newEnabled = !customBranding.enabled
+                                                            setCustomBranding(prev => ({ ...prev, enabled: newEnabled }))
+
+                                                            // If turning OFF, auto-save to revert to default footer
+                                                            if (!newEnabled) {
+                                                                const loadingId = toast.loading('Reverting to default footer...')
+                                                                try {
+                                                                    await updateCustomBranding({ enabled: false, text: '', url: '' })
+                                                                    toast.dismiss(loadingId)
+                                                                    toast.success('Custom branding disabled')
+                                                                } catch (err) {
+                                                                    toast.dismiss(loadingId)
+                                                                    toast.error('Failed to save')
+                                                                }
+                                                            }
+                                                        }}
                                                         className={`relative w-14 h-8 rounded-full transition-all ${customBranding.enabled ? 'bg-pink-500' : 'bg-gray-600'}`}
                                                     >
                                                         <motion.div
