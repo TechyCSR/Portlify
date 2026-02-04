@@ -155,6 +155,17 @@ const TimelineItem = ({ item, type, index, isLast }) => (
                 </div>
             </div>
 
+            {/* GPA/Score for Education */}
+            {type === 'education' && item.gpa && (
+                <div className="flex items-center gap-2 mb-3 px-3 py-1.5 rounded-lg w-fit text-sm font-medium"
+                    style={{ background: 'rgba(99, 102, 241, 0.1)', color: 'var(--primary)' }}>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                    </svg>
+                    Score: {item.gpa}
+                </div>
+            )}
+
             {item.location && (
                 <div className="flex items-center gap-2 mb-3 text-sm" style={{ color: 'var(--textSecondary)' }}>
                     <MapPin size={14} />
@@ -563,10 +574,10 @@ function Portfolio() {
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="max-w-3xl mx-auto"
+                    className="max-w-3xl mx-auto flex justify-center"
                 >
                     <div
-                        className="flex items-center gap-1 p-1.5 rounded-2xl backdrop-blur-xl border overflow-x-auto scrollbar-hide"
+                        className="inline-flex items-center gap-1 p-1.5 rounded-2xl backdrop-blur-xl border overflow-x-auto scrollbar-hide"
                         style={{ background: colors.surface, borderColor: colors.border }}
                     >
                         {tabs.map((tab) => {
