@@ -1,6 +1,7 @@
 import { Ollama } from 'ollama';
 import axios from 'axios';
 import mammoth from 'mammoth';
+import WordExtractor from 'word-extractor';
 import { extractTextWithLinks } from './pdfLinkExtractor.js';
 
 // Initialize Ollama with cloud API
@@ -13,6 +14,9 @@ const ollama = new Ollama({
 
 // Model to use
 const MODEL = 'gemma3:4b-cloud';
+
+// Initialize Word extractor for legacy .doc files
+const wordExtractor = new WordExtractor();
 
 /**
  * Detect file type from URL
@@ -30,17 +34,25 @@ function getFileTypeFromUrl(url) {
 }
 
 /**
- * Extract text from Word document (DOC/DOCX)
+ * Extract text from Word document (DOC or DOCX)
  * @param {Buffer} buffer - File buffer
+ * @param {string} fileType - 'doc' or 'docx'
  * @returns {Promise<string>} - Extracted text
  */
-async function extractTextFromWord(buffer) {
+async function extractTextFromWord(buffer, fileType) {
   try {
-    const result = await mammoth.extractRawText({ buffer });
-    return result.value;
+    if (fileType === 'docx') {
+      // Use mammoth for DOCX (XML-based format)
+      const result = await mammoth.extractRawText({ buffer });
+      return result.value;
+    } else {
+      // Use word-extractor for DOC (legacy binary format)
+      const extracted = await wordExtractor.extract(buffer);
+      return extracted.getBody();
+    }
   } catch (error) {
     console.error('Word extraction error:', error);
-    throw new Error('Failed to extract text from Word document');
+    throw new Error(`Failed to extract text from ${fileType.toUpperCase()} document`);
   }
 }
 
@@ -231,9 +243,9 @@ export async function parseResumeWithAI(fileUrl) {
       console.log('Extracting text from PDF...');
       text = await extractTextWithLinks(response.data);
     } else if (fileType === 'doc' || fileType === 'docx') {
-      // Use mammoth for Word documents
-      console.log('Extracting text from Word document...');
-      text = await extractTextFromWord(Buffer.from(response.data));
+      // Use appropriate extractor for Word documents
+      console.log(`Extracting text from ${fileType.toUpperCase()} document...`);
+      text = await extractTextFromWord(Buffer.from(response.data), fileType);
     } else {
       throw new Error(`Unsupported file type: ${fileType}`);
     }
