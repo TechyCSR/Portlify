@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { SignedIn, SignedOut, UserButton } from '@clerk/clerk-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { LayoutDashboard, UserCog, Upload, BarChart2, Sparkles, Settings } from 'lucide-react'
 import ThemeToggle from './ThemeToggle'
 import { useTheme } from '../context/ThemeContext'
 
@@ -163,16 +164,58 @@ function Navbar() {
                                     />
                                     <span className="text-primary text-sm font-medium">My Account</span>
                                 </div>
-                                <Link
-                                    to="/dashboard"
-                                    onClick={() => setMobileMenuOpen(false)}
-                                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-secondary hover:text-primary hover:bg-white/5 transition-all"
-                                >
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                                    </svg>
-                                    Dashboard
-                                </Link>
+
+                                {/* Dashboard Navigation Links */}
+                                <div className="space-y-1">
+                                    <Link
+                                        to="/dashboard"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className="flex items-center gap-3 px-4 py-3 rounded-xl text-secondary hover:text-primary hover:bg-white/5 transition-all"
+                                    >
+                                        <LayoutDashboard size={20} />
+                                        Overview
+                                    </Link>
+                                    <Link
+                                        to="/editor"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className="flex items-center gap-3 px-4 py-3 rounded-xl text-secondary hover:text-primary hover:bg-white/5 transition-all"
+                                    >
+                                        <UserCog size={20} />
+                                        Edit Profile
+                                    </Link>
+                                    <Link
+                                        to="/upload"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className="flex items-center gap-3 px-4 py-3 rounded-xl text-secondary hover:text-primary hover:bg-white/5 transition-all"
+                                    >
+                                        <Upload size={20} />
+                                        Upload Resume
+                                    </Link>
+                                    <Link
+                                        to="/analytics"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className="flex items-center gap-3 px-4 py-3 rounded-xl text-secondary hover:text-primary hover:bg-white/5 transition-all"
+                                    >
+                                        <BarChart2 size={20} />
+                                        Analytics
+                                    </Link>
+                                    <Link
+                                        to="/premium"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className="flex items-center gap-3 px-4 py-3 rounded-xl text-secondary hover:text-primary hover:bg-white/5 transition-all"
+                                    >
+                                        <Sparkles size={20} />
+                                        Premium
+                                    </Link>
+                                    <Link
+                                        to="/settings"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className="flex items-center gap-3 px-4 py-3 rounded-xl text-secondary hover:text-primary hover:bg-white/5 transition-all"
+                                    >
+                                        <Settings size={20} />
+                                        Settings
+                                    </Link>
+                                </div>
                             </SignedIn>
 
                             {/* Theme Toggle in Mobile Menu */}

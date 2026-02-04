@@ -179,7 +179,7 @@ function Dashboard() {
     }
 
     const { basicDetails, skills, experience, education, projects } = profile || {}
-    
+
     // New categorized skills structure with animated icons
     const skillCategories = [
         { key: 'programmingLanguages', label: 'Programming Languages', icon: Terminal, gradient: 'from-blue-500 to-cyan-500' },
@@ -189,7 +189,7 @@ function Dashboard() {
         { key: 'cloudSystems', label: 'Cloud & Systems', icon: Cloud, gradient: 'from-indigo-500 to-violet-500' },
         { key: 'softSkills', label: 'Soft Skills', icon: MessageCircle, gradient: 'from-rose-500 to-pink-500' }
     ]
-    
+
     const allSkills = [
         ...(skills?.programmingLanguages || []),
         ...(skills?.frameworks || []),
@@ -208,26 +208,7 @@ function Dashboard() {
 
     return (
         <div className="min-h-screen pt-16">
-            {/* Mobile sidebar toggle */}
-            <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="fixed top-20 left-4 z-50 md:hidden p-3 rounded-xl glass-card text-primary"
-            >
-                {sidebarOpen ? icons.close : icons.menu}
-            </button>
 
-            {/* Mobile sidebar overlay */}
-            <AnimatePresence>
-                {sidebarOpen && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={() => setSidebarOpen(false)}
-                        className="fixed inset-0 z-40 bg-black/50 md:hidden"
-                    />
-                )}
-            </AnimatePresence>
 
             <div className="flex">
                 {/* Sidebar */}
@@ -448,7 +429,7 @@ function Dashboard() {
                                     {skillCategories.map((category) => {
                                         const categorySkills = skills?.[category.key] || []
                                         if (categorySkills.length === 0) return null
-                                        
+
                                         return (
                                             <motion.div
                                                 key={category.key}
@@ -458,7 +439,7 @@ function Dashboard() {
                                                 className="glass-card rounded-xl p-4 group transition-all duration-300"
                                             >
                                                 <div className="flex items-center gap-3 mb-3">
-                                                    <motion.div 
+                                                    <motion.div
                                                         className={`w-9 h-9 rounded-xl bg-gradient-to-br ${category.gradient} flex items-center justify-center shadow-lg`}
                                                         whileHover={{ scale: 1.1, rotate: 5 }}
                                                         transition={{ type: 'spring', stiffness: 400 }}
