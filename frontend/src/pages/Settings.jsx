@@ -68,7 +68,7 @@ const icons = {
 const tabs = [
     { id: 'profile', label: 'Profile', icon: icons.user },
     { id: 'appearance', label: 'Appearance', icon: icons.palette },
-    { id: 'security', label: 'Security', icon: icons.shield },
+    { id: 'security', label: 'Premium', icon: icons.shield },
     { id: 'export', label: 'Export', icon: icons.download },
     { id: 'privacy', label: 'Privacy', icon: icons.eye },
     { id: 'data', label: 'Data', icon: icons.trash }
@@ -942,7 +942,7 @@ function Settings() {
                                                                     value={customBranding.text}
                                                                     onChange={(e) => setCustomBranding(prev => ({ ...prev, text: e.target.value }))}
                                                                     placeholder="Made by John Doe"
-                                                                    className="w-full px-4 py-3 rounded-xl bg-surface/80 backdrop-blur-sm border border-white/10 text-primary placeholder:text-muted/50 focus:outline-none focus:border-pink-500/50 transition-colors"
+                                                                    className="w-full px-4 py-3 pr-16 rounded-xl bg-surface border border-white/10 text-primary font-medium placeholder:text-muted/40 focus:outline-none focus:border-pink-500/50 focus:ring-2 focus:ring-pink-500/20 transition-all"
                                                                     maxLength={50}
                                                                 />
                                                                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted">
@@ -959,7 +959,7 @@ function Settings() {
                                                                 value={customBranding.url}
                                                                 onChange={(e) => setCustomBranding(prev => ({ ...prev, url: e.target.value }))}
                                                                 placeholder="https://yourwebsite.com"
-                                                                className="w-full px-4 py-3 rounded-xl bg-surface/80 backdrop-blur-sm border border-white/10 text-primary placeholder:text-muted/50 focus:outline-none focus:border-pink-500/50 transition-colors"
+                                                                className="w-full px-4 py-3 rounded-xl bg-surface border border-white/10 text-primary font-medium placeholder:text-muted/40 focus:outline-none focus:border-pink-500/50 focus:ring-2 focus:ring-pink-500/20 transition-all"
                                                             />
                                                         </div>
 

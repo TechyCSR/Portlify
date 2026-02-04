@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { getPremiumStatus, createPaymentOrder, verifyPayment, getCurrentUser } from '../utils/api'
 import { useToast } from '../context/ToastContext'
 
@@ -9,48 +9,53 @@ import { useToast } from '../context/ToastContext'
 const premiumFeatures = [
     {
         icon: (
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
             </svg>
         ),
         title: 'Change Username',
-        description: 'Update your portfolio URL anytime'
+        description: 'Update your portfolio URL anytime',
+        color: 'from-blue-500 to-cyan-500'
     },
     {
         icon: (
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
             </svg>
         ),
         title: 'Custom Branding',
-        description: 'Replace footer with your own text & link'
+        description: 'Replace footer with your own text & link',
+        color: 'from-purple-500 to-pink-500'
     },
     {
         icon: (
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
             </svg>
         ),
         title: 'Premium Badge',
-        description: 'Show your supporter status proudly'
+        description: 'Show your supporter status proudly',
+        color: 'from-amber-500 to-orange-500'
     },
     {
         icon: (
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
         ),
         title: 'Priority Support',
-        description: 'Get faster responses to your queries'
+        description: 'Get faster responses to your queries',
+        color: 'from-green-500 to-emerald-500'
     },
     {
         icon: (
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
             </svg>
         ),
         title: 'Support the Project',
-        description: 'Help us build more amazing features'
+        description: 'Help us build more amazing features',
+        color: 'from-rose-500 to-red-500'
     }
 ]
 
@@ -180,214 +185,192 @@ function Premium() {
     }
 
     return (
-        <div className="min-h-screen pt-24 pb-12 px-4">
-            <div className="max-w-4xl mx-auto">
+        <div className="min-h-screen pt-24 pb-16 px-4">
+            <div className="max-w-5xl mx-auto">
                 {/* Header */}
-                <div className="flex items-center gap-4 mb-8">
+                <motion.div 
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center gap-4 mb-10"
+                >
                     <motion.button
-                        whileHover={{ scale: 1.05, x: -3 }}
+                        whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => navigate('/dashboard')}
-                        className="p-3 rounded-xl glass-card text-secondary hover:text-primary transition-colors"
+                        className="p-3 rounded-xl bg-surface border border-border text-secondary hover:text-primary hover:border-indigo-500/30 transition-all"
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
                     </motion.button>
                     <div>
-                        <h1 className="text-2xl font-display font-bold text-primary">Premium Membership</h1>
-                        <p className="text-secondary">Unlock exclusive features</p>
+                        <h1 className="text-3xl font-display font-bold text-primary">Go Premium</h1>
+                        <p className="text-secondary">Unlock all features with a one-time payment</p>
                     </div>
-                </div>
+                </motion.div>
 
-                {/* Premium Card */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="relative overflow-hidden rounded-3xl"
-                >
-                    {/* Animated gradient background */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 via-purple-600/20 to-pink-600/20" />
-                    <div className="absolute inset-0 backdrop-blur-xl" />
-                    
-                    {/* Decorative orbs */}
-                    <div className="absolute -top-20 -right-20 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl" />
-                    <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl" />
-
-                    {/* Glass border */}
-                    <div className="absolute inset-0 rounded-3xl border border-white/10" />
-
-                    <div className="relative p-8 md:p-12">
-                        {/* Status Badge */}
-                        {isPremium && (
+                {/* Main Content */}
+                <div className="grid lg:grid-cols-5 gap-8">
+                    {/* Features Section - Left Side */}
+                    <motion.div 
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className="lg:col-span-3 space-y-4"
+                    >
+                        <h2 className="text-lg font-semibold text-primary mb-6">What you get</h2>
+                        
+                        {premiumFeatures.map((feature, index) => (
                             <motion.div
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                className="absolute top-6 right-6"
-                            >
-                                <div className="px-4 py-2 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold flex items-center gap-2 shadow-lg shadow-amber-500/25">
-                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732l-3.354 1.935-1.18 4.455a1 1 0 01-1.933 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732l3.354-1.935 1.18-4.455A1 1 0 0112 2z" clipRule="evenodd" />
-                                    </svg>
-                                    Premium Member
-                                </div>
-                            </motion.div>
-                        )}
-
-                        {/* Main Content */}
-                        <div className="text-center mb-10">
-                            {/* 3D Icon */}
-                            <motion.div
-                                className="inline-block mb-6"
-                                animate={{ rotateY: [0, 360] }}
-                                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                                style={{ transformStyle: "preserve-3d" }}
-                            >
-                                <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-2xl shadow-purple-500/30">
-                                    <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                                    </svg>
-                                </div>
-                            </motion.div>
-
-                            <h2 className="text-3xl md:text-4xl font-display font-bold text-primary mb-3">
-                                {isPremium ? 'You\'re Premium!' : 'Go Premium'}
-                            </h2>
-                            <p className="text-secondary text-lg max-w-md mx-auto">
-                                {isPremium 
-                                    ? 'Enjoy all the exclusive features and thank you for supporting Portlify!'
-                                    : 'Unlock all features with a one-time payment. No subscriptions, no hidden fees.'
-                                }
-                            </p>
-                        </div>
-
-                        {/* Features Grid */}
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
-                            {premiumFeatures.map((feature, index) => (
-                                <motion.div
-                                    key={feature.title}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: index * 0.1 }}
-                                    whileHover={{ scale: 1.02, y: -2 }}
-                                    className="relative p-5 rounded-2xl overflow-hidden group"
-                                >
-                                    {/* Card background */}
-                                    <div className="absolute inset-0 bg-white/5 backdrop-blur-sm" />
-                                    <div className="absolute inset-0 border border-white/10 rounded-2xl" />
-                                    
-                                    {/* Hover glow */}
-                                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-indigo-500/10 to-purple-500/10" />
-
-                                    <div className="relative">
-                                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center text-indigo-400 mb-4">
-                                            {feature.icon}
-                                        </div>
-                                        <h3 className="text-primary font-semibold mb-1">{feature.title}</h3>
-                                        <p className="text-secondary text-sm">{feature.description}</p>
-
-                                        {isPremium && (
-                                            <div className="absolute top-4 right-4 w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center">
-                                                <svg className="w-3 h-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                                </svg>
-                                            </div>
-                                        )}
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </div>
-
-                        {/* Pricing & CTA */}
-                        {!isPremium && (
-                            <motion.div
+                                key={feature.title}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.5 }}
-                                className="text-center"
+                                transition={{ delay: 0.1 + index * 0.08 }}
+                                whileHover={{ x: 4 }}
+                                className="group relative p-5 rounded-2xl bg-surface border border-border hover:border-indigo-500/30 transition-all"
                             >
-                                {/* Price Card */}
-                                <div className="inline-block mb-6">
-                                    <div className="relative px-8 py-6 rounded-2xl overflow-hidden">
-                                        <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 backdrop-blur-sm" />
-                                        <div className="absolute inset-0 border border-white/10 rounded-2xl" />
-                                        
-                                        <div className="relative">
-                                            <p className="text-muted text-sm uppercase tracking-wider mb-2">One-time payment</p>
-                                            <div className="flex items-baseline justify-center gap-1">
-                                                <span className="text-2xl text-secondary">₹</span>
-                                                <span className="text-5xl font-display font-bold text-primary">11</span>
-                                            </div>
-                                            <p className="text-secondary text-sm mt-2">
-                                                "Shagun" - A token of appreciation
-                                            </p>
-                                        </div>
+                                <div className="flex items-start gap-4">
+                                    {/* Icon */}
+                                    <div className={`flex-shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center text-white shadow-lg`}>
+                                        {feature.icon}
+                                    </div>
+                                    
+                                    {/* Content */}
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="font-semibold text-primary mb-1 flex items-center gap-2">
+                                            {feature.title}
+                                            {isPremium && (
+                                                <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            )}
+                                        </h3>
+                                        <p className="text-secondary text-sm">{feature.description}</p>
                                     </div>
                                 </div>
+                            </motion.div>
+                        ))}
+                    </motion.div>
 
-                                {/* Pay Button */}
-                                <div>
-                                    <motion.button
-                                        whileHover={{ scale: 1.02, boxShadow: "0 25px 50px -12px rgba(99, 102, 241, 0.4)" }}
-                                        whileTap={{ scale: 0.98 }}
-                                        onClick={handlePayment}
-                                        disabled={processing}
-                                        className="relative px-12 py-4 rounded-2xl font-semibold text-white text-lg overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        {/* Animated gradient background */}
-                                        <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-[length:200%_100%] animate-gradient-x" />
-                                        
-                                        {/* Shine effect */}
-                                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                    {/* Pricing Card - Right Side */}
+                    <motion.div 
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="lg:col-span-2"
+                    >
+                        <div className="sticky top-28">
+                            {/* Pricing Card */}
+                            <div className="relative overflow-hidden rounded-2xl bg-surface border border-border">
+                                {/* Premium gradient top bar */}
+                                <div className="h-1.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
+                                
+                                <div className="p-6">
+                                    {/* Status Badge for Premium users */}
+                                    {isPremium && (
+                                        <motion.div
+                                            initial={{ scale: 0 }}
+                                            animate={{ scale: 1 }}
+                                            className="mb-6"
+                                        >
+                                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30">
+                                                <svg className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                </svg>
+                                                <span className="text-sm font-semibold text-amber-400">Premium Member</span>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                    
+                                    {/* Price Display */}
+                                    <div className="text-center mb-6">
+                                        <div className="inline-block">
+                                            <p className="text-xs text-muted uppercase tracking-wider mb-2">One-time payment</p>
+                                            <div className="flex items-baseline justify-center gap-1">
+                                                <span className="text-2xl font-medium text-secondary">₹</span>
+                                                <span className="text-6xl font-display font-bold text-primary">11</span>
+                                            </div>
+                                            <p className="text-sm text-secondary mt-2">Lifetime access</p>
                                         </div>
+                                    </div>
 
-                                        <span className="relative flex items-center gap-3">
+                                    {/* Divider */}
+                                    <div className="h-px bg-border mb-6" />
+
+                                    {/* Quick Features List */}
+                                    <ul className="space-y-3 mb-6">
+                                        {['All premium features', 'No recurring fees', 'Instant activation', 'Forever yours'].map((item, i) => (
+                                            <li key={i} className="flex items-center gap-3 text-sm text-secondary">
+                                                <svg className="w-4 h-4 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                                                </svg>
+                                                {item}
+                                            </li>
+                                        ))}
+                                    </ul>
+
+                                    {/* CTA Button */}
+                                    {!isPremium ? (
+                                        <motion.button
+                                            whileHover={{ scale: 1.02 }}
+                                            whileTap={{ scale: 0.98 }}
+                                            onClick={handlePayment}
+                                            disabled={processing}
+                                            className="w-full py-4 rounded-xl font-semibold text-white text-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
                                             {processing ? (
-                                                <>
+                                                <span className="flex items-center justify-center gap-3">
                                                     <motion.div 
                                                         className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
                                                         animate={{ rotate: 360 }}
                                                         transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                                                     />
                                                     Processing...
-                                                </>
+                                                </span>
                                             ) : (
-                                                <>
+                                                <span className="flex items-center justify-center gap-2">
                                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                                     </svg>
-                                                    Pay ₹11 & Unlock Premium
-                                                </>
+                                                    Pay ₹11 & Unlock
+                                                </span>
                                             )}
-                                        </span>
-                                    </motion.button>
+                                        </motion.button>
+                                    ) : (
+                                        <motion.button
+                                            whileHover={{ scale: 1.02 }}
+                                            whileTap={{ scale: 0.98 }}
+                                            onClick={() => navigate('/settings')}
+                                            className="w-full py-4 rounded-xl font-semibold text-primary bg-surface border border-border hover:border-indigo-500/30 transition-all"
+                                        >
+                                            Go to Settings
+                                        </motion.button>
+                                    )}
 
-                                    <p className="text-muted text-sm mt-4 flex items-center justify-center gap-2">
+                                    {/* Secured Badge */}
+                                    <p className="text-center text-xs text-muted mt-4 flex items-center justify-center gap-2">
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                                         </svg>
                                         Secured by Razorpay
                                     </p>
                                 </div>
-                            </motion.div>
-                        )}
-
-                        {/* Already Premium - Go to Settings */}
-                        {isPremium && (
-                            <div className="text-center">
-                                <motion.button
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    onClick={() => navigate('/settings')}
-                                    className="px-8 py-3 rounded-xl bg-white/10 border border-white/20 text-primary font-medium hover:bg-white/20 transition-colors"
-                                >
-                                    Go to Settings to Use Premium Features
-                                </motion.button>
                             </div>
-                        )}
-                    </div>
-                </motion.div>
+
+                            {/* Shagun Note */}
+                            <motion.div 
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 0.5 }}
+                                className="mt-4 p-4 rounded-xl bg-indigo-500/5 border border-indigo-500/10"
+                            >
+                                <p className="text-center text-sm text-secondary">
+                                    <span className="text-indigo-400 font-medium">"Shagun"</span> — A token of appreciation 💜
+                                </p>
+                            </motion.div>
+                        </div>
+                    </motion.div>
+                </div>
             </div>
         </div>
     )
