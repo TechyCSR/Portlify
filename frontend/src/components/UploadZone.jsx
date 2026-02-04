@@ -2,7 +2,11 @@ import { useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { motion } from 'framer-motion'
 
-function UploadZone({ onFileSelect, uploading, progress, accept = { 'application/pdf': ['.pdf'] } }) {
+function UploadZone({ onFileSelect, uploading, progress, accept = {
+    'application/pdf': ['.pdf'],
+    'application/msword': ['.doc'],
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx']
+} }) {
     const onDrop = useCallback((acceptedFiles) => {
         if (acceptedFiles.length > 0) {
             onFileSelect(acceptedFiles[0])
@@ -83,7 +87,7 @@ function UploadZone({ onFileSelect, uploading, progress, accept = { 'application
                                 or click to browse
                             </p>
                             <p className="text-sm text-tertiary">
-                                PDF files only, max 10MB
+                                PDF, DOC, DOCX — max 10MB
                             </p>
                         </>
                     )}
