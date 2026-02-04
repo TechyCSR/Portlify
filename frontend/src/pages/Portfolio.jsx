@@ -9,7 +9,7 @@ import {
     Github, Linkedin, Twitter, Globe, Mail,
     MapPin, ExternalLink, Code, Calendar,
     Building, ChevronRight, Sparkles, Moon, Sun,
-    Terminal, Layers, Database, Wrench, Cloud, MessageCircle
+    Terminal, Layers, Database, Wrench, Cloud, MessageCircle, Info
 } from 'lucide-react'
 
 // ==================== THEME UTILS ====================
@@ -250,6 +250,7 @@ const ProjectCard = ({ project, index }) => (
 
 // ==================== MAIN PORTFOLIO COMPONENT ====================
 function Portfolio() {
+    const [showPremiumInfo, setShowPremiumInfo] = useState(false)
     const { username } = useParams()
     const { theme, toggleTheme } = useTheme()
     const [profile, setProfile] = useState(null)
@@ -647,7 +648,7 @@ function Portfolio() {
                                         {skillCategories.map((category, catIndex) => {
                                             const categorySkills = skills?.[category.key] || []
                                             if (categorySkills.length === 0) return null
-                                            
+
                                             return (
                                                 <motion.div
                                                     key={category.key}
@@ -661,13 +662,13 @@ function Portfolio() {
                                                     }}
                                                 >
                                                     {/* Glow effect on hover */}
-                                                    <div 
+                                                    <div
                                                         className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-xl"
                                                         style={{ boxShadow: `inset 0 0 30px var(--glow)` }}
                                                     />
-                                                    
+
                                                     <div className="flex items-center gap-3 mb-3 relative z-10">
-                                                        <motion.div 
+                                                        <motion.div
                                                             className={`w-9 h-9 rounded-xl bg-gradient-to-br ${category.gradient} flex items-center justify-center shadow-lg`}
                                                             whileHover={{ scale: 1.1, rotate: 5 }}
                                                             transition={{ type: 'spring', stiffness: 400 }}
@@ -931,13 +932,13 @@ function Portfolio() {
             {/* Footer - Glassy Portlify Branding or Custom Branding */}
             <footer className="relative py-12 px-4">
                 {/* Subtle gradient separator */}
-                <div 
+                <div
                     className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 max-w-md h-px"
-                    style={{ 
-                        background: `linear-gradient(90deg, transparent, ${colors.primary}40, transparent)` 
+                    style={{
+                        background: `linear-gradient(90deg, transparent, ${colors.primary}40, transparent)`
                     }}
                 />
-                
+
                 <div className="max-w-4xl mx-auto flex justify-center">
                     {/* Check if custom branding is enabled */}
                     {profile?.customBranding?.enabled && profile?.customBranding?.text ? (
@@ -953,15 +954,15 @@ function Portfolio() {
                             onClick={(e) => !profile.customBranding.url && e.preventDefault()}
                         >
                             {/* Glow effect on hover */}
-                            <div 
+                            <div
                                 className="absolute -inset-4 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"
                                 style={{ background: colors.accent }}
                             />
-                            
+
                             {/* Glass card container */}
-                            <div 
+                            <div
                                 className="relative px-6 py-3 rounded-xl backdrop-blur-xl border transition-all duration-300 overflow-hidden"
-                                style={{ 
+                                style={{
                                     background: colors.surface,
                                     borderColor: colors.border,
                                     boxShadow: `0 4px 24px rgba(0, 0, 0, 0.1), 0 0 0 1px ${colors.border}`
@@ -970,17 +971,17 @@ function Portfolio() {
                                 {/* Content */}
                                 <div className="relative flex items-center gap-3">
                                     {/* Custom text */}
-                                    <span 
+                                    <span
                                         className="text-sm font-medium"
                                         style={{ color: colors.text }}
                                     >
                                         {profile.customBranding.text}
                                     </span>
-                                    
+
                                     {/* Arrow indicator if URL exists */}
                                     {profile.customBranding.url && (
-                                        <ChevronRight 
-                                            size={16} 
+                                        <ChevronRight
+                                            size={16}
                                             className="opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300"
                                             style={{ color: colors.primary }}
                                         />
@@ -990,97 +991,153 @@ function Portfolio() {
                         </motion.a>
                     ) : (
                         // Default Portlify Branding
-                        <motion.a
-                            href="https://portlify.techycsr.dev"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="group relative"
-                            whileHover={{ scale: 1.05, y: -2 }}
-                            whileTap={{ scale: 0.98 }}
-                            transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                        >
-                            {/* Glow effect on hover */}
-                            <div 
-                                className="absolute -inset-4 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"
-                                style={{ background: colors.accent }}
-                            />
-                            
-                            {/* Glass card container */}
-                            <div 
-                                className="relative px-6 py-3 rounded-xl backdrop-blur-xl border transition-all duration-300 overflow-hidden"
-                                style={{ 
-                                    background: colors.surface,
-                                    borderColor: colors.border,
-                                    boxShadow: `0 4px 24px rgba(0, 0, 0, 0.1), 0 0 0 1px ${colors.border}`
-                                }}
-                            >
-                                {/* Inner shine effect */}
-                                <div 
-                                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                                    style={{
-                                        background: `linear-gradient(135deg, transparent 40%, ${colors.primary}10 50%, transparent 60%)`,
+                        <div className="relative">
+                            {/* Premium Info Badge */}
+                            <div className="absolute -top-2 -right-2 z-20">
+                                <motion.button
+                                    className="w-5 h-5 rounded-full flex items-center justify-center shadow-lg cursor-help"
+                                    style={{ background: colors.primary, color: '#fff' }}
+                                    whileHover={{ scale: 1.1 }}
+                                    onClick={(e) => {
+                                        e.preventDefault()
+                                        e.stopPropagation()
+                                        setShowPremiumInfo(!showPremiumInfo)
                                     }}
-                                />
-                                
-                                {/* Animated gradient border on hover */}
-                                <div 
-                                    className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                                    style={{ 
-                                        padding: '1px',
-                                        background: colors.accent,
-                                        mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                                        maskComposite: 'xor',
-                                        WebkitMaskComposite: 'xor'
-                                    }}
-                                />
-                                
-                                {/* Content */}
-                                <div className="relative flex items-center gap-3">
-                                    {/* Logo/Icon */}
-                                    <motion.div
-                                        className="relative"
-                                        animate={{ rotate: [0, 5, -5, 0] }}
-                                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                                    >
-                                        <div 
-                                            className="w-8 h-8 rounded-lg flex items-center justify-center"
-                                            style={{ 
-                                                background: colors.accent,
-                                                boxShadow: `0 4px 12px ${colors.glow}`
+                                    onMouseEnter={() => setShowPremiumInfo(true)}
+                                    onMouseLeave={() => setShowPremiumInfo(false)}
+                                >
+                                    <Info size={12} strokeWidth={3} />
+                                </motion.button>
+
+                                <AnimatePresence>
+                                    {showPremiumInfo && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                                            exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                                            className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-56 p-4 rounded-xl backdrop-blur-xl border text-xs text-center shadow-xl z-30"
+                                            style={{
+                                                background: colors.surfaceSolid,
+                                                color: colors.text,
+                                                borderColor: colors.border
                                             }}
                                         >
-                                            <Sparkles size={16} className="text-white" />
-                                        </div>
-                                    </motion.div>
-                                    
-                                    {/* Text */}
-                                    <div className="flex items-center gap-2">
-                                        <span 
-                                            className="text-sm"
-                                            style={{ color: colors.textSecondary }}
-                                        >
-                                            Built with
-                                        </span>
-                                        <span 
-                                            className="font-semibold text-sm bg-clip-text text-transparent"
-                                            style={{ 
-                                                backgroundImage: colors.accent,
-                                                WebkitBackgroundClip: 'text'
-                                            }}
-                                        >
-                                            Portlify
-                                        </span>
-                                    </div>
-                                    
-                                    {/* Arrow indicator */}
-                                    <ChevronRight 
-                                        size={16} 
-                                        className="opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300"
-                                        style={{ color: colors.primary }}
-                                    />
-                                </div>
+                                            <p className="mb-2 leading-relaxed">
+                                                You can customize or remove this branding by buying a premium membership.
+                                            </p>
+                                            <a
+                                                href="https://portlify.techycsr.dev/premium"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="block py-1.5 px-3 rounded-lg font-bold transition-opacity hover:opacity-80"
+                                                style={{ background: colors.primary, color: '#fff' }}
+                                            >
+                                                Click here to upgrade
+                                            </a>
+                                            <div
+                                                className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 border-b border-r"
+                                                style={{
+                                                    background: colors.surfaceSolid,
+                                                    borderColor: colors.border
+                                                }}
+                                            />
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                             </div>
-                        </motion.a>
+
+                            <motion.a
+                                href="https://portlify.techycsr.dev"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="group relative block"
+                                whileHover={{ scale: 1.05, y: -2 }}
+                                whileTap={{ scale: 0.98 }}
+                                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                            >
+                                {/* Glow effect on hover */}
+                                <div
+                                    className="absolute -inset-4 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"
+                                    style={{ background: colors.accent }}
+                                />
+
+                                {/* Glass card container */}
+                                <div
+                                    className="relative px-6 py-3 rounded-xl backdrop-blur-xl border transition-all duration-300 overflow-hidden"
+                                    style={{
+                                        background: colors.surface,
+                                        borderColor: colors.border,
+                                        boxShadow: `0 4px 24px rgba(0, 0, 0, 0.1), 0 0 0 1px ${colors.border}`
+                                    }}
+                                >
+                                    {/* Inner shine effect */}
+                                    <div
+                                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                                        style={{
+                                            background: `linear-gradient(135deg, transparent 40%, ${colors.primary}10 50%, transparent 60%)`,
+                                        }}
+                                    />
+
+                                    {/* Animated gradient border on hover */}
+                                    <div
+                                        className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                        style={{
+                                            padding: '1px',
+                                            background: colors.accent,
+                                            mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                                            maskComposite: 'xor',
+                                            WebkitMaskComposite: 'xor'
+                                        }}
+                                    />
+
+                                    {/* Content */}
+                                    <div className="relative flex items-center gap-3">
+                                        {/* Logo/Icon */}
+                                        <motion.div
+                                            className="relative"
+                                            animate={{ rotate: [0, 5, -5, 0] }}
+                                            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                                        >
+                                            <div
+                                                className="w-8 h-8 rounded-lg flex items-center justify-center"
+                                                style={{
+                                                    background: colors.accent,
+                                                    boxShadow: `0 4px 12px ${colors.glow}`
+                                                }}
+                                            >
+                                                <Sparkles size={16} className="text-white" />
+                                            </div>
+                                        </motion.div>
+
+                                        {/* Text */}
+                                        <div className="flex items-center gap-2">
+                                            <span
+                                                className="text-sm"
+                                                style={{ color: colors.textSecondary }}
+                                            >
+                                                Built with
+                                            </span>
+                                            <span
+                                                className="font-semibold text-sm bg-clip-text text-transparent"
+                                                style={{
+                                                    backgroundImage: colors.accent,
+                                                    WebkitBackgroundClip: 'text'
+                                                }}
+                                            >
+                                                Portlify
+                                            </span>
+                                        </div>
+
+                                        {/* Arrow indicator */}
+                                        <ChevronRight
+                                            size={16}
+                                            className="opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300"
+                                            style={{ color: colors.primary }}
+                                        />
+                                    </div>
+                                </div>
+                            </motion.a>
+                        </div>
                     )}
                 </div>
             </footer>
