@@ -249,10 +249,12 @@ function sanitizeAndValidate(data) {
       about: ''
     },
     skills: {
-      technical: [],
-      soft: [],
+      programmingLanguages: [],
+      frameworks: [],
+      databases: [],
       tools: [],
-      languages: []
+      cloudSystems: [],
+      softSkills: []
     },
     experience: [],
     education: [],
@@ -277,10 +279,12 @@ function sanitizeAndValidate(data) {
   const result = {
     basicDetails: { ...defaultData.basicDetails, ...data.basicDetails },
     skills: {
-      technical: Array.isArray(data.skills?.technical) ? data.skills.technical : [],
-      soft: Array.isArray(data.skills?.soft) ? data.skills.soft : [],
+      programmingLanguages: Array.isArray(data.skills?.programmingLanguages) ? data.skills.programmingLanguages : [],
+      frameworks: Array.isArray(data.skills?.frameworks) ? data.skills.frameworks : [],
+      databases: Array.isArray(data.skills?.databases) ? data.skills.databases : [],
       tools: Array.isArray(data.skills?.tools) ? data.skills.tools : [],
-      languages: Array.isArray(data.skills?.languages) ? data.skills.languages : []
+      cloudSystems: Array.isArray(data.skills?.cloudSystems) ? data.skills.cloudSystems : [],
+      softSkills: Array.isArray(data.skills?.softSkills) ? data.skills.softSkills : []
     },
     experience: Array.isArray(data.experience) ? data.experience.map(sanitizeExperience) : [],
     education: Array.isArray(data.education) ? data.education.map(sanitizeEducation) : [],
