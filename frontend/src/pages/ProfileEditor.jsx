@@ -10,7 +10,8 @@ import {
     Share2, FileText, Globe, BookOpen, Heart,
     Users, Plus, Trash2, Save, ChevronLeft, ChevronRight,
     Camera, MapPin, Mail, Phone, Link as LinkIcon,
-    Linkedin, Github, Twitter, Rocket, Sparkles
+    Linkedin, Github, Twitter, Rocket, Sparkles,
+    Terminal, Layers, Database, Wrench, Cloud, MessageCircle
 } from 'lucide-react'
 
 function ProfileEditor() {
@@ -451,18 +452,28 @@ function ProfileEditor() {
                                     <h2 className="text-xl font-bold text-primary mb-6">Skills</h2>
 
                                     {[
-                                        { key: 'programmingLanguages', label: 'Programming Languages', placeholder: 'Python, JavaScript, SQL, C++...', icon: '💻', gradient: 'from-blue-500 to-cyan-500' },
-                                        { key: 'frameworks', label: 'Frameworks & Libraries', placeholder: 'React, Node.js, TensorFlow, Flask...', icon: '🛠️', gradient: 'from-purple-500 to-pink-500' },
-                                        { key: 'databases', label: 'Databases', placeholder: 'MongoDB, MySQL, PostgreSQL...', icon: '🗄️', gradient: 'from-emerald-500 to-teal-500' },
-                                        { key: 'tools', label: 'Tools', placeholder: 'Git, Docker, Postman, VS Code...', icon: '🔧', gradient: 'from-orange-500 to-amber-500' },
-                                        { key: 'cloudSystems', label: 'Cloud & Systems', placeholder: 'AWS, Linux, Windows, Heroku...', icon: '☁️', gradient: 'from-indigo-500 to-violet-500' },
-                                        { key: 'softSkills', label: 'Soft Skills', placeholder: 'Leadership, Communication, Team Collaboration...', icon: '🤝', gradient: 'from-rose-500 to-pink-500' }
+                                        { key: 'programmingLanguages', label: 'Programming Languages', placeholder: 'Python, JavaScript, SQL, C++...', icon: Terminal, gradient: 'from-blue-500 to-cyan-500' },
+                                        { key: 'frameworks', label: 'Frameworks & Libraries', placeholder: 'React, Node.js, TensorFlow, Flask...', icon: Layers, gradient: 'from-purple-500 to-pink-500' },
+                                        { key: 'databases', label: 'Databases', placeholder: 'MongoDB, MySQL, PostgreSQL...', icon: Database, gradient: 'from-emerald-500 to-teal-500' },
+                                        { key: 'tools', label: 'Tools', placeholder: 'Git, Docker, Postman, VS Code...', icon: Wrench, gradient: 'from-orange-500 to-amber-500' },
+                                        { key: 'cloudSystems', label: 'Cloud & Systems', placeholder: 'AWS, Linux, Windows, Heroku...', icon: Cloud, gradient: 'from-indigo-500 to-violet-500' },
+                                        { key: 'softSkills', label: 'Soft Skills', placeholder: 'Leadership, Communication, Team Collaboration...', icon: MessageCircle, gradient: 'from-rose-500 to-pink-500' }
                                     ].map(category => (
-                                        <div key={category.key} className="glass-card rounded-xl p-4 border border-border/50">
-                                            <div className="flex items-center gap-2 mb-3">
-                                                <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${category.gradient} flex items-center justify-center text-white text-sm`}>
-                                                    {category.icon}
-                                                </div>
+                                        <motion.div 
+                                            key={category.key} 
+                                            className="glass-card rounded-xl p-5 border border-border/50 group hover:border-white/20 transition-all duration-300"
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            whileHover={{ scale: 1.01 }}
+                                        >
+                                            <div className="flex items-center gap-3 mb-4">
+                                                <motion.div 
+                                                    className={`w-10 h-10 rounded-xl bg-gradient-to-br ${category.gradient} flex items-center justify-center shadow-lg`}
+                                                    whileHover={{ scale: 1.1, rotate: 5 }}
+                                                    transition={{ type: 'spring', stiffness: 400 }}
+                                                >
+                                                    <category.icon size={20} className="text-white" />
+                                                </motion.div>
                                                 <label className="text-primary font-medium">{category.label}</label>
                                             </div>
                                             <div className="flex flex-wrap gap-2 mb-3 min-h-[2rem]">
@@ -490,18 +501,20 @@ function ProfileEditor() {
                                                         }
                                                     }}
                                                 />
-                                                <button
+                                                <motion.button
+                                                    whileHover={{ scale: 1.02 }}
+                                                    whileTap={{ scale: 0.98 }}
                                                     onClick={(e) => {
                                                         const input = e.target.previousSibling
                                                         addSkill(category.key, input.value)
                                                         input.value = ''
                                                     }}
-                                                    className={`px-4 py-2 rounded-xl bg-gradient-to-r ${category.gradient} text-white hover:opacity-90 transition-opacity`}
+                                                    className={`px-4 py-2 rounded-xl bg-gradient-to-r ${category.gradient} text-white hover:opacity-90 transition-opacity shadow-lg`}
                                                 >
                                                     Add
-                                                </button>
+                                                </motion.button>
                                             </div>
-                                        </div>
+                                        </motion.div>
                                     ))}
                                 </div>
                             )}

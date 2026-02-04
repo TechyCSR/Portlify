@@ -50,7 +50,7 @@ const generateHTML = (profile, preferences) => {
             
             ${skills.programmingLanguages?.length ? `
             <div class="skill-category">
-                <h3>💻 Programming Languages</h3>
+                <h3>Programming Languages</h3>
                 <div class="skills-grid">
                     ${skills.programmingLanguages.map(s => `<span class="skill-tag">${s}</span>`).join('')}
                 </div>
@@ -59,7 +59,7 @@ const generateHTML = (profile, preferences) => {
             
             ${skills.frameworks?.length ? `
             <div class="skill-category">
-                <h3>🛠️ Frameworks & Libraries</h3>
+                <h3>Frameworks & Libraries</h3>
                 <div class="skills-grid">
                     ${skills.frameworks.map(s => `<span class="skill-tag">${s}</span>`).join('')}
                 </div>
@@ -68,7 +68,7 @@ const generateHTML = (profile, preferences) => {
             
             ${skills.databases?.length ? `
             <div class="skill-category">
-                <h3>🗄️ Databases</h3>
+                <h3>Databases</h3>
                 <div class="skills-grid">
                     ${skills.databases.map(s => `<span class="skill-tag">${s}</span>`).join('')}
                 </div>
@@ -77,7 +77,7 @@ const generateHTML = (profile, preferences) => {
             
             ${skills.tools?.length ? `
             <div class="skill-category">
-                <h3>🔧 Tools</h3>
+                <h3>Tools</h3>
                 <div class="skills-grid">
                     ${skills.tools.map(s => `<span class="skill-tag">${s}</span>`).join('')}
                 </div>
@@ -86,7 +86,7 @@ const generateHTML = (profile, preferences) => {
             
             ${skills.cloudSystems?.length ? `
             <div class="skill-category">
-                <h3>☁️ Cloud & Systems</h3>
+                <h3>Cloud & Systems</h3>
                 <div class="skills-grid">
                     ${skills.cloudSystems.map(s => `<span class="skill-tag">${s}</span>`).join('')}
                 </div>
@@ -95,7 +95,7 @@ const generateHTML = (profile, preferences) => {
             
             ${skills.softSkills?.length ? `
             <div class="skill-category">
-                <h3>🤝 Soft Skills</h3>
+                <h3>Soft Skills</h3>
                 <div class="skills-grid">
                     ${skills.softSkills.map(s => `<span class="skill-tag">${s}</span>`).join('')}
                 </div>

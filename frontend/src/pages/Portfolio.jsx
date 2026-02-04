@@ -8,7 +8,8 @@ import {
     Award, BookOpen, Heart, Users,
     Github, Linkedin, Twitter, Globe, Mail,
     MapPin, ExternalLink, Code, Calendar,
-    Building, ChevronRight, Sparkles, Moon, Sun
+    Building, ChevronRight, Sparkles, Moon, Sun,
+    Terminal, Layers, Database, Wrench, Cloud, MessageCircle
 } from 'lucide-react'
 
 // ==================== THEME UTILS ====================
@@ -277,14 +278,14 @@ function Portfolio() {
     const { basicDetails, skills, experience, education, projects,
         certifications, publications, volunteering, socialLinks, customSections } = profile || {}
 
-    // Skill categories configuration
+    // Skill categories configuration with animated icons
     const skillCategories = useMemo(() => [
-        { key: 'programmingLanguages', label: 'Programming Languages', icon: '💻', gradient: 'from-blue-500 to-cyan-500' },
-        { key: 'frameworks', label: 'Frameworks & Libraries', icon: '🛠️', gradient: 'from-purple-500 to-pink-500' },
-        { key: 'databases', label: 'Databases', icon: '🗄️', gradient: 'from-emerald-500 to-teal-500' },
-        { key: 'tools', label: 'Tools', icon: '🔧', gradient: 'from-orange-500 to-amber-500' },
-        { key: 'cloudSystems', label: 'Cloud & Systems', icon: '☁️', gradient: 'from-indigo-500 to-violet-500' },
-        { key: 'softSkills', label: 'Soft Skills', icon: '🤝', gradient: 'from-rose-500 to-pink-500' }
+        { key: 'programmingLanguages', label: 'Programming Languages', icon: Terminal, gradient: 'from-blue-500 to-cyan-500' },
+        { key: 'frameworks', label: 'Frameworks & Libraries', icon: Layers, gradient: 'from-purple-500 to-pink-500' },
+        { key: 'databases', label: 'Databases', icon: Database, gradient: 'from-emerald-500 to-teal-500' },
+        { key: 'tools', label: 'Tools', icon: Wrench, gradient: 'from-orange-500 to-amber-500' },
+        { key: 'cloudSystems', label: 'Cloud & Systems', icon: Cloud, gradient: 'from-indigo-500 to-violet-500' },
+        { key: 'softSkills', label: 'Soft Skills', icon: MessageCircle, gradient: 'from-rose-500 to-pink-500' }
     ], [])
 
     const allSkills = useMemo(() => [
@@ -654,8 +655,14 @@ function Portfolio() {
                                                         style={{ boxShadow: `inset 0 0 30px var(--glow)` }}
                                                     />
                                                     
-                                                    <div className="flex items-center gap-2 mb-3 relative z-10">
-                                                        <span className="text-lg">{category.icon}</span>
+                                                    <div className="flex items-center gap-3 mb-3 relative z-10">
+                                                        <motion.div 
+                                                            className={`w-9 h-9 rounded-xl bg-gradient-to-br ${category.gradient} flex items-center justify-center shadow-lg`}
+                                                            whileHover={{ scale: 1.1, rotate: 5 }}
+                                                            transition={{ type: 'spring', stiffness: 400 }}
+                                                        >
+                                                            <category.icon size={18} className="text-white" />
+                                                        </motion.div>
                                                         <h3 className="font-medium text-sm" style={{ color: colors.text }}>
                                                             {category.label}
                                                         </h3>

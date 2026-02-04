@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getMyProfile, getCurrentUser, getAnalyticsSummary } from '../utils/api'
+import { Terminal, Layers, Database, Wrench, Cloud, MessageCircle } from 'lucide-react'
 
 // SVG Icons
 const icons = {
@@ -173,14 +174,14 @@ function Dashboard() {
 
     const { basicDetails, skills, experience, education, projects } = profile || {}
     
-    // New categorized skills structure
+    // New categorized skills structure with animated icons
     const skillCategories = [
-        { key: 'programmingLanguages', label: 'Programming Languages', icon: '💻', gradient: 'from-blue-500 to-cyan-500' },
-        { key: 'frameworks', label: 'Frameworks & Libraries', icon: '🛠️', gradient: 'from-purple-500 to-pink-500' },
-        { key: 'databases', label: 'Databases', icon: '🗄️', gradient: 'from-emerald-500 to-teal-500' },
-        { key: 'tools', label: 'Tools', icon: '🔧', gradient: 'from-orange-500 to-amber-500' },
-        { key: 'cloudSystems', label: 'Cloud & Systems', icon: '☁️', gradient: 'from-indigo-500 to-violet-500' },
-        { key: 'softSkills', label: 'Soft Skills', icon: '🤝', gradient: 'from-rose-500 to-pink-500' }
+        { key: 'programmingLanguages', label: 'Programming Languages', icon: Terminal, gradient: 'from-blue-500 to-cyan-500' },
+        { key: 'frameworks', label: 'Frameworks & Libraries', icon: Layers, gradient: 'from-purple-500 to-pink-500' },
+        { key: 'databases', label: 'Databases', icon: Database, gradient: 'from-emerald-500 to-teal-500' },
+        { key: 'tools', label: 'Tools', icon: Wrench, gradient: 'from-orange-500 to-amber-500' },
+        { key: 'cloudSystems', label: 'Cloud & Systems', icon: Cloud, gradient: 'from-indigo-500 to-violet-500' },
+        { key: 'softSkills', label: 'Soft Skills', icon: MessageCircle, gradient: 'from-rose-500 to-pink-500' }
     ]
     
     const allSkills = [
@@ -447,12 +448,17 @@ function Dashboard() {
                                                 key={category.key}
                                                 initial={{ opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
-                                                className="glass-card rounded-xl p-4 group hover:scale-[1.02] transition-all duration-300"
+                                                whileHover={{ scale: 1.02 }}
+                                                className="glass-card rounded-xl p-4 group transition-all duration-300"
                                             >
-                                                <div className="flex items-center gap-2 mb-3">
-                                                    <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${category.gradient} flex items-center justify-center text-white text-sm`}>
-                                                        {category.icon}
-                                                    </div>
+                                                <div className="flex items-center gap-3 mb-3">
+                                                    <motion.div 
+                                                        className={`w-9 h-9 rounded-xl bg-gradient-to-br ${category.gradient} flex items-center justify-center shadow-lg`}
+                                                        whileHover={{ scale: 1.1, rotate: 5 }}
+                                                        transition={{ type: 'spring', stiffness: 400 }}
+                                                    >
+                                                        <category.icon size={18} className="text-white" />
+                                                    </motion.div>
                                                     <h3 className="font-medium text-primary text-sm">{category.label}</h3>
                                                 </div>
                                                 <div className="flex flex-wrap gap-1.5">
