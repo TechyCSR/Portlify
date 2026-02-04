@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getPublicProfile, trackPortfolioView } from '../utils/api'
@@ -251,6 +251,25 @@ const ProjectCard = ({ project, index }) => (
 // ==================== MAIN PORTFOLIO COMPONENT ====================
 function Portfolio() {
     const [showPremiumInfo, setShowPremiumInfo] = useState(false)
+    const timeoutRef = useRef(null)
+
+    const handleMouseEnter = () => {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current)
+        setShowPremiumInfo(true)
+    }
+
+    const handleMouseLeave = () => {
+        timeoutRef.current = setTimeout(() => {
+            setShowPremiumInfo(false)
+        }, 3000)
+    }
+
+    // Cleanup timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (timeoutRef.current) clearTimeout(timeoutRef.current)
+        }
+    }, [])
     const { username } = useParams()
     const { theme, toggleTheme } = useTheme()
     const [profile, setProfile] = useState(null)
@@ -993,7 +1012,11 @@ function Portfolio() {
                         // Default Portlify Branding
                         <div className="relative">
                             {/* Premium Info Badge */}
-                            <div className="absolute -top-2 -right-2 z-20">
+                            <div
+                                className="absolute -top-2 -left-2 z-20"
+                                onMouseEnter={handleMouseEnter}
+                                onMouseLeave={handleMouseLeave}
+                            >
                                 <motion.button
                                     className="w-5 h-5 rounded-full flex items-center justify-center shadow-lg cursor-help"
                                     style={{ background: colors.primary, color: '#fff' }}
@@ -1003,8 +1026,6 @@ function Portfolio() {
                                         e.stopPropagation()
                                         setShowPremiumInfo(!showPremiumInfo)
                                     }}
-                                    onMouseEnter={() => setShowPremiumInfo(true)}
-                                    onMouseLeave={() => setShowPremiumInfo(false)}
                                 >
                                     <Info size={12} strokeWidth={3} />
                                 </motion.button>
@@ -1021,6 +1042,8 @@ function Portfolio() {
                                                 color: colors.text,
                                                 borderColor: colors.border
                                             }}
+                                            onMouseEnter={handleMouseEnter}
+                                            onMouseLeave={handleMouseLeave}
                                         >
                                             <p className="mb-2 leading-relaxed">
                                                 You can customize or remove this branding by buying a premium membership.
@@ -1029,6 +1052,7 @@ function Portfolio() {
                                                 href="https://portlify.techycsr.dev/premium"
                                                 target="_blank"
                                                 rel="noopener noreferrer"
+                                                onClick={(e) => e.stopPropagation()}
                                                 className="block py-1.5 px-3 rounded-lg font-bold transition-opacity hover:opacity-80"
                                                 style={{ background: colors.primary, color: '#fff' }}
                                             >
