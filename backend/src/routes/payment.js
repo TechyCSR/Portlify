@@ -53,7 +53,7 @@ router.post('/create-order', authMiddleware, getUserFromAuth, async (req, res) =
         const options = {
             amount: PREMIUM_AMOUNT,
             currency: 'INR',
-            receipt: `premium_${user._id}_${Date.now()}`,
+            receipt: `prem_${Date.now()}`,
             notes: {
                 userId: user._id.toString(),
                 username: user.username,
