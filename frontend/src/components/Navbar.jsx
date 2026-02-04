@@ -1,11 +1,13 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { SignedIn, SignedOut, UserButton } from '@clerk/clerk-react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import ThemeToggle from './ThemeToggle'
 import { useTheme } from '../context/ThemeContext'
 
 function Navbar() {
     const { theme } = useTheme()
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
     // Clerk appearance for UserButton based on theme
     const userButtonAppearance = {
@@ -67,8 +69,8 @@ function Navbar() {
                         </span>
                     </Link>
 
-                    {/* Navigation */}
-                    <div className="flex items-center space-x-3">
+                    {/* Desktop Navigation */}
+                    <div className="hidden md:flex items-center space-x-3">
                         <ThemeToggle />
 
                         <SignedOut>
@@ -96,8 +98,90 @@ function Navbar() {
                             />
                         </SignedIn>
                     </div>
+
+                    {/* Mobile Menu Button */}
+                    <div className="flex md:hidden items-center gap-2">
+                        <SignedIn>
+                            <UserButton
+                                afterSignOutUrl="/"
+                                appearance={userButtonAppearance}
+                            />
+                        </SignedIn>
+                        <button
+                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                            className="p-2 rounded-lg text-secondary hover:text-primary hover:bg-surface transition-all"
+                            aria-label="Toggle menu"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                {mobileMenuOpen ? (
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                ) : (
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                                )}
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
+
+            {/* Mobile Menu */}
+            <AnimatePresence>
+                {mobileMenuOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="md:hidden border-t border-border overflow-hidden"
+                        style={{ background: 'var(--color-surface)' }}
+                    >
+                        <div className="px-4 py-4 space-y-3">
+                            <SignedOut>
+                                <Link
+                                    to="/sign-in"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-secondary hover:text-primary hover:bg-white/5 transition-all"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                                    </svg>
+                                    Sign In
+                                </Link>
+                                <Link
+                                    to="/sign-up"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-white font-medium"
+                                    style={{ background: 'var(--gradient-primary)' }}
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                                    </svg>
+                                    Get Started
+                                </Link>
+                            </SignedOut>
+
+                            <SignedIn>
+                                <Link
+                                    to="/dashboard"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-secondary hover:text-primary hover:bg-white/5 transition-all"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                                    </svg>
+                                    Dashboard
+                                </Link>
+                            </SignedIn>
+
+                            {/* Theme Toggle in Mobile Menu */}
+                            <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-white/5">
+                                <span className="text-secondary text-sm font-medium">Theme</span>
+                                <ThemeToggle />
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </motion.nav>
     )
 }
