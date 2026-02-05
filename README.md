@@ -8,7 +8,7 @@
 [![API](https://img.shields.io/badge/api-portlifybackend.techycsr.dev-10B981?style=for-the-badge&logo=node.js&logoColor=white)](https://portlifybackend.techycsr.dev)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
 
-[Features](#-features) • [Architecture](#-architecture) • [Tech Stack](#-tech-stack) • [Quick Start](#-quick-start) • [API](#-api-reference)
+[Features](#-features) • [Architecture](#-architecture)  • [Quick Start](#-quick-start) • [API](#-api-reference)
 
 </div>
 
@@ -22,9 +22,18 @@ Portlify transforms your PDF resume into a beautiful, responsive portfolio websi
 Resume.pdf → AI Parser → Professional Portfolio → Share Anywhere
 ```
 
+## 🎬 Demo
+
+https://github.com/user-attachments/assets/e36d6f10-bb27-4ae8-a2b6-81122ef85994
+
+---
+
+
 **Live Example:** [portlify.techycsr.dev/username](https://portlify.techycsr.dev)
 
 ---
+
+
 
 ## ✨ Features
 
