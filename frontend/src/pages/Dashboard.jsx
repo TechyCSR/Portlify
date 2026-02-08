@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -129,6 +129,7 @@ function Dashboard() {
     const [sidebarOpen, setSidebarOpen] = useState(false)
     const [error, setError] = useState(null)
     const [retryCount, setRetryCount] = useState(0)
+    const attemptCountRef = useRef(0)
 
     useEffect(() => {
         if (!isLoaded) return
@@ -155,6 +156,9 @@ function Dashboard() {
                 } catch (e) {
                     // Analytics might not exist yet
                 }
+
+                // Reset attempt count on success
+                attemptCountRef.current = 0
             } catch (err) {
                 console.error('Dashboard data fetch error:', err)
                 if (err.response?.status === 404 || err.response?.data?.needsSetup) {
@@ -162,8 +166,17 @@ function Dashboard() {
                 } else if (err.response?.data?.needsRegistration) {
                     navigate('/username')
                 } else {
-                    // unexpected error
-                    setError('Failed to load dashboard data. Please check your connection.')
+                    // Auto-retry once if this is the first attempt (likely Clerk not ready)
+                    if (attemptCountRef.current === 0) {
+                        attemptCountRef.current = 1
+                        console.log('First attempt failed, retrying in 1 second...')
+                        setTimeout(() => {
+                            setRetryCount(c => c + 1)
+                        }, 1000)
+                    } else {
+                        // Second attempt failed, show error
+                        setError('Failed to load dashboard data. Please check your connection.')
+                    }
                 }
             } finally {
                 setLoading(false)
