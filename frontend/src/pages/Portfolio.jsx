@@ -306,7 +306,7 @@ function Portfolio() {
     const colors = useMemo(() => getThemeColors(portfolioTheme, theme), [portfolioTheme, theme])
 
     // Extract profile data
-    const { basicDetails, skills, experience, education, projects,
+    const { basicDetails, skills, experience, education, projects, achievements,
         certifications, publications, volunteering, socialLinks, customSections } = profile || {}
 
     // Skill categories configuration with animated icons
@@ -335,6 +335,7 @@ function Portfolio() {
             { id: 'experience', label: 'Experience', icon: Briefcase, show: experience?.length > 0 },
             { id: 'projects', label: 'Projects', icon: Rocket, show: projects?.length > 0 },
             { id: 'education', label: 'Education', icon: GraduationCap, show: education?.length > 0 },
+            { id: 'achievements', label: 'Achievements', icon: Award, show: achievements?.length > 0 },
             { id: 'certifications', label: 'Certifications', icon: Award, show: certifications?.length > 0 },
             { id: 'publications', label: 'Publications', icon: BookOpen, show: publications?.length > 0 },
             { id: 'volunteering', label: 'Volunteering', icon: Heart, show: volunteering?.length > 0 }
@@ -352,7 +353,7 @@ function Portfolio() {
             }))
 
         return [...tabConfig.filter(t => t.show), ...customTabs]
-    }, [experience, projects, education, certifications, publications, volunteering, customSections])
+    }, [experience, projects, education, achievements, certifications, publications, volunteering, customSections])
 
     // CSS Variables injection
     const cssVars = {
@@ -801,6 +802,56 @@ function Portfolio() {
                                         index={i}
                                         isLast={i === education.length - 1}
                                     />
+                                ))}
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {/* Achievements Tab */}
+                    {activeTab === 'achievements' && achievements?.length > 0 && (
+                        <motion.div
+                            key="achievements"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            variants={containerVariants}
+                        >
+                            <h2 className="text-2xl font-semibold mb-6 flex items-center gap-3" style={{ color: colors.text }}>
+                                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: colors.accent }}>
+                                    <Award size={20} className="text-white" />
+                                </div>
+                                Achievements
+                            </h2>
+                            <div className="grid md:grid-cols-2 gap-4">
+                                {achievements.map((achievement, i) => (
+                                    <motion.div
+                                        key={i}
+                                        variants={itemVariants}
+                                    >
+                                        <GlassCard className="p-5 h-full">
+                                            <div className="flex items-start gap-3 mb-3">
+                                                <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: colors.accent }}>
+                                                    <Award size={18} className="text-white" />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <h3 className="font-semibold mb-1" style={{ color: colors.text }}>
+                                                        {achievement.title}
+                                                    </h3>
+                                                    {achievement.date && (
+                                                        <div className="flex items-center gap-1.5 text-xs" style={{ color: colors.textSecondary }}>
+                                                            <Calendar size={12} />
+                                                            {achievement.date}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            {achievement.description && (
+                                                <p className="text-sm leading-relaxed" style={{ color: colors.textSecondary }}>
+                                                    {achievement.description}
+                                                </p>
+                                            )}
+                                        </GlassCard>
+                                    </motion.div>
                                 ))}
                             </div>
                         </motion.div>
