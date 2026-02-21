@@ -287,6 +287,22 @@ function Portfolio() {
                 setProfile(data)
                 if (data.theme) setPortfolioTheme(data.theme)
 
+                // Dynamic SEO — set page title and meta description
+                const name = data.basicDetails?.name || username
+                const title = data.basicDetails?.title || 'Professional'
+                document.title = `${name} — ${title} | Portlify by TechyCSR`
+                const metaDesc = document.querySelector('meta[name="description"]')
+                if (metaDesc) {
+                    metaDesc.setAttribute('content',
+                        `${name}'s professional portfolio — ${title}. Built with Portlify by TechyCSR.`
+                    )
+                }
+                // Set OG title dynamically
+                const ogTitle = document.querySelector('meta[property="og:title"]')
+                if (ogTitle) ogTitle.setAttribute('content', `${name} — ${title} | Portlify`)
+                const ogDesc = document.querySelector('meta[property="og:description"]')
+                if (ogDesc) ogDesc.setAttribute('content', `${name}'s professional portfolio — ${title}. Built with Portlify.`)
+
                 // Track view using fetch to avoid auth interceptor issues
                 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
                 fetch(`${API_URL}/api/analytics/track/${encodeURIComponent(username)}`, {

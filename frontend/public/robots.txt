@@ -1,19 +1,20 @@
 # Robots.txt for Portlify
 # https://portlify.techycsr.dev
+# Created by TechyCSR
 
 User-agent: *
 Allow: /
-Allow: /portfolio/
 
 # Disallow admin/private routes
 Disallow: /dashboard
 Disallow: /settings
 Disallow: /onboarding
 Disallow: /upload
+Disallow: /editor
+Disallow: /analytics
+Disallow: /username
 Disallow: /api/
 
-# Sitemap
+# Sitemaps — dynamic (primary) + static (fallback)
+Sitemap: https://portlifybackend.techycsr.dev/api/sitemap.xml
 Sitemap: https://portlify.techycsr.dev/sitemap.xml
-
-# Crawl-delay (optional, for polite crawling)
-Crawl-delay: 1
