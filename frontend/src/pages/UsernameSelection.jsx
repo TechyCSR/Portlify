@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
 import { motion } from 'framer-motion'
 import { checkUsername, registerUser, getCurrentUser } from '../utils/api'
+import { getAppUrl } from '../utils/appUrl'
 
 const MAX_USERNAME_LENGTH = 8
 
@@ -87,7 +88,7 @@ function UsernameSelection() {
     }
 
     const handleUsernameChange = (e) => {
-        const value = e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, '')
+        const value = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '')
         if (value.length <= MAX_USERNAME_LENGTH) {
             setUsername(value)
         }
@@ -115,7 +116,7 @@ function UsernameSelection() {
                         <div className="mb-6 p-4 rounded-xl" style={{ background: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)' }}>
                             <p className="text-tertiary text-sm mb-1">Your portfolio URL</p>
                             <p className="text-lg font-medium">
-                                <span className="text-muted">portlify.techycsr.dev/</span>
+                                <span className="text-muted">{getAppUrl().replace(/^https?:\/\//, '')}/</span>
                                 <span className="heading-gradient">{username || 'you'}</span>
                             </p>
                         </div>
@@ -155,7 +156,7 @@ function UsernameSelection() {
 
                             {/* Character info */}
                             <p className="mt-2 text-xs text-muted">
-                                3-8 characters · Lowercase letters, numbers, underscore, hyphen
+                                3-8 characters · Lowercase letters, numbers, and underscore
                             </p>
 
                             {/* Status message */}

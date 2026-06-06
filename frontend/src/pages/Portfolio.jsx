@@ -1,7 +1,9 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { getPublicProfile, trackPortfolioView } from '../utils/api'
+import { getPublicProfile, API_URL } from '../utils/api'
+import { getAppUrl } from '../utils/appUrl'
+import { safeHref, safeMailto } from '../utils/safeUrl'
 import { useTheme } from '../context/ThemeContext'
 import {
     User, Briefcase, Rocket, GraduationCap,
@@ -209,15 +211,15 @@ const ProjectCard = ({ project, index }) => (
                     <Rocket size={24} className="text-white" />
                 </div>
                 <div className="flex gap-2">
-                    {project.githubUrl && (
-                        <a href={project.githubUrl} target="_blank" rel="noopener noreferrer"
+                    {safeHref(project.githubUrl) && (
+                        <a href={safeHref(project.githubUrl)} target="_blank" rel="noopener noreferrer"
                             className="p-2 rounded-lg transition-colors hover:bg-white/10"
                             style={{ color: 'var(--textSecondary)' }}>
                             <Github size={18} />
                         </a>
                     )}
-                    {project.demoUrl && (
-                        <a href={project.demoUrl} target="_blank" rel="noopener noreferrer"
+                    {safeHref(project.demoUrl) && (
+                        <a href={safeHref(project.demoUrl)} target="_blank" rel="noopener noreferrer"
                             className="p-2 rounded-lg transition-colors hover:bg-white/10"
                             style={{ color: 'var(--textSecondary)' }}>
                             <ExternalLink size={18} />
@@ -289,27 +291,28 @@ function Portfolio() {
 
                 // Dynamic SEO — set page title and meta description
                 const name = data.basicDetails?.name || username
-                const title = data.basicDetails?.title || 'Professional'
-                document.title = `${name} — ${title} | Portlify by TechyCSR`
+                const headline = data.basicDetails?.headline || data.basicDetails?.about?.substring(0, 60) || 'Professional'
+                document.title = `${name} — ${headline} | Portlify by TechyCSR`
                 const metaDesc = document.querySelector('meta[name="description"]')
                 if (metaDesc) {
                     metaDesc.setAttribute('content',
-                        `${name}'s professional portfolio — ${title}. Built with Portlify by TechyCSR.`
+                        `${name}'s professional portfolio — ${headline}. Built with Portlify by TechyCSR.`
                     )
                 }
-                // Set OG title dynamically
                 const ogTitle = document.querySelector('meta[property="og:title"]')
-                if (ogTitle) ogTitle.setAttribute('content', `${name} — ${title} | Portlify`)
+                if (ogTitle) ogTitle.setAttribute('content', `${name} — ${headline} | Portlify`)
                 const ogDesc = document.querySelector('meta[property="og:description"]')
-                if (ogDesc) ogDesc.setAttribute('content', `${name}'s professional portfolio — ${title}. Built with Portlify.`)
+                if (ogDesc) ogDesc.setAttribute('content', `${name}'s professional portfolio — ${headline}. Built with Portlify.`)
 
-                // Track view using fetch to avoid auth interceptor issues
-                const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-                fetch(`${API_URL}/api/analytics/track/${encodeURIComponent(username)}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ referrer: document.referrer || 'direct' })
-                }).catch(() => { /* silent */ })
+                const viewKey = `viewed_${username}`
+                if (!sessionStorage.getItem(viewKey)) {
+                    sessionStorage.setItem(viewKey, '1')
+                    fetch(`${API_URL}/api/analytics/track/${encodeURIComponent(username)}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ referrer: document.referrer || 'direct' })
+                    }).catch(() => { /* silent */ })
+                }
             } catch (err) {
                 setError(err.response?.status === 404 ? 'Profile not found' : 'Failed to load profile')
             } finally {
@@ -566,36 +569,36 @@ function Portfolio() {
                             transition={{ delay: 0.5 }}
                             className="flex items-center justify-center gap-3 flex-wrap"
                         >
-                            {socialLinks.github && (
-                                <a href={socialLinks.github} target="_blank" rel="noopener noreferrer"
+                            {safeHref(socialLinks.github) && (
+                                <a href={safeHref(socialLinks.github)} target="_blank" rel="noopener noreferrer"
                                     className="p-3 rounded-xl backdrop-blur-sm border transition-all hover:scale-110"
                                     style={{ background: colors.surface, borderColor: colors.border }}>
                                     <Github size={20} style={{ color: colors.text }} />
                                 </a>
                             )}
-                            {socialLinks.linkedin && (
-                                <a href={socialLinks.linkedin} target="_blank" rel="noopener noreferrer"
+                            {safeHref(socialLinks.linkedin) && (
+                                <a href={safeHref(socialLinks.linkedin)} target="_blank" rel="noopener noreferrer"
                                     className="p-3 rounded-xl backdrop-blur-sm border transition-all hover:scale-110"
                                     style={{ background: colors.surface, borderColor: colors.border }}>
                                     <Linkedin size={20} style={{ color: colors.text }} />
                                 </a>
                             )}
-                            {socialLinks.twitter && (
-                                <a href={socialLinks.twitter} target="_blank" rel="noopener noreferrer"
+                            {safeHref(socialLinks.twitter) && (
+                                <a href={safeHref(socialLinks.twitter)} target="_blank" rel="noopener noreferrer"
                                     className="p-3 rounded-xl backdrop-blur-sm border transition-all hover:scale-110"
                                     style={{ background: colors.surface, borderColor: colors.border }}>
                                     <Twitter size={20} style={{ color: colors.text }} />
                                 </a>
                             )}
-                            {socialLinks.website && (
-                                <a href={socialLinks.website} target="_blank" rel="noopener noreferrer"
+                            {safeHref(socialLinks.website) && (
+                                <a href={safeHref(socialLinks.website)} target="_blank" rel="noopener noreferrer"
                                     className="p-3 rounded-xl backdrop-blur-sm border transition-all hover:scale-110"
                                     style={{ background: colors.surface, borderColor: colors.border }}>
                                     <Globe size={20} style={{ color: colors.text }} />
                                 </a>
                             )}
-                            {(socialLinks.email || basicDetails?.email) && (
-                                <a href={`mailto:${socialLinks.email || basicDetails.email}`}
+                            {safeMailto(socialLinks.email || basicDetails?.email) && (
+                                <a href={safeMailto(socialLinks.email || basicDetails?.email)}
                                     className="p-3 rounded-xl backdrop-blur-sm border transition-all hover:scale-110"
                                     style={{ background: colors.surface, borderColor: colors.border }}>
                                     <Mail size={20} style={{ color: colors.text }} />
@@ -899,8 +902,8 @@ function Portfolio() {
                                                 {cert.date}
                                             </div>
                                         )}
-                                        {cert.credentialUrl && (
-                                            <a href={cert.credentialUrl} target="_blank" rel="noopener noreferrer"
+                                        {safeHref(cert.credentialUrl) && (
+                                            <a href={safeHref(cert.credentialUrl)} target="_blank" rel="noopener noreferrer"
                                                 className="inline-flex items-center gap-1 mt-3 text-sm font-medium"
                                                 style={{ color: colors.primary }}>
                                                 View Credential <ExternalLink size={14} />
@@ -937,8 +940,8 @@ function Portfolio() {
                                         {pub.description && (
                                             <p className="text-sm" style={{ color: colors.textSecondary }}>{pub.description}</p>
                                         )}
-                                        {pub.url && (
-                                            <a href={pub.url} target="_blank" rel="noopener noreferrer"
+                                        {safeHref(pub.url) && (
+                                            <a href={safeHref(pub.url)} target="_blank" rel="noopener noreferrer"
                                                 className="inline-flex items-center gap-1 mt-3 text-sm font-medium"
                                                 style={{ color: colors.primary }}>
                                                 Read Publication <ExternalLink size={14} />
@@ -1030,14 +1033,14 @@ function Portfolio() {
                     {profile?.customBranding?.enabled && profile?.customBranding?.text ? (
                         // Custom Branding Footer
                         <motion.a
-                            href={profile.customBranding.url || '#'}
-                            target={profile.customBranding.url ? "_blank" : "_self"}
+                            href={safeHref(profile.customBranding.url) || '#'}
+                            target={safeHref(profile.customBranding.url) ? '_blank' : '_self'}
                             rel="noopener noreferrer"
                             className="group relative"
                             whileHover={{ scale: 1.05, y: -2 }}
                             whileTap={{ scale: 0.98 }}
                             transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                            onClick={(e) => !profile.customBranding.url && e.preventDefault()}
+                            onClick={(e) => !safeHref(profile.customBranding.url) && e.preventDefault()}
                         >
                             {/* Glow effect on hover */}
                             <div
@@ -1116,7 +1119,7 @@ function Portfolio() {
                                                 You can customize or remove this branding by buying a premium membership.
                                             </p>
                                             <a
-                                                href="https://portlify.techycsr.dev/premium"
+                                                href={`${getAppUrl()}/premium`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 onClick={(e) => e.stopPropagation()}
@@ -1138,7 +1141,7 @@ function Portfolio() {
                             </div>
 
                             <motion.a
-                                href="https://portlify.techycsr.dev"
+                                href={getAppUrl()}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="group relative block"

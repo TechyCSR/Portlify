@@ -196,13 +196,9 @@ router.put('/preferences', authMiddleware, getUserFromAuth, async (req, res) => 
     try {
         const { portfolioType, experienceLevel, themePreference } = req.body;
 
-        console.log('Updating preferences for user:', req.clerkUserId);
-        console.log('Request body:', req.body);
-
         const user = await User.findOne({ clerkId: req.clerkUserId });
 
         if (!user) {
-            console.log('User not found for clerkId:', req.clerkUserId);
             return res.status(404).json({ error: 'User not found', needsRegistration: true });
         }
 
@@ -225,15 +221,16 @@ router.put('/preferences', authMiddleware, getUserFromAuth, async (req, res) => 
 
         await user.save();
 
-        console.log('Preferences updated successfully for user:', user.username);
-
         res.json({
             message: 'Preferences updated successfully',
             preferences: user.preferences
         });
     } catch (error) {
         console.error('Update preferences error:', error);
-        res.status(500).json({ error: error.message || 'Failed to update preferences' });
+        const message = process.env.NODE_ENV === 'production'
+            ? 'Failed to update preferences'
+            : (error.message || 'Failed to update preferences');
+        res.status(500).json({ error: message });
     }
 });
 
@@ -317,14 +314,8 @@ router.put('/username', authMiddleware, getUserFromAuth, async (req, res) => {
         );
 
         // Analytics might not exist for new users, so we don't fail if it doesn't exist
-        if (!analyticsUpdate) {
-            console.log('No analytics record found for user, skipping analytics update');
-        }
-
         // Commit the transaction
         await session.commitTransaction();
-
-        console.log(`Username updated successfully: ${oldUsername} -> ${normalizedUsername}`);
 
         res.json({
             message: 'Username updated successfully',
@@ -339,7 +330,10 @@ router.put('/username', authMiddleware, getUserFromAuth, async (req, res) => {
             return res.status(400).json({ error: 'Username is already taken' });
         }
 
-        res.status(500).json({ error: error.message || 'Failed to update username' });
+        const message = process.env.NODE_ENV === 'production'
+            ? 'Failed to update username'
+            : (error.message || 'Failed to update username');
+        res.status(500).json({ error: message });
     } finally {
         session.endSession();
     }

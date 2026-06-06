@@ -91,7 +91,6 @@ function ProfileEditor() {
             if (storedData) {
                 try {
                     const parsed = JSON.parse(storedData)
-                    console.log('Loading from sessionStorage (resume upload):', parsed)
                     setResumeUrl(parsed.resumeUrl || '')
                     setFormData(prev => ({
                         ...prev,
@@ -144,7 +143,7 @@ function ProfileEditor() {
                 }
             } catch (err) {
                 // No existing profile, user will start fresh
-                console.log('No existing profile found')
+
             }
 
             setLoading(false)

@@ -66,6 +66,7 @@ function Analytics() {
     const navigate = useNavigate()
     const { isLoaded, isSignedIn } = useUser()
     const [loading, setLoading] = useState(true)
+    const [loadError, setLoadError] = useState('')
     const [summary, setSummary] = useState(null)
     const [detailed, setDetailed] = useState(null)
     const [period, setPeriod] = useState('week')
@@ -78,6 +79,7 @@ function Analytics() {
         }
 
         const loadData = async () => {
+            setLoadError('')
             try {
                 const [summaryRes, detailedRes] = await Promise.all([
                     getAnalyticsSummary(),
@@ -88,7 +90,9 @@ function Analytics() {
             } catch (err) {
                 if (err.response?.data?.needsRegistration) {
                     navigate('/username')
+                    return
                 }
+                setLoadError(err.response?.data?.error || 'Failed to load analytics')
             } finally {
                 setLoading(false)
             }
@@ -112,6 +116,22 @@ function Analytics() {
         return (
             <div className="min-h-screen flex items-center justify-center pt-20">
                 <div className="spinner w-8 h-8" />
+            </div>
+        )
+    }
+
+    if (loadError) {
+        return (
+            <div className="min-h-screen flex items-center justify-center pt-20 px-4">
+                <div className="glass-card rounded-2xl p-8 max-w-md text-center">
+                    <p className="text-red-400 mb-4">{loadError}</p>
+                    <button
+                        onClick={() => { setLoading(true); window.location.reload() }}
+                        className="btn-primary px-6 py-2 rounded-xl"
+                    >
+                        Retry
+                    </button>
+                </div>
             </div>
         )
     }

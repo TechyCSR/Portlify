@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
-import { SignIn, SignUp, ClerkProvider } from '@clerk/clerk-react'
+import { SignIn, SignUp } from '@clerk/clerk-react'
 import { ThemeProvider, useTheme } from './context/ThemeContext'
 import { ToastProvider } from './context/ToastContext'
 import Navbar from './components/Navbar'
@@ -118,7 +118,6 @@ const getClerkAppearance = (theme) => ({
 // Layout wrapper that conditionally shows navbar
 function AppLayout({ children }) {
     const location = useLocation()
-    const { theme } = useTheme()
 
     // Check if current route is a public portfolio (/:username)
     const isPortfolioPage = location.pathname !== '/' &&
@@ -132,8 +131,6 @@ function AppLayout({ children }) {
         !location.pathname.startsWith('/analytics') &&
         !location.pathname.startsWith('/premium')
 
-    const clerkAppearance = getClerkAppearance(theme)
-
     return (
         <>
             {/* Background orbs */}
@@ -142,7 +139,7 @@ function AppLayout({ children }) {
             <div className="bg-orb orb-3" />
 
             <div className="min-h-screen relative">
-                {!isPortfolioPage && <Navbar clerkAppearance={clerkAppearance} />}
+                {!isPortfolioPage && <Navbar />}
                 {children}
             </div>
         </>
@@ -151,12 +148,17 @@ function AppLayout({ children }) {
 
 function SignInPage() {
     const { theme } = useTheme()
+    const location = useLocation()
+    const redirectUrl = location.state?.from?.pathname || '/dashboard'
+
     return (
         <div className="min-h-screen flex items-center justify-center pt-20">
             <SignIn
                 routing="path"
                 path="/sign-in"
                 signUpUrl="/sign-up"
+                forceRedirectUrl={redirectUrl}
+                fallbackRedirectUrl="/dashboard"
                 appearance={getClerkAppearance(theme)}
             />
         </div>

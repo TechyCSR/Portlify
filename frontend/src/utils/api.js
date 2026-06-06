@@ -1,6 +1,17 @@
 import axios from 'axios'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+let apiUrlWarningShown = false
+
+const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+const API_URL = rawApiUrl.replace(/\/api\/?$/, '')
+
+if (import.meta.env.DEV && rawApiUrl.match(/\/api\/?$/) && !apiUrlWarningShown) {
+    console.warn(
+        '[Portlify] VITE_API_URL should not include /api suffix. ' +
+        'Use the base URL only (e.g. http://localhost:5000). Auto-corrected.'
+    )
+    apiUrlWarningShown = true
+}
 
 const api = axios.create({
     baseURL: API_URL,
@@ -12,10 +23,8 @@ const api = axios.create({
 // Add auth token to requests
 api.interceptors.request.use(async (config) => {
     try {
-        // Wait for Clerk to be fully loaded
         const clerk = window.Clerk
         if (clerk) {
-            // Try to get token from active session
             const session = clerk.session
             if (session) {
                 const token = await session.getToken()
@@ -115,4 +124,5 @@ export const getCustomBranding = () =>
 export const updateCustomBranding = (branding) =>
     api.put('/api/payment/branding', branding)
 
+export { API_URL }
 export default api

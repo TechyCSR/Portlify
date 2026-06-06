@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getCurrentUser, getPreferences, updatePreferences, getMyProfile, downloadPortfolio, resetProfile, updateVisibility, checkUsername, updateUsername, getPremiumStatus, getCustomBranding, updateCustomBranding } from '../utils/api'
+import { getAppUrl } from '../utils/appUrl'
 import { useToast } from '../context/ToastContext'
 
 // Icons
@@ -96,6 +97,7 @@ function Settings() {
     const { isLoaded, isSignedIn } = useUser()
     const [activeTab, setActiveTab] = useState('profile')
     const [loading, setLoading] = useState(true)
+    const [loadError, setLoadError] = useState('')
     const [saving, setSaving] = useState(false)
     const [downloading, setDownloading] = useState(false)
     const [resetting, setResetting] = useState(false)
@@ -133,6 +135,7 @@ function Settings() {
         }
 
         const loadData = async () => {
+            setLoadError('')
             try {
                 const [userRes, prefsRes, profileRes, premiumRes, brandingRes] = await Promise.all([
                     getCurrentUser(),
@@ -155,7 +158,9 @@ function Settings() {
             } catch (err) {
                 if (err.response?.data?.needsRegistration) {
                     navigate('/username')
+                    return
                 }
+                setLoadError(err.response?.data?.error || 'Failed to load settings')
             } finally {
                 setLoading(false)
             }
@@ -177,16 +182,10 @@ function Settings() {
         const loadingId = toast.loading('Saving settings...')
 
         try {
-            // Save preferences
-            console.log('Saving preferences:', preferences)
-            const prefResponse = await updatePreferences(preferences)
-            console.log('Preferences saved:', prefResponse.data)
+            await updatePreferences(preferences)
 
-            // Save visibility if changed
             if (isPublic !== originalIsPublic) {
-                console.log('Updating visibility to:', isPublic)
-                const visResponse = await updateVisibility(isPublic)
-                console.log('Visibility updated:', visResponse.data)
+                await updateVisibility(isPublic)
                 setOriginalIsPublic(isPublic)
             }
 
@@ -195,8 +194,6 @@ function Settings() {
             setSaveSuccess(true)
             setTimeout(() => setSaveSuccess(false), 3000)
         } catch (err) {
-            console.error('Save error:', err)
-            console.error('Error response:', err.response?.data)
             toast.dismiss(loadingId)
 
             const errorMessage = err.response?.data?.error || err.message || 'Failed to save settings'
@@ -347,6 +344,22 @@ function Settings() {
         return (
             <div className="min-h-screen flex items-center justify-center pt-20">
                 <div className="spinner w-8 h-8" />
+            </div>
+        )
+    }
+
+    if (loadError) {
+        return (
+            <div className="min-h-screen flex items-center justify-center pt-20 px-4">
+                <div className="glass-card rounded-2xl p-8 max-w-md text-center">
+                    <p className="text-red-400 mb-4">{loadError}</p>
+                    <button
+                        onClick={() => { setLoading(true); window.location.reload() }}
+                        className="btn-primary px-6 py-2 rounded-xl"
+                    >
+                        Retry
+                    </button>
+                </div>
             </div>
         )
     }
@@ -1123,7 +1136,7 @@ function Settings() {
 
                                     <p className="mt-4 text-sm text-muted">
                                         {isPublic
-                                            ? '✓ Your portfolio is publicly accessible at portlify.techycsr.dev/' + (userData?.username || 'username')
+                                            ? `✓ Your portfolio is publicly accessible at ${getAppUrl().replace(/^https?:\/\//, '')}/` + (userData?.username || 'username')
                                             : '✗ Your portfolio is hidden from public view'
                                         }
                                     </p>

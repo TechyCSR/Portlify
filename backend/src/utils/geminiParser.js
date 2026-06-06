@@ -3,6 +3,7 @@ import axios from 'axios';
 import mammoth from 'mammoth';
 import WordExtractor from 'word-extractor';
 import { extractTextWithLinks } from './pdfLinkExtractor.js';
+import { getSignedCloudinaryDownloadUrl } from './cloudinaryDownload.js';
 
 // Initialize Ollama with cloud API
 const ollama = new Ollama({
@@ -223,15 +224,20 @@ Now analyze the following resume and extract ALL information:
  * @param {string} fileUrl - Cloudinary URL of the resume (PDF, DOC, or DOCX)
  * @returns {Object} Structured resume data
  */
+const debugLog = (...args) => {
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(...args);
+  }
+};
+
 export async function parseResumeWithAI(fileUrl) {
   try {
-    // Detect file type
     const fileType = getFileTypeFromUrl(fileUrl);
-    console.log(`Detected file type: ${fileType} from URL: ${fileUrl}`);
+    debugLog(`Detected file type: ${fileType}`);
 
-    // Download the file
-    console.log('Downloading resume file...');
-    const response = await axios.get(fileUrl, {
+    debugLog('Downloading resume file...');
+    const downloadUrl = getSignedCloudinaryDownloadUrl(fileUrl);
+    const response = await axios.get(downloadUrl, {
       responseType: 'arraybuffer',
       timeout: 30000
     });
@@ -240,24 +246,24 @@ export async function parseResumeWithAI(fileUrl) {
     let text;
     if (fileType === 'pdf' || fileType === 'unknown') {
       // Default to PDF extraction (also handles unknown as fallback)
-      console.log('Extracting text from PDF...');
+      debugLog('Extracting text from PDF...');
       text = await extractTextWithLinks(response.data);
     } else if (fileType === 'doc' || fileType === 'docx') {
       // Use appropriate extractor for Word documents
-      console.log(`Extracting text from ${fileType.toUpperCase()} document...`);
+      debugLog(`Extracting text from ${fileType.toUpperCase()} document...`);
       text = await extractTextFromWord(Buffer.from(response.data), fileType);
     } else {
       throw new Error(`Unsupported file type: ${fileType}`);
     }
 
-    console.log(`Extracted text, length: ${text.length}`);
+    debugLog(`Extracted text, length: ${text.length}`);
 
     if (!text || text.trim().length < 50) {
       throw new Error('Could not extract sufficient text from resume');
     }
 
     // Send to Ollama
-    console.log('Sending to Ollama (gemma3:4b-cloud)...');
+    debugLog('Sending to Ollama (gemma3:4b-cloud)...');
 
     const aiResponse = await ollama.chat({
       model: MODEL,
@@ -287,7 +293,19 @@ export async function parseResumeWithAI(fileUrl) {
     return sanitizeAndValidate(parsedData);
 
   } catch (error) {
-    console.error('Ollama parsing error:', error);
+    const status = error.response?.status;
+    if (status === 401 || status === 403) {
+      const cldError = error.response?.headers?.['x-cld-error'];
+      console.error('Cloudinary download error:', cldError || error.message);
+      throw new Error(
+        'Failed to download resume from Cloudinary. Check your Cloudinary API credentials and delivery settings.'
+      );
+    }
+    if (error.message?.includes('Ollama') || error.message?.includes('401')) {
+      console.error('Ollama API error:', error.message);
+      throw new Error('Resume AI parsing failed. Check that OLLAMA_API_KEY is set correctly.');
+    }
+    console.error('Resume parsing error:', error);
     throw new Error(`Resume parsing failed: ${error.message}`);
   }
 }

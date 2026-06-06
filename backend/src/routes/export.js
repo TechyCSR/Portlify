@@ -3,24 +3,34 @@ import archiver from 'archiver';
 import Profile from '../models/Profile.js';
 import User from '../models/User.js';
 import authMiddleware, { getUserFromAuth } from '../middleware/auth.js';
+import { escapeHtml } from '../utils/escapeHtml.js';
+import { validateHttpsUrl } from '../utils/validateUrl.js';
 
 const router = express.Router();
+
+const e = escapeHtml;
+const safeUrl = (url) => validateHttpsUrl(url) || '#';
 
 // Generate portfolio HTML template
 const generateHTML = (profile, preferences) => {
     const { basicDetails, skills, experience, education, projects, certifications, socialLinks } = profile;
-    const isTechnical = preferences?.portfolioType === 'technical';
+    const name = e(basicDetails.name || 'Your Name');
+    const headline = e(basicDetails.headline || '');
+    const about = e(basicDetails.about || '');
+    const location = e(basicDetails.location || '');
+    const profilePhoto = safeUrl(basicDetails.profilePhoto);
+    const metaDesc = e(basicDetails.headline || `Portfolio of ${basicDetails.name || 'User'}`);
 
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="${basicDetails.headline || `Portfolio of ${basicDetails.name}`}">
-    <meta property="og:title" content="${basicDetails.name} - Portfolio">
-    <meta property="og:description" content="${basicDetails.headline || basicDetails.about?.substring(0, 160)}">
-    <meta property="og:image" content="${basicDetails.profilePhoto || ''}">
-    <title>${basicDetails.name} - Portfolio</title>
+    <meta name="description" content="${metaDesc}">
+    <meta property="og:title" content="${name} - Portfolio">
+    <meta property="og:description" content="${headline || about.substring(0, 160)}">
+    <meta property="og:image" content="${profilePhoto}">
+    <title>${name} - Portfolio</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -28,18 +38,18 @@ const generateHTML = (profile, preferences) => {
     <div class="container">
         <!-- Hero Section -->
         <header class="hero">
-            ${basicDetails.profilePhoto ? `<img src="${basicDetails.profilePhoto}" alt="${basicDetails.name}" class="avatar">` : ''}
-            <h1>${basicDetails.name || 'Your Name'}</h1>
-            <p class="headline">${basicDetails.headline || ''}</p>
-            <p class="location">${basicDetails.location || ''}</p>
-            ${basicDetails.about ? `<p class="about">${basicDetails.about}</p>` : ''}
+            ${basicDetails.profilePhoto ? `<img src="${profilePhoto}" alt="${name}" class="avatar">` : ''}
+            <h1>${name}</h1>
+            <p class="headline">${headline}</p>
+            <p class="location">${location}</p>
+            ${about ? `<p class="about">${about}</p>` : ''}
             
             <!-- Social Links -->
             <div class="social-links">
-                ${socialLinks?.linkedin ? `<a href="${socialLinks.linkedin}" target="_blank" rel="noopener">LinkedIn</a>` : ''}
-                ${socialLinks?.github ? `<a href="${socialLinks.github}" target="_blank" rel="noopener">GitHub</a>` : ''}
-                ${socialLinks?.twitter ? `<a href="${socialLinks.twitter}" target="_blank" rel="noopener">Twitter</a>` : ''}
-                ${socialLinks?.website ? `<a href="${socialLinks.website}" target="_blank" rel="noopener">Website</a>` : ''}
+                ${socialLinks?.linkedin ? `<a href="${safeUrl(socialLinks.linkedin)}" target="_blank" rel="noopener">LinkedIn</a>` : ''}
+                ${socialLinks?.github ? `<a href="${safeUrl(socialLinks.github)}" target="_blank" rel="noopener">GitHub</a>` : ''}
+                ${socialLinks?.twitter ? `<a href="${safeUrl(socialLinks.twitter)}" target="_blank" rel="noopener">Twitter</a>` : ''}
+                ${socialLinks?.website ? `<a href="${safeUrl(socialLinks.website)}" target="_blank" rel="noopener">Website</a>` : ''}
             </div>
         </header>
 
@@ -52,7 +62,7 @@ const generateHTML = (profile, preferences) => {
             <div class="skill-category">
                 <h3>Programming Languages</h3>
                 <div class="skills-grid">
-                    ${skills.programmingLanguages.map(s => `<span class="skill-tag">${s}</span>`).join('')}
+                    ${skills.programmingLanguages.map(s => `<span class="skill-tag">${e(s)}</span>`).join('')}
                 </div>
             </div>
             ` : ''}
@@ -61,7 +71,7 @@ const generateHTML = (profile, preferences) => {
             <div class="skill-category">
                 <h3>Frameworks & Libraries</h3>
                 <div class="skills-grid">
-                    ${skills.frameworks.map(s => `<span class="skill-tag">${s}</span>`).join('')}
+                    ${skills.frameworks.map(s => `<span class="skill-tag">${e(s)}</span>`).join('')}
                 </div>
             </div>
             ` : ''}
@@ -70,7 +80,7 @@ const generateHTML = (profile, preferences) => {
             <div class="skill-category">
                 <h3>Databases</h3>
                 <div class="skills-grid">
-                    ${skills.databases.map(s => `<span class="skill-tag">${s}</span>`).join('')}
+                    ${skills.databases.map(s => `<span class="skill-tag">${e(s)}</span>`).join('')}
                 </div>
             </div>
             ` : ''}
@@ -79,7 +89,7 @@ const generateHTML = (profile, preferences) => {
             <div class="skill-category">
                 <h3>Tools</h3>
                 <div class="skills-grid">
-                    ${skills.tools.map(s => `<span class="skill-tag">${s}</span>`).join('')}
+                    ${skills.tools.map(s => `<span class="skill-tag">${e(s)}</span>`).join('')}
                 </div>
             </div>
             ` : ''}
@@ -88,7 +98,7 @@ const generateHTML = (profile, preferences) => {
             <div class="skill-category">
                 <h3>Cloud & Systems</h3>
                 <div class="skills-grid">
-                    ${skills.cloudSystems.map(s => `<span class="skill-tag">${s}</span>`).join('')}
+                    ${skills.cloudSystems.map(s => `<span class="skill-tag">${e(s)}</span>`).join('')}
                 </div>
             </div>
             ` : ''}
@@ -97,7 +107,7 @@ const generateHTML = (profile, preferences) => {
             <div class="skill-category">
                 <h3>Soft Skills</h3>
                 <div class="skills-grid">
-                    ${skills.softSkills.map(s => `<span class="skill-tag">${s}</span>`).join('')}
+                    ${skills.softSkills.map(s => `<span class="skill-tag">${e(s)}</span>`).join('')}
                 </div>
             </div>
             ` : ''}
@@ -110,10 +120,10 @@ const generateHTML = (profile, preferences) => {
             <h2>Experience</h2>
             ${experience.map(exp => `
             <div class="card">
-                <h3>${exp.title}</h3>
-                <p class="subtitle">${exp.company} ${exp.location ? `• ${exp.location}` : ''}</p>
-                <p class="duration">${exp.duration}</p>
-                ${exp.description ? `<p>${exp.description}</p>` : ''}
+                <h3>${e(exp.title)}</h3>
+                <p class="subtitle">${e(exp.company)} ${exp.location ? `• ${e(exp.location)}` : ''}</p>
+                <p class="duration">${e(exp.duration)}</p>
+                ${exp.description ? `<p>${e(exp.description)}</p>` : ''}
             </div>
             `).join('')}
         </section>
@@ -126,16 +136,16 @@ const generateHTML = (profile, preferences) => {
             <div class="projects-grid">
                 ${projects.map(proj => `
                 <div class="card project-card">
-                    <h3>${proj.title}</h3>
-                    <p>${proj.description || ''}</p>
+                    <h3>${e(proj.title)}</h3>
+                    <p>${e(proj.description || '')}</p>
                     ${proj.techStack?.length ? `
                     <div class="tech-stack">
-                        ${proj.techStack.map(t => `<span class="tech-tag">${t}</span>`).join('')}
+                        ${proj.techStack.map(t => `<span class="tech-tag">${e(t)}</span>`).join('')}
                     </div>
                     ` : ''}
                     <div class="project-links">
-                        ${proj.demoUrl ? `<a href="${proj.demoUrl}" target="_blank" rel="noopener">Live Demo</a>` : ''}
-                        ${proj.githubUrl ? `<a href="${proj.githubUrl}" target="_blank" rel="noopener">GitHub</a>` : ''}
+                        ${proj.demoUrl ? `<a href="${safeUrl(proj.demoUrl)}" target="_blank" rel="noopener">Live Demo</a>` : ''}
+                        ${proj.githubUrl ? `<a href="${safeUrl(proj.githubUrl)}" target="_blank" rel="noopener">GitHub</a>` : ''}
                     </div>
                 </div>
                 `).join('')}
@@ -149,9 +159,9 @@ const generateHTML = (profile, preferences) => {
             <h2>Education</h2>
             ${education.map(edu => `
             <div class="card">
-                <h3>${edu.degree}</h3>
-                <p class="subtitle">${edu.institution}</p>
-                <p class="duration">${edu.year}</p>
+                <h3>${e(edu.degree)}</h3>
+                <p class="subtitle">${e(edu.institution)}</p>
+                <p class="duration">${e(edu.year)}</p>
             </div>
             `).join('')}
         </section>
@@ -163,10 +173,10 @@ const generateHTML = (profile, preferences) => {
             <h2>Certifications</h2>
             ${certifications.map(cert => `
             <div class="card">
-                <h3>${cert.name}</h3>
-                <p class="subtitle">${cert.issuer}</p>
-                <p class="duration">${cert.date}</p>
-                ${cert.credentialUrl ? `<a href="${cert.credentialUrl}" target="_blank" rel="noopener">View Credential</a>` : ''}
+                <h3>${e(cert.name)}</h3>
+                <p class="subtitle">${e(cert.issuer)}</p>
+                <p class="duration">${e(cert.date)}</p>
+                ${cert.credentialUrl ? `<a href="${safeUrl(cert.credentialUrl)}" target="_blank" rel="noopener">View Credential</a>` : ''}
             </div>
             `).join('')}
         </section>
@@ -442,7 +452,7 @@ Generated from Portlify on ${new Date().toLocaleDateString()}
 Feel free to modify the CSS variables in styles.css to change colors.
 
 Generated with ❤️ by Portlify
-https://portlify.techycsr.dev
+${process.env.FRONTEND_URL || 'https://portlify.techycsr.dev'}
 `, { name: 'README.md' });
 
         await archive.finalize();

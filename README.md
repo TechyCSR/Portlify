@@ -116,7 +116,7 @@ Upload PDF → Extract Text → AI Analysis → Parse Data → Store in DB → G
 |:-----:|:------------|
 | **Frontend** | React 18 · Vite · Tailwind CSS · Framer Motion · React Router |
 | **Backend** | Node.js · Express · MongoDB · Mongoose · Clerk Auth |
-| **AI/ML** | Google Gemini API · PDF Parse · Natural Language Processing |
+| **AI/ML** | Ollama Cloud (gemma3:4b) · PDF/DOC/DOCX Parse · NLP |
 | **Services** | Cloudinary (Images) · Razorpay (Payments) · Vercel (Hosting) |
 | **Tools** | Git · npm · MongoDB Atlas · VS Code |
 
@@ -129,7 +129,7 @@ Upload PDF → Extract Text → AI Analysis → Parse Data → Store in DB → G
 ### Prerequisites
 
 ```bash
-Node.js 18+ · MongoDB Atlas · Clerk · Google Gemini API · Cloudinary · Razorpay
+Node.js 18+ · MongoDB Atlas · Clerk · Ollama Cloud API · Cloudinary · Razorpay
 ```
 
 ### Installation
@@ -159,12 +159,13 @@ PORT=5000
 MONGODB_URI=your_mongodb_uri
 CLERK_SECRET_KEY=your_clerk_secret
 CLERK_PUBLISHABLE_KEY=your_clerk_publishable
-GEMINI_API_KEY=your_gemini_key
+OLLAMA_API_KEY=your_ollama_api_key
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_cloudinary_key
 CLOUDINARY_API_SECRET=your_cloudinary_secret
 RAZORPAY_KEY_ID=your_razorpay_key
 RAZORPAY_KEY_SECRET=your_razorpay_secret
+FRONTEND_URL=http://localhost:5173
 ```
 
 </details>
@@ -173,9 +174,10 @@ RAZORPAY_KEY_SECRET=your_razorpay_secret
 <summary><b>Frontend (.env)</b></summary>
 
 ```env
-VITE_API_URL=http://localhost:5000/api
+# Do NOT include /api suffix
+VITE_API_URL=http://localhost:5000
+VITE_APP_URL=http://localhost:5173
 VITE_CLERK_PUBLISHABLE_KEY=your_clerk_publishable
-VITE_RAZORPAY_KEY_ID=your_razorpay_key
 ```
 
 </details>
@@ -204,7 +206,7 @@ VITE_RAZORPAY_KEY_ID=your_razorpay_key
 GET    /api/auth/me
 POST   /api/auth/register
 PUT    /api/auth/username
-GET    /api/auth/check-username/:username
+GET    /api/auth/check-username?username=
 ```
 
 ### Profile Management
@@ -212,9 +214,9 @@ GET    /api/auth/check-username/:username
 GET    /api/profile/me
 GET    /api/profile/:username
 PUT    /api/profile
-POST   /api/profile/parse-resume
+POST   /api/profile/parse
 PUT    /api/profile/visibility
-DELETE /api/profile/reset
+POST   /api/profile/reset
 ```
 
 ### Analytics
