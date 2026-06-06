@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
 import { SignIn, SignUp } from '@clerk/clerk-react'
 import { ThemeProvider, useTheme } from './context/ThemeContext'
+import { DashboardNavBridgeProvider } from './context/DashboardNavBridge'
 import { ToastProvider } from './context/ToastContext'
 import Navbar from './components/Navbar'
 import ScrollToTop from './components/ScrollToTop'
@@ -140,11 +141,13 @@ function App() {
         <ThemeProvider>
             <ClerkThemeProvider>
                 <ToastProvider>
-                    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-                        <ScrollToTop />
-                        <SeoManager />
-                        <AppRoutes />
-                    </Router>
+                    <DashboardNavBridgeProvider>
+                        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+                            <ScrollToTop />
+                            <SeoManager />
+                            <AppRoutes />
+                        </Router>
+                    </DashboardNavBridgeProvider>
                 </ToastProvider>
             </ClerkThemeProvider>
         </ThemeProvider>

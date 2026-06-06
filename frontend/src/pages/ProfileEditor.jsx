@@ -331,12 +331,12 @@ function ProfileEditor() {
                 />
             </motion.div>
 
-                <div className="flex flex-col lg:flex-row gap-6">
+                <div className="flex flex-col md:flex-row gap-6">
                     {/* Sidebar Navigation - Desktop */}
                     <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className="hidden lg:block lg:w-64 flex-shrink-0"
+                        className="hidden md:block md:w-64 flex-shrink-0"
                     >
                         <div className="glass-card rounded-2xl p-4 sticky sticky-below-navbar">
                             <nav className="space-y-1">
@@ -344,7 +344,7 @@ function ProfileEditor() {
                                     <button
                                         key={section.id}
                                         onClick={() => setActiveSection(section.id)}
-                                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left ${activeSection === section.id
+                                        className={`w-full flex items-center gap-3 px-4 py-3 min-h-[44px] rounded-xl transition-all text-left ${activeSection === section.id
                                             ? 'text-white'
                                             : 'text-secondary hover:text-primary'
                                             }`}
@@ -369,7 +369,7 @@ function ProfileEditor() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
-                        className="flex-1"
+                        className="flex-1 min-w-0"
                     >
                         <div className="glass-card rounded-3xl p-6 md:p-8">
                             {/* Basic Info Section */}
@@ -389,7 +389,7 @@ function ProfileEditor() {
                                                     </span>
                                                 )}
                                             </div>
-                                            <label className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center cursor-pointer hover:bg-primary-400 transition-colors shadow-lg">
+                                            <label className="absolute -bottom-1 -right-1 min-h-[44px] min-w-[44px] rounded-full bg-primary-500 flex items-center justify-center cursor-pointer hover:bg-primary-400 transition-colors shadow-lg">
                                                 <Camera size={14} className="text-white" />
                                                 <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} disabled={photoUploading} />
                                             </label>
@@ -521,7 +521,7 @@ function ProfileEditor() {
                                                         addSkill(category.key, input.value)
                                                         input.value = ''
                                                     }}
-                                                    className="btn-primary px-4 py-2 text-sm"
+                                                    className="btn-primary px-4 py-2.5 min-h-[44px] text-sm"
                                                 >
                                                     Add
                                                 </motion.button>
@@ -538,7 +538,7 @@ function ProfileEditor() {
                                         <h2 className="text-xl font-bold text-primary">Experience</h2>
                                         <button
                                             onClick={() => addArrayItem('experience', { title: '', company: '', duration: '', location: '', description: '', achievements: [] })}
-                                            className="px-4 py-2 rounded-xl bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors text-sm"
+                                            className="px-4 py-2.5 min-h-[44px] rounded-xl bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors text-sm"
                                         >
                                             + Add Experience
                                         </button>
@@ -603,7 +603,7 @@ function ProfileEditor() {
                                         <h2 className="text-xl font-bold text-primary">Education</h2>
                                         <button
                                             onClick={() => addArrayItem('education', { degree: '', institution: '', year: '', gpa: '', coursework: [] })}
-                                            className="px-4 py-2 rounded-xl bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors text-sm"
+                                            className="px-4 py-2.5 min-h-[44px] rounded-xl bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors text-sm"
                                         >
                                             + Add Education
                                         </button>
@@ -661,7 +661,7 @@ function ProfileEditor() {
                                         <h2 className="text-xl font-bold text-primary">Projects</h2>
                                         <button
                                             onClick={() => addArrayItem('projects', { title: '', description: '', techStack: [], demoUrl: '', githubUrl: '' })}
-                                            className="px-4 py-2 rounded-xl bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors text-sm"
+                                            className="px-4 py-2.5 min-h-[44px] rounded-xl bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors text-sm"
                                         >
                                             + Add Project
                                         </button>
@@ -719,7 +719,7 @@ function ProfileEditor() {
                                         <h2 className="text-xl font-bold text-primary">Achievements</h2>
                                         <button
                                             onClick={() => addArrayItem('achievements', { title: '', description: '', date: '' })}
-                                            className="px-4 py-2 rounded-xl bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors text-sm"
+                                            className="px-4 py-2.5 min-h-[44px] rounded-xl bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors text-sm"
                                         >
                                             + Add Achievement
                                         </button>
@@ -770,7 +770,7 @@ function ProfileEditor() {
                                         <h2 className="text-xl font-bold text-primary">Certifications</h2>
                                         <button
                                             onClick={() => addArrayItem('certifications', { name: '', issuer: '', date: '', url: '' })}
-                                            className="px-4 py-2 rounded-xl bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors text-sm flex items-center gap-2"
+                                            className="px-4 py-2.5 min-h-[44px] rounded-xl bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors text-sm flex items-center gap-2"
                                         >
                                             <Plus size={16} /> Add Certification
                                         </button>
@@ -829,7 +829,7 @@ function ProfileEditor() {
                                         <h2 className="text-xl font-bold text-primary">Publications</h2>
                                         <button
                                             onClick={() => addArrayItem('publications', { title: '', publisher: '', date: '', url: '' })}
-                                            className="px-4 py-2 rounded-xl bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors text-sm flex items-center gap-2"
+                                            className="px-4 py-2.5 min-h-[44px] rounded-xl bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors text-sm flex items-center gap-2"
                                         >
                                             <Plus size={16} /> Add Publication
                                         </button>
@@ -888,7 +888,7 @@ function ProfileEditor() {
                                         <h2 className="text-xl font-bold text-primary">Volunteering</h2>
                                         <button
                                             onClick={() => addArrayItem('volunteering', { role: '', organization: '', date: '', description: '' })}
-                                            className="px-4 py-2 rounded-xl bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors text-sm flex items-center gap-2"
+                                            className="px-4 py-2.5 min-h-[44px] rounded-xl bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors text-sm flex items-center gap-2"
                                         >
                                             <Plus size={16} /> Add Experience
                                         </button>
@@ -947,7 +947,7 @@ function ProfileEditor() {
                                         <h2 className="text-xl font-bold text-primary">References</h2>
                                         <button
                                             onClick={() => addArrayItem('references', { name: '', relationship: '', contact: '' })}
-                                            className="px-4 py-2 rounded-xl bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors text-sm flex items-center gap-2"
+                                            className="px-4 py-2.5 min-h-[44px] rounded-xl bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors text-sm flex items-center gap-2"
                                         >
                                             <Plus size={16} /> Add Reference
                                         </button>
@@ -999,7 +999,7 @@ function ProfileEditor() {
                                         <h2 className="text-xl font-bold text-primary">Custom Sections</h2>
                                         <button
                                             onClick={() => addArrayItem('customSections', { title: 'New Section', content: '' })}
-                                            className="px-4 py-2 rounded-xl bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors text-sm flex items-center gap-2"
+                                            className="px-4 py-2.5 min-h-[44px] rounded-xl bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors text-sm flex items-center gap-2"
                                         >
                                             <Plus size={16} /> Add Custom Section
                                         </button>
@@ -1056,7 +1056,7 @@ function ProfileEditor() {
                                         <h2 className="text-xl font-bold text-primary">Extra Curricular</h2>
                                         <button
                                             onClick={() => addArrayItem('extraCurricular', { activity: '', role: '', description: '' })}
-                                            className="px-4 py-2 rounded-xl bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors text-sm"
+                                            className="px-4 py-2.5 min-h-[44px] rounded-xl bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors text-sm"
                                         >
                                             + Add Activity
                                         </button>

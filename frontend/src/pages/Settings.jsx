@@ -332,7 +332,7 @@ function Settings() {
                                     key={tab.id}
                                     whileHover={{ x: 4 }}
                                     onClick={() => setActiveTab(tab.id)}
-                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === tab.id
+                                    className={`w-full flex items-center gap-3 px-4 py-3 min-h-[44px] rounded-xl transition-all ${activeTab === tab.id
                                         ? tab.id === 'data' ? 'bg-red-500/20 text-red-400' : 'bg-primary-500/20 text-primary-400'
                                         : 'text-secondary hover:text-primary hover:bg-surface'
                                         }`}
@@ -352,11 +352,11 @@ function Settings() {
                         }))}
                         activeId={activeTab}
                         onChange={setActiveTab}
-                        className="md:hidden mb-4"
+                        className="mb-4"
                     />
 
                     {/* Content */}
-                    <div className="glass-card rounded-2xl p-6">
+                    <div className="glass-card rounded-2xl p-6 min-w-0">
                         <AnimatePresence mode="wait">
                             {/* Profile Tab */}
                             {activeTab === 'profile' && (
