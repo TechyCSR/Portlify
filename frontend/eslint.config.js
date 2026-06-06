@@ -35,6 +35,14 @@ export default [
         }
     },
     {
+        files: ['vite.config.js', 'scripts/**/*.{js,mjs}'],
+        languageOptions: {
+            globals: {
+                ...globals.node,
+            },
+        },
+    },
+    {
         ignores: ['dist/**', 'node_modules/**']
     }
 ]
