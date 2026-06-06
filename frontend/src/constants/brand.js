@@ -18,7 +18,7 @@ export const BRAND_KEYWORDS = [
     'job portfolio',
     'resume portfolio maker',
 ].join(', ')
-export const BRAND_LOGO_SRC = '/portlify_clean_logo.png'
+export const BRAND_LOGO_SRC = '/logo-2.png'
 export const BRAND_LOGO_ALT = 'PortlifyAi logo'
 export const BRAND_AUTHOR = 'TechyCSR'
 export const BRAND_AUTHOR_URL = 'https://techycsr.dev'
@@ -29,6 +29,9 @@ export const BRAND_SOCIAL = [
     'https://twitter.com/techycsr',
 ]
 
-export const DEFAULT_SITE_URL = 'https://portlify.techycsr.dev'
-export const DEFAULT_OG_IMAGE = `${DEFAULT_SITE_URL}/og-image.png`
+export const DEFAULT_SITE_URL = 'https://portlifyai.app'
+export const OG_IMAGE_PATH = '/og-image.png'
+export const OG_IMAGE_VERSION = '6'
+export const HERO_IMAGE_PATH = '/hero.png'
+export const DEFAULT_OG_IMAGE = `${DEFAULT_SITE_URL}${OG_IMAGE_PATH}?v=${OG_IMAGE_VERSION}`
 export const DEFAULT_TITLE = `${BRAND_NAME_DISPLAY} - ${BRAND_TAGLINE}`

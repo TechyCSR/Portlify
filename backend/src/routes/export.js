@@ -452,7 +452,7 @@ Generated from PortlifyAi on ${new Date().toLocaleDateString()}
 Feel free to modify the CSS variables in styles.css to change colors.
 
 Generated with ❤️ by PortlifyAi
-${process.env.FRONTEND_URL || 'https://portlify.techycsr.dev'}
+${process.env.FRONTEND_URL || 'https://portlifyai.app'}
 `, { name: 'README.md' });
 
         await archive.finalize();

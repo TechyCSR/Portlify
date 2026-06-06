@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
 import { motion } from 'framer-motion'
-import { checkUsername, registerUser, getCurrentUser } from '../utils/api'
+import { checkUsername, registerUser, getCurrentUser, getMyProfile } from '../utils/api'
+import { hasCompletedProfileSetup } from '../utils/profileSetup'
 import { getAppUrl } from '../utils/appUrl'
 import { Check, X } from 'lucide-react'
 import { ICON_STROKE } from '../components/IconTile'
@@ -30,11 +31,16 @@ function UsernameSelection() {
             try {
                 const { data } = await getCurrentUser()
                 if (data?.username) {
-                    // If onboarding not complete, go to onboarding
                     if (!data.onboardingCompleted) {
                         navigate('/onboarding')
-                    } else {
-                        navigate('/dashboard')
+                        return
+                    }
+
+                    try {
+                        const { data: profile } = await getMyProfile()
+                        navigate(hasCompletedProfileSetup(profile) ? '/dashboard' : '/upload')
+                    } catch {
+                        navigate('/upload')
                     }
                 }
             } catch (err) {

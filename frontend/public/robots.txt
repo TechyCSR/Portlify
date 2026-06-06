@@ -1,5 +1,5 @@
 # Robots.txt for PortlifyAi
-# https://portlify.techycsr.dev
+# https://portlifyai.app
 # Created by TechyCSR
 
 User-agent: *
@@ -17,4 +17,4 @@ Disallow: /api/
 
 # Sitemaps — dynamic (primary) + static (fallback)
 Sitemap: https://portlifybackend.techycsr.dev/api/sitemap.xml
-Sitemap: https://portlify.techycsr.dev/sitemap.xml
+Sitemap: https://portlifyai.app/sitemap.xml

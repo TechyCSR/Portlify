@@ -12,6 +12,8 @@ import {
     DEFAULT_OG_IMAGE,
     DEFAULT_SITE_URL,
     DEFAULT_TITLE,
+    OG_IMAGE_PATH,
+    OG_IMAGE_VERSION,
 } from '../constants/brand'
 import { getAppUrl, getPortfolioUrl } from './appUrl'
 import { safeHref } from './safeUrl'
@@ -36,6 +38,11 @@ function getSiteUrl() {
 function getAbsoluteAsset(path) {
     const base = getSiteUrl().replace(/\/$/, '')
     return path.startsWith('http') ? path : `${base}${path.startsWith('/') ? path : `/${path}`}`
+}
+
+function getDefaultOgImage() {
+    const base = getSiteUrl().replace(/\/$/, '')
+    return `${base}${OG_IMAGE_PATH}?v=${OG_IMAGE_VERSION}`
 }
 
 function upsertMeta(selector, attributes) {
@@ -93,7 +100,7 @@ export function applySiteSeo(overrides = {}) {
     const meta = {
         ...DEFAULT_META,
         canonical: `${siteUrl}/`,
-        ogImage: getAbsoluteAsset('/og-image.png'),
+        ogImage: getDefaultOgImage(),
         ...overrides,
     }
 
@@ -140,7 +147,7 @@ export function buildPortfolioSeo(profile, username) {
     const aboutSnippet = profile?.basicDetails?.about?.substring(0, 155)
     const canonical = getPortfolioUrl(username)
     const profilePhoto = profile?.basicDetails?.profilePhoto
-    const ogImage = profilePhoto || getAbsoluteAsset('/og-image.png')
+    const ogImage = profilePhoto || getDefaultOgImage()
 
     const description = aboutSnippet
         ? `${name} — ${aboutSnippet}${aboutSnippet.length >= 155 ? '…' : ''} View ${name}'s portfolio on ${BRAND_NAME_DISPLAY}.`
@@ -277,7 +284,7 @@ export function getSiteStructuredData(siteUrl = DEFAULT_SITE_URL) {
                     'Custom Branding',
                     'Portfolio Export',
                 ],
-                screenshot: `${base}/og-image.png`,
+                screenshot: `${base}${OG_IMAGE_PATH}?v=${OG_IMAGE_VERSION}`,
                 author: {
                     '@type': 'Person',
                     name: BRAND_AUTHOR,

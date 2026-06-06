@@ -4,6 +4,14 @@ import { useUser } from '@clerk/clerk-react'
 import { motion } from 'framer-motion'
 import { getAnalyticsDetailed, getAnalyticsSummary } from '../utils/api'
 import {
+    buildChartSeries,
+    formatChartLabel,
+    formatChartTooltip,
+    getChartBarHeight,
+    getChartGapClass,
+} from '../utils/analyticsChart'
+import { getReferrerCategoryLabel, getReferrerIcon } from '../utils/referrer'
+import {
     Calendar,
     Eye,
     Monitor,
@@ -13,8 +21,10 @@ import {
     Users,
 } from 'lucide-react'
 import { IconTile, InlineIcon } from '../components/IconTile'
+import GrowthTips from '../components/GrowthTips'
 import PageHeader from '../components/PageHeader'
 import { ErrorState, LoadingState } from '../components/AsyncState'
+import { useDashboardLayout } from '../components/DashboardLayout'
 
 const analyticsStats = [
     { label: 'Total Views', key: 'totalViews', icon: Eye },
@@ -45,6 +55,7 @@ const itemVariants = {
 function Analytics() {
     const navigate = useNavigate()
     const { isLoaded, isSignedIn } = useUser()
+    const { dbUser, profile, basicDetails, isRouteReady } = useDashboardLayout()
     const [loading, setLoading] = useState(true)
     const [loadError, setLoadError] = useState('')
     const [summary, setSummary] = useState(null)
@@ -57,6 +68,7 @@ function Analytics() {
             navigate('/')
             return
         }
+        if (!isRouteReady) return
 
         const loadData = async () => {
             setLoadError('')
@@ -78,7 +90,7 @@ function Analytics() {
             }
         }
         loadData()
-    }, [isLoaded, isSignedIn, navigate])
+    }, [isLoaded, isSignedIn, isRouteReady, navigate])
 
     // Format number with commas
     const formatNumber = (num) => {
@@ -105,6 +117,19 @@ function Analytics() {
     const getDevicePercent = (type) => {
         if (!totalDevices) return 0
         return Math.round(((detailed?.devices?.[type] || 0) / totalDevices) * 100)
+    }
+
+    const chartData = buildChartSeries(detailed?.dailyStats, period)
+    const maxViews = Math.max(1, ...chartData.map((stat) => stat.views))
+    const hasChartViews = chartData.some((stat) => stat.views > 0)
+
+    const allReferrers = detailed?.referrers || []
+    const topReferrers = allReferrers.slice(0, 8)
+    const totalReferrerViews = allReferrers.reduce((sum, ref) => sum + (ref.count || 0), 0)
+
+    const getReferrerPercent = (count) => {
+        if (!totalReferrerViews) return 0
+        return Math.round((count / totalReferrerViews) * 100)
     }
 
     return (
@@ -158,33 +183,61 @@ function Analytics() {
                             </div>
                         </div>
 
-                        {/* Simple bar chart */}
-                        <div className="h-48 flex items-end gap-2">
-                            {(detailed?.dailyStats?.slice(period === 'week' ? -7 : -30) || []).map((stat, i) => {
-                                const maxViews = Math.max(...(detailed?.dailyStats?.map(s => s.views) || [1]))
-                                const height = (stat.views / maxViews) * 100
-                                return (
-                                    <motion.div
-                                        key={i}
-                                        initial={{ height: 0 }}
-                                        animate={{ height: `${Math.max(height, 5)}%` }}
-                                        transition={{ delay: i * 0.05 }}
-                                        className="flex-1 bg-primary-500 rounded-t-lg relative group cursor-pointer min-h-[8px]"
-                                        role="img"
-                                        aria-label={`${stat.date}: ${stat.views} views`}
-                                        title={`${stat.date}: ${stat.views} views`}
-                                    >
-                                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-surface rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                                            {stat.views} views
+                        <div className="space-y-3">
+                            <div
+                                className={`relative h-48 flex items-end ${getChartGapClass(period)}`}
+                                role="img"
+                                aria-label={`Views over the last ${period === 'week' ? '7 days' : '30 days'}`}
+                            >
+                                {!hasChartViews && (
+                                    <div className="absolute inset-0 flex items-center justify-center text-sm text-muted pointer-events-none">
+                                        No views in this period yet
+                                    </div>
+                                )}
+                                {chartData.map((stat, i) => {
+                                    const barHeight = getChartBarHeight(stat.views, maxViews, period)
+                                    const barDelay = period === 'month' ? i * 0.015 : i * 0.04
+
+                                    return (
+                                        <div
+                                            key={`${stat.date.getTime()}-${i}`}
+                                            className="flex-1 h-full flex flex-col justify-end min-w-0"
+                                        >
+                                            <motion.div
+                                                initial={{ height: 0 }}
+                                                animate={{ height: barHeight }}
+                                                transition={{ delay: barDelay, duration: 0.35, ease: 'easeOut' }}
+                                                className={`w-full rounded-t-sm relative group ${stat.views > 0
+                                                    ? 'bg-primary-500/90 hover:bg-primary-500'
+                                                    : 'bg-surface/80'
+                                                    }`}
+                                                title={formatChartTooltip(stat.date, stat.views)}
+                                            >
+                                                {stat.views > 0 && (
+                                                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-surface border border-[var(--glass-border)] rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                                                        {stat.views} views
+                                                    </div>
+                                                )}
+                                            </motion.div>
                                         </div>
-                                    </motion.div>
-                                )
-                            })}
-                            {(!detailed?.dailyStats?.length) && (
-                                <div className="flex-1 flex items-center justify-center text-muted">
-                                    No data yet
-                                </div>
-                            )}
+                                    )
+                                })}
+                            </div>
+                            <div className={`flex ${getChartGapClass(period)}`}>
+                                {chartData.map((stat, i) => {
+                                    const label = formatChartLabel(stat.date, period, i, chartData.length)
+
+                                    return (
+                                        <div
+                                            key={`${stat.date.getTime()}-label-${i}`}
+                                            className="flex-1 text-center text-[10px] sm:text-xs text-muted min-w-0 leading-none"
+                                            aria-hidden={!label}
+                                        >
+                                            {label}
+                                        </div>
+                                    )
+                                })}
+                            </div>
                         </div>
                     </motion.div>
 
@@ -227,21 +280,60 @@ function Analytics() {
                         transition={{ delay: 0.5 }}
                         className="glass-card rounded-2xl p-6"
                     >
-                        <h2 className="font-bold text-primary mb-6">Top Referrers</h2>
+                        <div className="flex items-center justify-between gap-3 mb-6">
+                            <h2 className="font-bold text-primary">Top Referrers</h2>
+                            {topReferrers.length > 0 && (
+                                <span className="text-xs text-muted">
+                                    {formatNumber(totalReferrerViews)} referrer visits tracked
+                                </span>
+                            )}
+                        </div>
 
-                        {(detailed?.referrers?.length || 0) > 0 ? (
-                            <div className="space-y-3">
-                                {detailed.referrers.slice(0, 5).map((ref, i) => (
-                                    <div key={i} className="flex items-center justify-between p-3 bg-surface rounded-xl">
-                                        <span className="text-secondary truncate max-w-[200px]">{ref.source}</span>
-                                        <span className="text-primary font-medium">{ref.count}</span>
-                                    </div>
-                                ))}
+                        {topReferrers.length > 0 ? (
+                            <div className="space-y-4">
+                                {topReferrers.map((ref, i) => {
+                                    const ReferrerIcon = getReferrerIcon(ref.category)
+                                    const label = ref.label || ref.source
+                                    const percent = getReferrerPercent(ref.count)
+
+                                    return (
+                                        <div key={`${ref.id || label}-${i}`}>
+                                            <div className="flex items-center justify-between gap-3 mb-2">
+                                                <div className="flex items-center gap-3 min-w-0">
+                                                    <div className="w-9 h-9 rounded-lg bg-tertiary flex items-center justify-center flex-shrink-0">
+                                                        <ReferrerIcon size={16} className="text-secondary" />
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <p className="text-primary font-medium truncate">{label}</p>
+                                                        <p className="text-xs text-muted truncate">
+                                                            {getReferrerCategoryLabel(ref.category)}
+                                                            {ref.domain ? ` · ${ref.domain}` : ''}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right flex-shrink-0">
+                                                    <p className="text-primary font-medium">{formatNumber(ref.count)}</p>
+                                                    <p className="text-xs text-muted">{percent}%</p>
+                                                </div>
+                                            </div>
+                                            <div className="h-2 bg-surface rounded-full overflow-hidden">
+                                                <motion.div
+                                                    initial={{ width: 0 }}
+                                                    animate={{ width: `${percent}%` }}
+                                                    transition={{ delay: 0.5 + i * 0.08, duration: 0.45 }}
+                                                    className="h-full bg-primary-500/70 rounded-full"
+                                                />
+                                            </div>
+                                        </div>
+                                    )
+                                })}
                             </div>
                         ) : (
                             <div className="text-center py-8 text-muted">
                                 <p>No referrer data yet</p>
-                                <p className="text-sm mt-1">Share your portfolio to see where visitors come from</p>
+                                <p className="text-sm mt-1 max-w-sm mx-auto">
+                                    Share your portfolio on LinkedIn, add UTM links, or send it through ChatGPT to see where visitors come from
+                                </p>
                             </div>
                         )}
                     </motion.div>
@@ -255,19 +347,11 @@ function Analytics() {
                     >
                         <h2 className="font-bold text-primary mb-6">Growth Tips</h2>
 
-                        <div className="space-y-3">
-                            {[
-                                { title: 'Share on LinkedIn', desc: 'Professional networks drive the most relevant traffic to portfolios.' },
-                                { title: 'Add to email signature', desc: 'Every email becomes an opportunity to showcase your work.' },
-                                { title: 'Add to resume', desc: 'Include your portfolio link to stand out from other applicants.' },
-                            ].map((tip) => (
-                                <div key={tip.title} className="p-4 bg-tertiary rounded-xl">
-                                    <p className="text-secondary text-sm">
-                                        <strong className="text-primary">{tip.title}</strong> — {tip.desc}
-                                    </p>
-                                </div>
-                            ))}
-                        </div>
+                        <GrowthTips
+                            username={dbUser?.username}
+                            basicDetails={basicDetails}
+                            profile={profile}
+                        />
                     </motion.div>
                 </div>
         </div>

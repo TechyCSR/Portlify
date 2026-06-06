@@ -8,6 +8,9 @@
         "build": "vite build",
         "lint": "eslint .",
         "preview": "vite preview",
+        "og:image": "node scripts/render-og-from-svg.mjs",
+        "og:image:crop": "node scripts/crop-og-image.mjs",
+        "og:image:render": "node scripts/render-og-image.mjs",
         "test": "vitest run"
     },
     "dependencies": {

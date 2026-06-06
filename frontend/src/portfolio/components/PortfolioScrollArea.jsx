@@ -1,5 +1,7 @@
 import { forwardRef, useCallback, useEffect, useRef, useState } from 'react'
 
+const DESKTOP_MEDIA_QUERY = '(min-width: 1024px)'
+
 const PortfolioScrollArea = forwardRef(function PortfolioScrollArea(
     { children, className = '', innerClassName = '', ...props },
     ref
@@ -7,6 +9,10 @@ const PortfolioScrollArea = forwardRef(function PortfolioScrollArea(
     const scrollRef = useRef(null)
     const [canScrollUp, setCanScrollUp] = useState(false)
     const [canScrollDown, setCanScrollDown] = useState(false)
+    const [isDesktop, setIsDesktop] = useState(() => {
+        if (typeof window === 'undefined') return true
+        return window.matchMedia(DESKTOP_MEDIA_QUERY).matches
+    })
 
     const setRefs = useCallback((node) => {
         scrollRef.current = node
@@ -17,18 +23,37 @@ const PortfolioScrollArea = forwardRef(function PortfolioScrollArea(
         }
     }, [ref])
 
+    useEffect(() => {
+        const mediaQuery = window.matchMedia(DESKTOP_MEDIA_QUERY)
+        const syncViewport = () => setIsDesktop(mediaQuery.matches)
+
+        syncViewport()
+        mediaQuery.addEventListener('change', syncViewport)
+        return () => mediaQuery.removeEventListener('change', syncViewport)
+    }, [])
+
     const updateScrollState = useCallback(() => {
         const el = scrollRef.current
-        if (!el) return
+        if (!el || !isDesktop) {
+            setCanScrollUp(false)
+            setCanScrollDown(false)
+            return
+        }
 
         const { scrollTop, clientHeight, scrollHeight } = el
         setCanScrollUp(scrollTop > 6)
         setCanScrollDown(scrollTop + clientHeight < scrollHeight - 6)
-    }, [])
+    }, [isDesktop])
 
     useEffect(() => {
+        if (!isDesktop) {
+            setCanScrollUp(false)
+            setCanScrollDown(false)
+            return undefined
+        }
+
         const el = scrollRef.current
-        if (!el) return
+        if (!el) return undefined
 
         updateScrollState()
 
@@ -46,24 +71,24 @@ const PortfolioScrollArea = forwardRef(function PortfolioScrollArea(
             resizeObserver.disconnect()
             mutationObserver.disconnect()
         }
-    }, [updateScrollState, children])
+    }, [updateScrollState, children, isDesktop])
 
     return (
-        <div className={`portfolio-scroll-area relative flex-1 min-h-0 ${className}`}>
-            {canScrollUp && (
-                <div className="portfolio-scroll-fade portfolio-scroll-fade-top" aria-hidden="true" />
+        <div className={`portfolio-scroll-area relative ${className}`}>
+            {isDesktop && canScrollUp && (
+                <div className="portfolio-scroll-fade portfolio-scroll-fade-top portfolio-mobile-scroll-fade" aria-hidden="true" />
             )}
 
             <div
                 ref={setRefs}
-                className={`portfolio-scroll portfolio-section-panel h-full overflow-y-auto ${innerClassName}`}
+                className={`portfolio-scroll portfolio-section-panel lg:h-full lg:overflow-y-auto ${innerClassName}`}
                 {...props}
             >
                 {children}
             </div>
 
-            {canScrollDown && (
-                <div className="portfolio-scroll-fade portfolio-scroll-fade-bottom" aria-hidden="true" />
+            {isDesktop && canScrollDown && (
+                <div className="portfolio-scroll-fade portfolio-scroll-fade-bottom portfolio-mobile-scroll-fade" aria-hidden="true" />
             )}
         </div>
     )

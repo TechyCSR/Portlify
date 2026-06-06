@@ -14,6 +14,7 @@ import Settings from './pages/Settings'
 import Analytics from './pages/Analytics'
 import Premium from './pages/Premium'
 import Portfolio from './pages/Portfolio'
+import PostAuthRedirect from './pages/PostAuthRedirect'
 import ProtectedRoute from './components/ProtectedRoute'
 import DashboardLayout from './components/DashboardLayout'
 import ClerkThemeProvider from './components/ClerkThemeProvider'
@@ -34,7 +35,8 @@ function AppLayout({ children }) {
         !location.pathname.startsWith('/dashboard') &&
         !location.pathname.startsWith('/settings') &&
         !location.pathname.startsWith('/analytics') &&
-        !location.pathname.startsWith('/premium')
+        !location.pathname.startsWith('/premium') &&
+        !location.pathname.startsWith('/app')
 
     return (
         <>
@@ -56,7 +58,7 @@ function AppLayout({ children }) {
 function SignInPage() {
     const { theme } = useTheme()
     const location = useLocation()
-    const redirectUrl = location.state?.from?.pathname || '/dashboard'
+    const redirectUrl = location.state?.from?.pathname || '/app'
 
     return (
         <div className="min-h-screen flex items-center justify-center pt-navbar">
@@ -65,7 +67,7 @@ function SignInPage() {
                 path="/sign-in"
                 signUpUrl="/sign-up"
                 forceRedirectUrl={redirectUrl}
-                fallbackRedirectUrl="/dashboard"
+                fallbackRedirectUrl="/app"
                 appearance={getClerkAppearance(theme)}
             />
         </div>
@@ -80,6 +82,8 @@ function SignUpPage() {
                 routing="path"
                 path="/sign-up"
                 signInUrl="/sign-in"
+                forceRedirectUrl="/app"
+                fallbackRedirectUrl="/app"
                 appearance={getClerkAppearance(theme)}
             />
         </div>
@@ -104,6 +108,11 @@ function AppRoutes() {
                 <Route path="/onboarding" element={
                     <ProtectedRoute>
                         <Onboarding />
+                    </ProtectedRoute>
+                } />
+                <Route path="/app" element={
+                    <ProtectedRoute>
+                        <PostAuthRedirect />
                     </ProtectedRoute>
                 } />
                 <Route element={
@@ -131,7 +140,7 @@ function App() {
         <ThemeProvider>
             <ClerkThemeProvider>
                 <ToastProvider>
-                    <Router>
+                    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                         <ScrollToTop />
                         <SeoManager />
                         <AppRoutes />

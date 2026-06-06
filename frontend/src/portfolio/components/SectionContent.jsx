@@ -38,7 +38,7 @@ function SectionTitle({ icon: Icon, children }) {
 
 function Surface({ children, className = '' }) {
     return (
-        <div className={`portfolio-surface rounded-2xl ${className}`}>
+        <div className={`portfolio-surface rounded-2xl overflow-visible ${className}`}>
             {children}
         </div>
     )
@@ -58,7 +58,7 @@ function ExperienceItem({ item, isLast }) {
             <TimelineCard>
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3">
                     <div>
-                        <h3 className="text-base sm:text-lg font-semibold portfolio-text">
+                        <h3 className="text-base sm:text-lg font-semibold portfolio-text portfolio-break-words">
                             {item.title}
                         </h3>
                         <div className="flex items-center gap-2 mt-1 text-sm portfolio-text-secondary">
@@ -80,14 +80,14 @@ function ExperienceItem({ item, isLast }) {
                     </div>
                 )}
                 {item.description && (
-                    <p className="text-sm leading-relaxed portfolio-text-secondary">
+                    <p className="text-sm sm:text-sm leading-relaxed portfolio-text-secondary portfolio-mobile-content-copy">
                         {item.description}
                     </p>
                 )}
                 {item.achievements?.length > 0 && (
                     <ul className="mt-3 space-y-2">
                         {item.achievements.map((achievement, index) => (
-                            <li key={index} className="flex items-start gap-2 text-sm portfolio-text-secondary">
+                            <li key={index} className="flex items-start gap-2 text-sm portfolio-text-secondary portfolio-mobile-content-copy">
                                 <ChevronRight size={14} strokeWidth={ICON_STROKE} className="portfolio-link mt-0.5 flex-shrink-0" />
                                 {achievement}
                             </li>
@@ -109,7 +109,7 @@ function EducationItem({ item, isLast }) {
             <TimelineCard>
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3">
                     <div>
-                        <h3 className="text-base sm:text-lg font-semibold portfolio-text">
+                        <h3 className="text-base sm:text-lg font-semibold portfolio-text portfolio-break-words">
                             {item.degree}
                         </h3>
                         <div className="flex items-center gap-2 mt-1 text-sm portfolio-text-secondary">
@@ -137,7 +137,7 @@ function EducationItem({ item, isLast }) {
                     </div>
                 )}
                 {item.description && (
-                    <p className="text-sm leading-relaxed portfolio-text-secondary">
+                    <p className="text-sm leading-relaxed portfolio-text-secondary portfolio-mobile-content-copy">
                         {item.description}
                     </p>
                 )}
@@ -157,7 +157,7 @@ function EducationItem({ item, isLast }) {
 
 function ProjectCard({ project }) {
     return (
-        <Surface className="p-5 sm:p-6 flex flex-col">
+        <Surface className="p-5 sm:p-6 flex flex-col min-w-0 w-full">
             <div className="flex items-start justify-between gap-3 mb-4">
                 <div className="portfolio-icon-tile w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0">
                     <Rocket size={20} strokeWidth={ICON_STROKE} />
@@ -169,7 +169,7 @@ function ProjectCard({ project }) {
                             target="_blank"
                             rel="noopener noreferrer"
                             aria-label="View project on GitHub"
-                            className="portfolio-chip p-2 rounded-lg"
+                            className="portfolio-chip portfolio-touch-target inline-flex items-center justify-center p-2.5 rounded-lg"
                         >
                             <Github size={18} strokeWidth={ICON_STROKE} />
                         </a>
@@ -180,23 +180,23 @@ function ProjectCard({ project }) {
                             target="_blank"
                             rel="noopener noreferrer"
                             aria-label="View live demo"
-                            className="portfolio-chip p-2 rounded-lg"
+                            className="portfolio-chip portfolio-touch-target inline-flex items-center justify-center p-2.5 rounded-lg"
                         >
                             <ExternalLink size={18} strokeWidth={ICON_STROKE} />
                         </a>
                     )}
                 </div>
             </div>
-            <h3 className="text-base sm:text-lg font-semibold mb-2 portfolio-text">
+            <h3 className="text-base sm:text-lg font-semibold mb-2 portfolio-text portfolio-break-words">
                 {project.title}
             </h3>
             {project.description && (
-                <p className="text-sm leading-relaxed mb-4 flex-1 portfolio-text-secondary">
+                <p className="text-sm leading-relaxed mb-4 flex-1 portfolio-text-secondary portfolio-mobile-content-copy portfolio-break-words">
                     {project.description}
                 </p>
             )}
             {project.techStack?.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-auto">
+                <div className="flex flex-wrap gap-2 mt-auto w-full min-w-0">
                     {project.techStack.map((tech, index) => (
                         <span key={index} className="portfolio-tag px-2.5 py-1 rounded-md text-xs font-medium">
                             {tech}
@@ -211,7 +211,7 @@ function ProjectCard({ project }) {
 function ListCard({ title, subtitle, description, date, url, urlLabel = 'View' }) {
     return (
         <Surface className="p-5 h-full">
-            <h3 className="font-semibold mb-1 portfolio-text">{title}</h3>
+            <h3 className="font-semibold mb-1 portfolio-text portfolio-break-words">{title}</h3>
             {subtitle && (
                 <p className="text-sm mb-2 font-medium portfolio-text-secondary">{subtitle}</p>
             )}
@@ -222,7 +222,7 @@ function ListCard({ title, subtitle, description, date, url, urlLabel = 'View' }
                 </div>
             )}
             {description && (
-                <p className="text-sm leading-relaxed portfolio-text-secondary">
+                <p className="text-sm leading-relaxed portfolio-text-secondary portfolio-mobile-content-copy">
                     {description}
                 </p>
             )}
@@ -231,7 +231,7 @@ function ListCard({ title, subtitle, description, date, url, urlLabel = 'View' }
                     href={safeHref(url)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="portfolio-link inline-flex items-center gap-1 mt-3 text-sm font-medium"
+                    className="portfolio-link inline-flex items-center gap-1 mt-3 text-sm font-medium min-h-[44px]"
                 >
                     {urlLabel} <ExternalLink size={14} strokeWidth={ICON_STROKE} />
                 </a>
@@ -248,7 +248,7 @@ function SectionContent({ section, basicDetails }) {
                 <>
                     <SectionTitle icon={section.icon}>About</SectionTitle>
                     <Surface className="p-5 sm:p-6">
-                        <p className="leading-relaxed whitespace-pre-wrap text-sm sm:text-base portfolio-text-secondary">
+                        <p className="leading-relaxed whitespace-pre-wrap text-base portfolio-text-secondary portfolio-mobile-content-copy">
                             {basicDetails?.about || 'Professional portfolio powered by PortlifyAi.'}
                         </p>
                     </Surface>
@@ -271,7 +271,7 @@ function SectionContent({ section, basicDetails }) {
             return (
                 <>
                     <SectionTitle icon={section.icon}>Projects</SectionTitle>
-                    <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full min-w-0">
                         {section.items.map((project, index) => (
                             <ProjectCard key={index} project={project} />
                         ))}
@@ -431,7 +431,7 @@ function SectionContent({ section, basicDetails }) {
                 <>
                     <SectionTitle icon={section.icon}>{section.label}</SectionTitle>
                     <Surface className="p-5 sm:p-6">
-                        <p className="leading-relaxed whitespace-pre-wrap text-sm sm:text-base portfolio-text-secondary">
+                        <p className="leading-relaxed whitespace-pre-wrap text-base portfolio-text-secondary portfolio-mobile-content-copy">
                             {section.content}
                         </p>
                     </Surface>

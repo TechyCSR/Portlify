@@ -8,23 +8,27 @@ import { useToast } from '../context/ToastContext'
 import { Check, CheckCircle, Info } from 'lucide-react'
 import { IconTile, InlineIcon, ICON_STROKE } from '../components/IconTile'
 import PageHeader from '../components/PageHeader'
+import { useDashboardLayout } from '../components/DashboardLayout'
 
 function ResumeUpload() {
     const navigate = useNavigate()
+    const { refreshPendingResume } = useDashboardLayout()
     const { upload, uploading, progress, error: uploadError } = useCloudinaryUpload()
     const toast = useToast()
     const [status, setStatus] = useState('idle') // idle, uploading, parsing, success, error
     const [error, setError] = useState('')
     const [parsingMessage, setParsingMessage] = useState('')
 
-    // Check if user has registered username
     useEffect(() => {
         const checkUser = async () => {
             try {
-                await getCurrentUser()
+                const { data } = await getCurrentUser()
+                if (!data.onboardingCompleted) {
+                    navigate('/onboarding', { replace: true })
+                }
             } catch (err) {
                 if (err.response?.data?.needsRegistration) {
-                    navigate('/username')
+                    navigate('/username', { replace: true })
                 }
             }
         }
@@ -58,6 +62,7 @@ function ResumeUpload() {
                 ...data.data,
                 resumeUrl: url
             }))
+            refreshPendingResume()
 
             setStatus('success')
             setParsingMessage('Done! Redirecting to editor...')
