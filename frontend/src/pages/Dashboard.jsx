@@ -1,133 +1,60 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { getMyProfile, getCurrentUser, getAnalyticsSummary } from '../utils/api'
+import { motion } from 'framer-motion'
+import { getAnalyticsSummary } from '../utils/api'
 import { getAppUrl, getPortfolioUrl } from '../utils/appUrl'
-import { Terminal, Layers, Database, Wrench, Cloud, MessageCircle } from 'lucide-react'
+import { useDashboardLayout } from '../components/DashboardLayout'
+import DashboardSkeleton from '../components/DashboardSkeleton'
+import {
+    BarChart3,
+    Briefcase,
+    Check,
+    Cloud,
+    Copy,
+    Database,
+    Eye,
+    GraduationCap,
+    Layers,
+    Link2,
+    MessageCircle,
+    Rocket,
+    Terminal,
+    Users,
+    Wrench,
+    Zap,
+} from 'lucide-react'
+import { IconTile, ICON_STROKE } from '../components/IconTile'
+import PageHeader from '../components/PageHeader'
+import SectionHeading from '../components/SectionHeading'
+import { ErrorState } from '../components/AsyncState'
 
-// SVG Icons
-const icons = {
-    home: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-        </svg>
-    ),
-    edit: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-        </svg>
-    ),
-    upload: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-        </svg>
-    ),
-    analytics: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-        </svg>
-    ),
-    settings: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-    ),
-    external: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-        </svg>
-    ),
-    skills: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-        </svg>
-    ),
-    briefcase: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-        </svg>
-    ),
-    rocket: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
-        </svg>
-    ),
-    education: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
-        </svg>
-    ),
-    copy: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-        </svg>
-    ),
-    check: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-        </svg>
-    ),
-    eye: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-        </svg>
-    ),
-    users: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-        </svg>
-    ),
-    menu: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-    ),
-    close: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-        </svg>
-    ),
-    premium: (
-        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-        </svg>
-    )
-}
-
-// Animation variants
 const containerVariants = {
     hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.05 } }
+    visible: { opacity: 1, transition: { staggerChildren: 0.05 } },
 }
 
 const itemVariants = {
     hidden: { opacity: 0, y: 15 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.3 } }
+    visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
 }
 
-// Sidebar navigation items
-const navItems = [
-    { to: '/dashboard', icon: icons.home, label: 'Overview' },
-    { to: '/editor', icon: icons.edit, label: 'Edit Profile' },
-    { to: '/upload', icon: icons.upload, label: 'Upload Resume' },
-    { to: '/analytics', icon: icons.analytics, label: 'Analytics' },
-    { to: '/premium', icon: icons.premium, label: 'Premium' },
-    { to: '/settings', icon: icons.settings, label: 'Settings' }
+const skillCategories = [
+    { key: 'programmingLanguages', label: 'Programming Languages', icon: Terminal },
+    { key: 'frameworks', label: 'Frameworks & Libraries', icon: Layers },
+    { key: 'databases', label: 'Databases', icon: Database },
+    { key: 'tools', label: 'Tools', icon: Wrench },
+    { key: 'cloudSystems', label: 'Cloud & Systems', icon: Cloud },
+    { key: 'softSkills', label: 'Soft Skills', icon: MessageCircle },
 ]
 
 function Dashboard() {
-    const { user, isLoaded, isSignedIn } = useUser()
+    const { isLoaded, isSignedIn } = useUser()
     const navigate = useNavigate()
-    const location = useLocation()
-    const [profile, setProfile] = useState(null)
-    const [loading, setLoading] = useState(true)
-    const [dbUser, setDbUser] = useState(null)
+    const { dbUser, profile, basicDetails, isLoading, loadError, refreshData } = useDashboardLayout()
     const [analytics, setAnalytics] = useState(null)
+    const [analyticsLoaded, setAnalyticsLoaded] = useState(false)
     const [copied, setCopied] = useState(false)
-    const [sidebarOpen, setSidebarOpen] = useState(false)
     const [error, setError] = useState(null)
     const [retryCount, setRetryCount] = useState(0)
     const attemptCountRef = useRef(0)
@@ -136,55 +63,53 @@ function Dashboard() {
         if (!isLoaded) return
         if (!isSignedIn) {
             navigate('/')
-            return
         }
+    }, [navigate, isLoaded, isSignedIn])
 
-        const fetchData = async () => {
-            setLoading(true)
-            setError(null)
+    useEffect(() => {
+        if (isLoading || !loadError) return
+
+        const err = loadError
+        console.error('Dashboard data fetch error:', err)
+        if (err.response?.status === 404 || err.response?.data?.needsSetup) {
+            navigate('/upload')
+        } else if (err.response?.data?.needsRegistration) {
+            navigate('/username')
+        } else if (attemptCountRef.current === 0) {
+            attemptCountRef.current = 1
+            setTimeout(() => setRetryCount((c) => c + 1), 1000)
+        } else {
+            setError('Failed to load dashboard data. Please check your connection.')
+        }
+    }, [isLoading, loadError, navigate])
+
+    useEffect(() => {
+        if (isLoading || loadError || !profile) return
+
+        attemptCountRef.current = 0
+        setError(null)
+
+        let cancelled = false
+        const fetchAnalytics = async () => {
             try {
-                const [userRes, profileRes] = await Promise.all([
-                    getCurrentUser(),
-                    getMyProfile()
-                ])
-                setDbUser(userRes.data)
-                setProfile(profileRes.data)
-
-                // Try to get analytics (might fail if no data yet)
-                try {
-                    const analyticsRes = await getAnalyticsSummary()
-                    setAnalytics(analyticsRes.data)
-                } catch (e) {
-                    // Analytics might not exist yet
-                }
-
-                // Reset attempt count on success
-                attemptCountRef.current = 0
-            } catch (err) {
-                console.error('Dashboard data fetch error:', err)
-                if (err.response?.status === 404 || err.response?.data?.needsSetup) {
-                    navigate('/upload')
-                } else if (err.response?.data?.needsRegistration) {
-                    navigate('/username')
-                } else {
-                    // Auto-retry once if this is the first attempt (likely Clerk not ready)
-                    if (attemptCountRef.current === 0) {
-                        attemptCountRef.current = 1
-                        console.log('First attempt failed, retrying in 1 second...')
-                        setTimeout(() => {
-                            setRetryCount(c => c + 1)
-                        }, 1000)
-                    } else {
-                        // Second attempt failed, show error
-                        setError('Failed to load dashboard data. Please check your connection.')
-                    }
-                }
+                const analyticsRes = await getAnalyticsSummary()
+                if (!cancelled) setAnalytics(analyticsRes.data)
+            } catch {
+                if (!cancelled) setAnalytics(null)
             } finally {
-                setLoading(false)
+                if (!cancelled) setAnalyticsLoaded(true)
             }
         }
-        fetchData()
-    }, [navigate, isLoaded, isSignedIn, retryCount])
+
+        fetchAnalytics()
+        return () => { cancelled = true }
+    }, [isLoading, loadError, profile])
+
+    useEffect(() => {
+        if (retryCount > 0) {
+            refreshData()
+        }
+    }, [retryCount, refreshData])
 
     const copyLink = () => {
         navigator.clipboard.writeText(getPortfolioUrl(dbUser?.username))
@@ -192,47 +117,15 @@ function Dashboard() {
         setTimeout(() => setCopied(false), 2000)
     }
 
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center pt-20">
-                <div className="spinner w-8 h-8" />
-            </div>
-        )
+    if (isLoading) {
+        return <DashboardSkeleton />
     }
 
     if (error) {
-        return (
-            <div className="min-h-screen flex items-center justify-center pt-20 px-4">
-                <div className="glass-card p-8 rounded-2xl text-center max-w-md w-full">
-                    <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
-                    </div>
-                    <h2 className="text-xl font-bold text-primary mb-2">Something went wrong</h2>
-                    <p className="text-secondary mb-6">{error}</p>
-                    <button
-                        onClick={() => setRetryCount(c => c + 1)}
-                        className="btn-primary w-full justify-center"
-                    >
-                        Try Again
-                    </button>
-                </div>
-            </div>
-        )
+        return <ErrorState message={error} onRetry={() => setRetryCount((c) => c + 1)} />
     }
 
-    const { basicDetails, skills, experience, education, projects } = profile || {}
-
-    // New categorized skills structure with animated icons
-    const skillCategories = [
-        { key: 'programmingLanguages', label: 'Programming Languages', icon: Terminal, gradient: 'from-blue-500 to-cyan-500' },
-        { key: 'frameworks', label: 'Frameworks & Libraries', icon: Layers, gradient: 'from-purple-500 to-pink-500' },
-        { key: 'databases', label: 'Databases', icon: Database, gradient: 'from-emerald-500 to-teal-500' },
-        { key: 'tools', label: 'Tools', icon: Wrench, gradient: 'from-orange-500 to-amber-500' },
-        { key: 'cloudSystems', label: 'Cloud & Systems', icon: Cloud, gradient: 'from-indigo-500 to-violet-500' },
-        { key: 'softSkills', label: 'Soft Skills', icon: MessageCircle, gradient: 'from-rose-500 to-pink-500' }
-    ]
+    const { skills, experience, education, projects } = profile || {}
 
     const allSkills = [
         ...(skills?.programmingLanguages || []),
@@ -240,285 +133,147 @@ function Dashboard() {
         ...(skills?.databases || []),
         ...(skills?.tools || []),
         ...(skills?.cloudSystems || []),
-        ...(skills?.softSkills || [])
+        ...(skills?.softSkills || []),
     ]
 
-    const stats = [
-        { label: 'Skills', value: allSkills.length, icon: icons.skills, gradient: 'from-indigo-500 to-purple-500' },
-        { label: 'Experience', value: experience?.length || 0, icon: icons.briefcase, gradient: 'from-emerald-500 to-teal-500' },
-        { label: 'Projects', value: projects?.length || 0, icon: icons.rocket, gradient: 'from-pink-500 to-rose-500' },
-        { label: 'Education', value: education?.length || 0, icon: icons.education, gradient: 'from-amber-500 to-orange-500' }
+    const profileStats = [
+        { label: 'Skills', value: allSkills.length, icon: Zap },
+        { label: 'Experience', value: experience?.length || 0, icon: Briefcase },
+        { label: 'Projects', value: projects?.length || 0, icon: Rocket },
+        { label: 'Education', value: education?.length || 0, icon: GraduationCap },
+    ]
+
+    const analyticsStats = [
+        { label: 'Total Views', value: analytics?.totalViews || 0, icon: Eye },
+        { label: 'Unique Visitors', value: analytics?.uniqueVisitors || 0, icon: Users },
+        { label: 'This Week', value: analytics?.weekViews || 0, icon: BarChart3 },
+        { label: 'Today', value: analytics?.todayViews || 0, icon: Rocket },
     ]
 
     return (
-        <div className="min-h-screen pt-16">
+        <motion.div
+            className="max-w-5xl mx-auto w-full"
+            variants={containerVariants}
+            initial={false}
+            animate="visible"
+        >
+            <motion.div variants={itemVariants}>
+                <PageHeader
+                    title={`Welcome back${basicDetails?.name ? `, ${basicDetails.name.split(' ')[0]}` : ''}!`}
+                    description="Here's an overview of your portfolio"
+                />
+            </motion.div>
 
-
-            <div className="flex">
-                {/* Sidebar */}
-                <motion.aside
-                    initial={false}
-                    animate={{ x: sidebarOpen ? 0 : '-100%' }}
-                    className={`fixed md:sticky top-16 left-0 z-50 md:z-0 w-64 h-[calc(100vh-4rem)] glass-card border-r border-border/50 p-4 overflow-y-auto transition-transform md:translate-x-0`}
-                >
-                    {/* User info */}
-                    <div className="flex items-center gap-3 p-4 rounded-xl bg-surface/50 mb-6">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold">
-                            {basicDetails?.name?.charAt(0) || dbUser?.username?.charAt(0) || 'U'}
+            {dbUser?.username && (
+                <motion.div variants={itemVariants} className="glass-card rounded-2xl p-5 mb-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div className="flex items-center gap-4 min-w-0">
+                            <IconTile icon={Link2} />
+                            <div className="min-w-0">
+                                <p className="text-sm text-muted mb-1">Your portfolio URL</p>
+                                <p className="text-primary font-medium truncate">
+                                    {getAppUrl().replace(/^https?:\/\//, '')}/
+                                    <span className="text-primary-400">{dbUser.username}</span>
+                                </p>
+                            </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-primary truncate">
-                                {basicDetails?.name || dbUser?.username || 'User'}
-                            </p>
-                            <p className="text-xs text-muted truncate">@{dbUser?.username}</p>
-                        </div>
+                        <button
+                            type="button"
+                            onClick={copyLink}
+                            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-tertiary text-primary hover:bg-surface-hover transition-colors flex-shrink-0"
+                        >
+                            {copied
+                                ? <Check size={16} strokeWidth={ICON_STROKE} className="text-success" />
+                                : <Copy size={16} strokeWidth={ICON_STROKE} className="text-secondary" />}
+                            <span>{copied ? 'Copied!' : 'Copy Link'}</span>
+                        </button>
                     </div>
+                </motion.div>
+            )}
 
-                    {/* Navigation */}
-                    <nav className="space-y-1">
-                        {navItems.map((item) => (
-                            <Link
-                                key={item.to}
-                                to={item.to}
-                                onClick={() => setSidebarOpen(false)}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${location.pathname === item.to
-                                    ? 'bg-indigo-500/20 text-indigo-400'
-                                    : 'text-secondary hover:text-primary hover:bg-surface'
-                                    }`}
+            <motion.div variants={itemVariants} className="mb-6">
+                <SectionHeading>Portfolio Analytics</SectionHeading>
+                {analyticsLoaded && analyticsStats.every((stat) => stat.value === 0) ? (
+                    <div className="glass-card rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <p className="text-secondary text-sm">
+                            No views yet. Share your portfolio link to start tracking visitors.
+                        </p>
+                        <Link to="/analytics" className="btn-primary text-sm justify-center">
+                            View Analytics
+                        </Link>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+                        {analyticsStats.map((stat) => {
+                            const Icon = stat.icon
+                            return (
+                                <div key={stat.label} className="glass-card rounded-xl p-4">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Icon size={15} strokeWidth={ICON_STROKE} className="text-secondary" />
+                                        <span className="text-xs text-muted">{stat.label}</span>
+                                    </div>
+                                    <p className="text-2xl font-bold text-primary">{stat.value}</p>
+                                </div>
+                            )
+                        })}
+                    </div>
+                )}
+            </motion.div>
+
+            <motion.div variants={itemVariants} className="mb-6">
+                <SectionHeading>Profile Stats</SectionHeading>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+                    {profileStats.map((stat) => {
+                        const Icon = stat.icon
+                        return (
+                            <div
+                                key={stat.label}
+                                className="glass-card rounded-xl p-4 hover:bg-surface-hover transition-colors"
                             >
-                                {item.icon}
-                                <span className="font-medium">{item.label}</span>
-                            </Link>
-                        ))}
-                    </nav>
+                                <IconTile icon={Icon} className="w-9 h-9 mb-3" size={18} />
+                                <p className="text-2xl font-bold text-primary">{stat.value}</p>
+                                <p className="text-sm text-muted">{stat.label}</p>
+                            </div>
+                        )
+                    })}
+                </div>
+            </motion.div>
 
-                    {/* View Portfolio button */}
-                    {dbUser?.username && (
-                        <div className="mt-6 pt-6 border-t border-border">
-                            <Link
-                                to={`/${dbUser.username}`}
-                                target="_blank"
-                                className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium hover:opacity-90 transition-opacity"
-                            >
-                                {icons.external}
-                                View Live Portfolio
-                            </Link>
-                        </div>
-                    )}
-                </motion.aside>
+            {allSkills.length > 0 && (
+                <motion.div variants={itemVariants}>
+                    <SectionHeading>Your Skills</SectionHeading>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                        {skillCategories.map((category) => {
+                            const categorySkills = skills?.[category.key] || []
+                            if (categorySkills.length === 0) return null
+                            const Icon = category.icon
 
-                {/* Main content */}
-                <main className="flex-1 p-6 md:p-8 md:ml-0">
-                    <motion.div
-                        className="max-w-5xl mx-auto"
-                        variants={containerVariants}
-                        initial="hidden"
-                        animate="visible"
-                    >
-                        {/* Header */}
-                        <motion.div variants={itemVariants} className="mb-8">
-                            <h1 className="text-3xl font-display font-bold text-primary flex items-center gap-3">
-                                Welcome back{basicDetails?.name ? `, ${basicDetails.name.split(' ')[0]}` : ''}!
-                                <motion.span
-                                    animate={{ rotate: [0, 14, -8, 14, -4, 10, 0] }}
-                                    transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 1 }}
+                            return (
+                                <div
+                                    key={category.key}
+                                    className="glass-card rounded-xl p-4 hover:bg-surface-hover transition-colors"
                                 >
-                                    👋
-                                </motion.span>
-                            </h1>
-                            <p className="text-secondary mt-1">Here's an overview of your portfolio</p>
-                        </motion.div>
-
-                        {/* Portfolio URL Card */}
-                        {dbUser?.username && (
-                            <motion.div
-                                variants={itemVariants}
-                                className="relative overflow-hidden glass-card rounded-2xl p-5 mb-6"
-                            >
-                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white">
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm text-muted mb-1">Your portfolio URL</p>
-                                            <p className="text-primary font-medium">
-                                                {getAppUrl().replace(/^https?:\/\//, '')}/<span className="heading-gradient">{dbUser.username}</span>
-                                            </p>
-                                        </div>
+                                    <div className="flex items-center gap-3 mb-3">
+                                        <IconTile icon={Icon} className="w-9 h-9" size={18} />
+                                        <h3 className="font-medium text-primary text-sm">{category.label}</h3>
                                     </div>
-                                    <motion.button
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                        onClick={copyLink}
-                                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface border border-border text-primary hover:border-indigo-500/50 transition-all"
-                                    >
-                                        {copied ? icons.check : icons.copy}
-                                        <span>{copied ? 'Copied!' : 'Copy Link'}</span>
-                                    </motion.button>
-                                </div>
-                            </motion.div>
-                        )}
-
-                        {/* Analytics Quick Stats */}
-                        <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                            <div className="glass-card rounded-xl p-4">
-                                <div className="flex items-center gap-2 text-blue-400 mb-2">
-                                    {icons.eye}
-                                    <span className="text-xs text-muted">Total Views</span>
-                                </div>
-                                <p className="text-2xl font-bold text-primary">{analytics?.totalViews || 0}</p>
-                            </div>
-                            <div className="glass-card rounded-xl p-4">
-                                <div className="flex items-center gap-2 text-emerald-400 mb-2">
-                                    {icons.users}
-                                    <span className="text-xs text-muted">Unique Visitors</span>
-                                </div>
-                                <p className="text-2xl font-bold text-primary">{analytics?.uniqueVisitors || 0}</p>
-                            </div>
-                            <div className="glass-card rounded-xl p-4">
-                                <div className="flex items-center gap-2 text-purple-400 mb-2">
-                                    {icons.analytics}
-                                    <span className="text-xs text-muted">This Week</span>
-                                </div>
-                                <p className="text-2xl font-bold text-primary">{analytics?.weekViews || 0}</p>
-                            </div>
-                            <div className="glass-card rounded-xl p-4">
-                                <div className="flex items-center gap-2 text-orange-400 mb-2">
-                                    {icons.rocket}
-                                    <span className="text-xs text-muted">Today</span>
-                                </div>
-                                <p className="text-2xl font-bold text-primary">{analytics?.todayViews || 0}</p>
-                            </div>
-                        </motion.div>
-
-                        {/* Profile Stats */}
-                        <motion.div variants={itemVariants} className="mb-6">
-                            <h2 className="text-lg font-semibold text-primary mb-4">Profile Stats</h2>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                {stats.map((stat, i) => (
-                                    <motion.div
-                                        key={stat.label}
-                                        variants={itemVariants}
-                                        className="relative overflow-hidden glass-card rounded-xl p-4 group hover:scale-[1.02] transition-transform"
-                                    >
-                                        <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-10 transition-opacity`} />
-                                        <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${stat.gradient} flex items-center justify-center text-white mb-3`}>
-                                            {stat.icon}
-                                        </div>
-                                        <p className="text-2xl font-bold text-primary">{stat.value}</p>
-                                        <p className="text-sm text-muted">{stat.label}</p>
-                                    </motion.div>
-                                ))}
-                            </div>
-                        </motion.div>
-
-                        {/* Quick Actions */}
-                        <motion.div variants={itemVariants}>
-                            <h2 className="text-lg font-semibold text-primary mb-4">Quick Actions</h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                <Link
-                                    to="/upload"
-                                    className="glass-card rounded-xl p-5 group hover:border-purple-500/50 border border-transparent transition-all"
-                                >
-                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform">
-                                        {icons.upload}
-                                    </div>
-                                    <h3 className="font-semibold text-primary mb-1">Upload Resume</h3>
-                                    <p className="text-sm text-muted">Update with new resume</p>
-                                </Link>
-
-                                <Link
-                                    to="/editor"
-                                    className="glass-card rounded-xl p-5 group hover:border-indigo-500/50 border border-transparent transition-all"
-                                >
-                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform">
-                                        {icons.edit}
-                                    </div>
-                                    <h3 className="font-semibold text-primary mb-1">Edit Profile</h3>
-                                    <p className="text-sm text-muted">Update info, add projects</p>
-                                </Link>
-
-                                <Link
-                                    to="/analytics"
-                                    className="glass-card rounded-xl p-5 group hover:border-blue-500/50 border border-transparent transition-all"
-                                >
-                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform">
-                                        {icons.analytics}
-                                    </div>
-                                    <h3 className="font-semibold text-primary mb-1">View Analytics</h3>
-                                    <p className="text-sm text-muted">Track your visitors</p>
-                                </Link>
-
-                                <Link
-                                    to="/settings"
-                                    className="glass-card rounded-xl p-5 group hover:border-orange-500/50 border border-transparent transition-all"
-                                >
-                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform">
-                                        {icons.settings}
-                                    </div>
-                                    <h3 className="font-semibold text-primary mb-1">Settings</h3>
-                                    <p className="text-sm text-muted">Preferences & export</p>
-                                </Link>
-                            </div>
-                        </motion.div>
-
-                        {/* Skills Section - Categorized Display */}
-                        {allSkills.length > 0 && (
-                            <motion.div variants={itemVariants} className="mt-6">
-                                <h2 className="text-lg font-semibold text-primary mb-4">Your Skills</h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {skillCategories.map((category) => {
-                                        const categorySkills = skills?.[category.key] || []
-                                        if (categorySkills.length === 0) return null
-
-                                        return (
-                                            <motion.div
-                                                key={category.key}
-                                                initial={{ opacity: 0, y: 10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                whileHover={{ scale: 1.02 }}
-                                                className="glass-card rounded-xl p-4 group transition-all duration-300"
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {categorySkills.map((skill, i) => (
+                                            <span
+                                                key={i}
+                                                className="px-2.5 py-1 rounded-md text-xs font-medium bg-tertiary text-secondary"
                                             >
-                                                <div className="flex items-center gap-3 mb-3">
-                                                    <motion.div
-                                                        className={`w-9 h-9 rounded-xl bg-gradient-to-br ${category.gradient} flex items-center justify-center shadow-lg`}
-                                                        whileHover={{ scale: 1.1, rotate: 5 }}
-                                                        transition={{ type: 'spring', stiffness: 400 }}
-                                                    >
-                                                        <category.icon size={18} className="text-white" />
-                                                    </motion.div>
-                                                    <h3 className="font-medium text-primary text-sm">{category.label}</h3>
-                                                </div>
-                                                <div className="flex flex-wrap gap-1.5">
-                                                    {categorySkills.map((skill, i) => (
-                                                        <motion.span
-                                                            key={i}
-                                                            initial={{ opacity: 0, scale: 0.8 }}
-                                                            animate={{ opacity: 1, scale: 1 }}
-                                                            transition={{ delay: i * 0.03 }}
-                                                            className={`px-2.5 py-1 rounded-full text-xs font-medium bg-gradient-to-r ${category.gradient} bg-opacity-10 border border-white/10 backdrop-blur-sm`}
-                                                            style={{
-                                                                background: `linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1))`,
-                                                                color: 'var(--color-primary)'
-                                                            }}
-                                                        >
-                                                            {skill}
-                                                        </motion.span>
-                                                    ))}
-                                                </div>
-                                            </motion.div>
-                                        )
-                                    })}
+                                                {skill}
+                                            </span>
+                                        ))}
+                                    </div>
                                 </div>
-                            </motion.div>
-                        )}
-                    </motion.div>
-                </main>
-            </div>
-        </div>
+                            )
+                        })}
+                    </div>
+                </motion.div>
+            )}
+        </motion.div>
     )
 }
 

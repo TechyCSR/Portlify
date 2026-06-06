@@ -5,6 +5,9 @@ import UploadZone from '../components/UploadZone'
 import { useCloudinaryUpload } from '../hooks/useCloudinaryUpload'
 import { parseResume, getCurrentUser } from '../utils/api'
 import { useToast } from '../context/ToastContext'
+import { Check, CheckCircle, Info } from 'lucide-react'
+import { IconTile, InlineIcon, ICON_STROKE } from '../components/IconTile'
+import PageHeader from '../components/PageHeader'
 
 function ResumeUpload() {
     const navigate = useNavigate()
@@ -79,20 +82,16 @@ function ResumeUpload() {
     }
 
     return (
-        <div className="min-h-screen pt-24 pb-12 px-4">
-            <div className="max-w-2xl mx-auto">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-center mb-10"
-                >
-                    <h1 className="text-3xl font-display font-bold text-primary mb-3">
-                        Upload Your Resume
-                    </h1>
-                    <p className="text-secondary">
-                        Our AI will analyze your resume and extract all the important details
-                    </p>
-                </motion.div>
+        <div className="max-w-2xl mx-auto pb-6">
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+            >
+                <PageHeader
+                    title="Upload Your Resume"
+                    description="Our AI will analyze your resume and extract all the important details"
+                />
+            </motion.div>
 
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -146,11 +145,7 @@ function ResumeUpload() {
                             animate={{ scale: 1, opacity: 1 }}
                             className="glass-card rounded-2xl p-12 text-center"
                         >
-                            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-green-500/20 flex items-center justify-center">
-                                <svg className="w-10 h-10 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
-                            </div>
+                            <IconTile icon={Check} className="w-16 h-16 mx-auto mb-6" size={28} />
                             <h3 className="text-xl font-semibold text-primary mb-2">
                                 Resume Analyzed!
                             </h3>
@@ -158,15 +153,11 @@ function ResumeUpload() {
                                 {parsingMessage}
                             </p>
                             <div className="flex justify-center gap-2 flex-wrap">
-                                <span className="px-3 py-1 rounded-full bg-green-500/20 text-green-300 text-sm">
-                                    ✓ Profile Extracted
-                                </span>
-                                <span className="px-3 py-1 rounded-full bg-green-500/20 text-green-300 text-sm">
-                                    ✓ Skills Identified
-                                </span>
-                                <span className="px-3 py-1 rounded-full bg-green-500/20 text-green-300 text-sm">
-                                    ✓ Projects Found
-                                </span>
+                                {['Profile Extracted', 'Skills Identified', 'Projects Found'].map((label) => (
+                                    <span key={label} className="px-3 py-1 rounded-md bg-tertiary text-secondary text-sm">
+                                        {label}
+                                    </span>
+                                ))}
                             </div>
                         </motion.div>
                     ) : null}
@@ -201,36 +192,23 @@ function ResumeUpload() {
                     transition={{ delay: 0.3 }}
                     className="mt-12 glass rounded-2xl p-6"
                 >
-                    <h3 className="text-lg font-semibold text-primary mb-4 flex items-center">
-                        <span className="w-8 h-8 rounded-lg bg-primary-500/20 flex items-center justify-center mr-3">
-                            <svg className="w-4 h-4 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </span>
+                    <h3 className="text-lg font-semibold text-primary mb-4 flex items-center gap-3">
+                        <IconTile icon={Info} className="w-8 h-8" size={16} />
                         Tips for Best Results
                     </h3>
                     <ul className="space-y-3 text-secondary">
-                        <li className="flex items-start">
-                            <svg className="w-5 h-5 text-primary-400 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            Include links to your projects, GitHub, and LinkedIn in your resume
-                        </li>
-                        <li className="flex items-start">
-                            <svg className="w-5 h-5 text-primary-400 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            Use clear section headers like "Experience", "Education", "Projects"
-                        </li>
-                        <li className="flex items-start">
-                            <svg className="w-5 h-5 text-primary-400 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            You'll be able to review and edit all extracted information
-                        </li>
+                        {[
+                            'Include links to your projects, GitHub, and LinkedIn in your resume',
+                            'Use clear section headers like "Experience", "Education", "Projects"',
+                            "You'll be able to review and edit all extracted information",
+                        ].map((tip) => (
+                            <li key={tip} className="flex items-start gap-3">
+                                <CheckCircle size={16} strokeWidth={ICON_STROKE} className="text-secondary mt-0.5 flex-shrink-0" />
+                                {tip}
+                            </li>
+                        ))}
                     </ul>
                 </motion.div>
-            </div>
         </div>
     )
 }

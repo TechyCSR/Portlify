@@ -16,18 +16,18 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             publishableKey={CLERK_PUBLISHABLE_KEY}
             appearance={{
                 variables: {
-                    colorPrimary: '#0ea5e9',
-                    colorBackground: '#0f172a',
-                    colorText: '#f1f5f9',
-                    colorInputBackground: '#1e293b',
-                    colorInputText: '#f1f5f9',
-                    borderRadius: '0.75rem',
+                    colorPrimary: '#5a7a9e',
+                    colorBackground: '#09090b',
+                    colorText: '#fafafa',
+                    colorInputBackground: '#18181b',
+                    colorInputText: '#fafafa',
+                    borderRadius: '0.625rem',
                 },
                 elements: {
-                    card: 'bg-dark-900/80 backdrop-blur-xl border border-white/10',
+                    card: 'bg-dark-900/80 backdrop-blur-xl border border-white/[0.06]',
                     headerTitle: 'text-white',
-                    headerSubtitle: 'text-dark-300',
-                    formButtonPrimary: 'bg-gradient-to-r from-primary-500 to-accent-500 hover:from-primary-400 hover:to-accent-400',
+                    headerSubtitle: 'text-dark-400',
+                    formButtonPrimary: 'bg-primary-500 hover:bg-primary-600',
                     footerActionLink: 'text-primary-400 hover:text-primary-300',
                 }
             }}
