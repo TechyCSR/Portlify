@@ -605,3 +605,64 @@ body {
   animation: gradient-slow 8s ease infinite;
   background-size: 200% 200%;
 }
+
+/* ===== CLERK USER BUTTON ===== */
+.cl-userButtonTrigger .cl-userButtonAvatarBox,
+.cl-userPreviewAvatarBox .cl-avatarBox,
+.cl-userButtonPopoverCard .cl-avatarBox {
+  background-color: var(--color-primary-500) !important;
+  color: #ffffff !important;
+}
+
+.cl-userButtonPopoverCard {
+  background-color: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.cl-userButtonPopoverMain,
+.cl-userButtonPopoverActions {
+  background-color: var(--color-surface) !important;
+}
+
+.cl-userButtonPopoverActionButton {
+  color: var(--color-text-primary) !important;
+}
+
+.cl-userButtonPopoverActionButton:hover {
+  background-color: var(--color-surface-hover) !important;
+}
+
+.cl-userButtonPopoverActionButtonIcon {
+  color: var(--color-text-secondary) !important;
+}
+
+.cl-userPreviewMainIdentifier,
+.cl-userPreviewMainIdentifierText {
+  color: var(--color-text-primary) !important;
+}
+
+.cl-userPreviewSecondaryIdentifier {
+  color: var(--color-text-secondary) !important;
+}
+
+.cl-userButtonPopoverFooter {
+  background-color: var(--color-bg-secondary) !important;
+  background-image: none !important;
+  border-top: 1px solid var(--color-border) !important;
+}
+
+.cl-userButtonPopoverFooter * {
+  color: var(--color-text-secondary) !important;
+}
+
+.cl-userButtonPopoverFooter [data-localization-key*='development'] {
+  color: var(--color-warning) !important;
+}
+
+@media (min-width: 640px) {
+  .cl-userButtonTrigger .cl-userButtonAvatarBox {
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+  }
+}

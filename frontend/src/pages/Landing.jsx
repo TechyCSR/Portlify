@@ -13,7 +13,9 @@ import {
     Sparkles,
     Zap,
 } from 'lucide-react'
+import BrandLogo from '../components/BrandLogo'
 import { IconTile, ICON_STROKE } from '../components/IconTile'
+import { BRAND_NAME_DISPLAY } from '../constants/brand'
 
 const fadeUp = {
     initial: { opacity: 0, y: 16 },
@@ -286,7 +288,7 @@ function Landing() {
                             Ready to Build Your Portfolio?
                         </h2>
                         <p className="text-base sm:text-lg text-secondary mb-6 sm:mb-10 max-w-xl mx-auto px-2">
-                            Join thousands of professionals showcasing their work with Portlify.
+                            Join thousands of professionals showcasing their work with {BRAND_NAME_DISPLAY}.
                             Start for free, no credit card required.
                         </p>
                         <SignedOut>
@@ -309,14 +311,9 @@ function Landing() {
             <footer className="py-8 sm:py-12 bg-secondary">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-primary-500">
-                                <span className="text-white font-bold text-sm">P</span>
-                            </div>
-                            <span className="font-display font-semibold heading-gradient">Portlify</span>
-                        </div>
+                        <BrandLogo size="sm" />
                         <p className="text-muted text-xs sm:text-sm text-center md:text-right">
-                            © 2026 Portlify. Built for professionals by{' '}
+                            © 2026 {BRAND_NAME_DISPLAY}. Built for professionals by{' '}
                             <a
                                 href="https://techycsr.dev"
                                 target="_blank"

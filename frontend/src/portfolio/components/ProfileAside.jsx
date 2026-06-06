@@ -40,8 +40,8 @@ function ProfileAside({
     const resumeLink = safeHref(resumeUrl)
 
     return (
-        <aside className="lg:sticky lg:sticky-below-navbar lg:self-start">
-            <div className="portfolio-surface rounded-2xl p-5 sm:p-6">
+        <aside className="portfolio-scroll portfolio-aside-scroll min-h-0 max-h-[34vh] lg:max-h-none overflow-y-auto lg:overflow-visible">
+            <div className="portfolio-surface rounded-2xl p-5 sm:p-6 lg:h-full lg:flex lg:flex-col">
                 <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
                     <div className="portfolio-surface-raised w-24 h-24 sm:w-28 sm:h-28 rounded-2xl mb-4 overflow-hidden flex items-center justify-center border-2 border-[var(--pf-border)]">
                         {basicDetails?.profilePhoto ? (
@@ -111,7 +111,7 @@ function ProfileAside({
                     )}
                 </div>
 
-                <nav className="hidden lg:block border-t border-[var(--pf-border-subtle)] pt-4" aria-label="Section navigation">
+                <nav className="portfolio-scroll hidden lg:block border-t border-[var(--pf-border-subtle)] pt-4 lg:flex-1 lg:min-h-0 lg:overflow-y-auto" aria-label="Section navigation">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.14em] mb-2 px-2 portfolio-text-muted">
                         Sections
                     </p>
@@ -124,6 +124,7 @@ function ProfileAside({
                                         type="button"
                                         onClick={() => onNavigate(section.id)}
                                         data-active={activeSection === section.id}
+                                        aria-current={activeSection === section.id ? 'true' : undefined}
                                         className="portfolio-nav-link w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-left"
                                     >
                                         <Icon size={15} strokeWidth={ICON_STROKE} />

@@ -157,7 +157,7 @@ function EducationItem({ item, isLast }) {
 
 function ProjectCard({ project }) {
     return (
-        <Surface className="p-5 sm:p-6 h-full flex flex-col">
+        <Surface className="p-5 sm:p-6 flex flex-col">
             <div className="flex items-start justify-between gap-3 mb-4">
                 <div className="portfolio-icon-tile w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0">
                     <Rocket size={20} strokeWidth={ICON_STROKE} />
@@ -249,7 +249,7 @@ function SectionContent({ section, basicDetails }) {
                     <SectionTitle icon={section.icon}>About</SectionTitle>
                     <Surface className="p-5 sm:p-6">
                         <p className="leading-relaxed whitespace-pre-wrap text-sm sm:text-base portfolio-text-secondary">
-                            {basicDetails?.about || 'Professional portfolio powered by Portlify.'}
+                            {basicDetails?.about || 'Professional portfolio powered by PortlifyAi.'}
                         </p>
                     </Surface>
                 </>
@@ -271,7 +271,7 @@ function SectionContent({ section, basicDetails }) {
             return (
                 <>
                     <SectionTitle icon={section.icon}>Projects</SectionTitle>
-                    <div className="grid sm:grid-cols-2 gap-4">
+                    <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
                         {section.items.map((project, index) => (
                             <ProjectCard key={index} project={project} />
                         ))}

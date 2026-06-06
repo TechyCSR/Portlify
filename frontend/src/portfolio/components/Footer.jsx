@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ChevronRight, Info, Sparkles } from 'lucide-react'
+import { ChevronRight, Info } from 'lucide-react'
 import { ICON_STROKE } from '../../components/IconTile'
 import { getAppUrl } from '../../utils/appUrl'
+import { BRAND_LOGO_ALT, BRAND_LOGO_SRC, BRAND_NAME_DISPLAY } from '../../constants/brand'
 import { safeHref } from '../../utils/safeUrl'
 
-function Footer({ profile }) {
+function Footer({ profile, compact = false }) {
     const [showPremiumInfo, setShowPremiumInfo] = useState(false)
     const timeoutRef = useRef(null)
 
@@ -25,22 +26,24 @@ function Footer({ profile }) {
     const customBranding = profile?.customBranding
 
     return (
-        <footer className="relative py-12 px-4 mt-8">
-            <div
-                className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 max-w-md h-px"
-                style={{ background: 'var(--pf-border-subtle)' }}
-            />
+        <footer className={`relative flex-shrink-0 ${compact ? 'py-3 mt-3' : 'py-12 px-4 mt-8'}`}>
+            {!compact && (
+                <div
+                    className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 max-w-md h-px"
+                    style={{ background: 'var(--pf-border-subtle)' }}
+                />
+            )}
 
-            <div className="max-w-6xl mx-auto flex justify-center">
+            <div className={`${compact ? '' : 'max-w-6xl mx-auto'} flex justify-center`}>
                 {customBranding?.enabled && customBranding?.text ? (
                     <a
                         href={safeHref(customBranding.url) || '#'}
                         target={safeHref(customBranding.url) ? '_blank' : '_self'}
                         rel="noopener noreferrer"
                         onClick={(e) => !safeHref(customBranding.url) && e.preventDefault()}
-                        className="group portfolio-surface rounded-xl px-6 py-3 inline-flex items-center gap-3 transition-transform hover:-translate-y-0.5"
+                        className={`group portfolio-surface rounded-xl inline-flex items-center gap-3 transition-transform hover:-translate-y-0.5 ${compact ? 'px-4 py-2' : 'px-6 py-3'}`}
                     >
-                        <span className="text-sm font-medium portfolio-text">
+                        <span className={`font-medium portfolio-text ${compact ? 'text-xs' : 'text-sm'}`}>
                             {customBranding.text}
                         </span>
                         {customBranding.url && (
@@ -97,15 +100,21 @@ function Footer({ profile }) {
                             href={getAppUrl()}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="group portfolio-surface rounded-xl px-6 py-3 inline-flex items-center gap-3 transition-transform hover:-translate-y-0.5"
+                            className={`group portfolio-surface rounded-xl inline-flex items-center gap-3 transition-transform hover:-translate-y-0.5 ${compact ? 'px-4 py-2' : 'px-6 py-3'}`}
                         >
-                            <div className="portfolio-brand-gradient w-8 h-8 rounded-lg flex items-center justify-center">
-                                <Sparkles size={16} strokeWidth={ICON_STROKE} className="text-white" />
-                            </div>
+                            <img
+                                src={BRAND_LOGO_SRC}
+                                alt={BRAND_LOGO_ALT}
+                                className={`object-contain flex-shrink-0 ${compact ? 'w-6 h-6' : 'w-8 h-8'}`}
+                                width={compact ? 24 : 32}
+                                height={compact ? 24 : 32}
+                                decoding="async"
+                            />
                             <div className="flex items-center gap-2">
-                                <span className="text-sm portfolio-text-secondary">Built with</span>
-                                <span className="portfolio-brand-text font-semibold text-sm">
-                                    Portlify
+                                <span className={`portfolio-text-secondary ${compact ? 'text-xs' : 'text-sm'}`}>Built with</span>
+                                <span className={`font-semibold ${compact ? 'text-xs' : 'text-sm'}`}>
+                                    <span className="portfolio-text">Portlify</span>
+                                    <span className="portfolio-brand-text">Ai</span>
                                 </span>
                             </div>
                             <ChevronRight

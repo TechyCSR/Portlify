@@ -7,6 +7,7 @@ import { useToast } from '../context/ToastContext'
 import { Check, Heart, Lock, Pencil, ShieldCheck, Sparkles, Star, Tag, Zap } from 'lucide-react'
 import { IconTile, InlineIcon, ICON_STROKE } from '../components/IconTile'
 import PageHeader from '../components/PageHeader'
+import { BRAND_NAME_DISPLAY } from '../constants/brand'
 import { ErrorState, LoadingState } from '../components/AsyncState'
 
 const premiumFeatures = [
@@ -96,7 +97,7 @@ function Premium() {
                 key: keyId,
                 amount: amount,
                 currency: currency,
-                name: 'Portlify',
+                name: BRAND_NAME_DISPLAY,
                 description: 'Premium Membership - Lifetime Access',
                 order_id: orderId,
                 handler: async (response) => {

@@ -2,25 +2,25 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://portlify.techycsr.dev/</loc>
-    <lastmod>2026-02-21</lastmod>
+    <lastmod>2026-06-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://portlify.techycsr.dev/premium</loc>
-    <lastmod>2026-02-21</lastmod>
+    <lastmod>2026-06-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://portlify.techycsr.dev/sign-in</loc>
-    <lastmod>2026-02-21</lastmod>
+    <lastmod>2026-06-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://portlify.techycsr.dev/sign-up</loc>
-    <lastmod>2026-02-21</lastmod>
+    <lastmod>2026-06-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>

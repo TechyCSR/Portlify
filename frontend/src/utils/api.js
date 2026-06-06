@@ -7,7 +7,7 @@ const API_URL = rawApiUrl.replace(/\/api\/?$/, '')
 
 if (import.meta.env.DEV && rawApiUrl.match(/\/api\/?$/) && !apiUrlWarningShown) {
     console.warn(
-        '[Portlify] VITE_API_URL should not include /api suffix. ' +
+        '[PortlifyAi] VITE_API_URL should not include /api suffix. ' +
         'Use the base URL only (e.g. http://localhost:5000). Auto-corrected.'
     )
     apiUrlWarningShown = true

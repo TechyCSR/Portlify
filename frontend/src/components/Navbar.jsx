@@ -8,6 +8,8 @@ import { dashboardNavItems } from './DashboardSidebar'
 import ThemeToggle from './ThemeToggle'
 import { useTheme } from '../context/ThemeContext'
 import { getUserButtonAppearance } from '../utils/clerkAppearance'
+import BrandLogo from './BrandLogo'
+import { BRAND_NAME_DISPLAY } from '../constants/brand'
 
 const DASHBOARD_PATHS = dashboardNavItems.map((item) => item.to)
 const MOBILE_MENU_ID = 'navbar-mobile-menu'
@@ -108,16 +110,11 @@ function Navbar() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
                         <Link
-                            to={onDashboard ? '/dashboard' : '/'}
+                            to="/"
                             className="flex items-center gap-3 group min-w-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50"
-                            aria-label={onDashboard ? 'Portlify dashboard home' : 'Portlify home'}
+                            aria-label={`${BRAND_NAME_DISPLAY} home`}
                         >
-                            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center bg-primary-500 shadow-sm transition-transform group-hover:scale-[1.03]">
-                                <span className="text-white font-bold text-lg sm:text-xl">P</span>
-                            </div>
-                            <span className="font-display font-bold text-lg sm:text-xl heading-gradient truncate">
-                                Portlify
-                            </span>
+                            <BrandLogo className="transition-transform group-hover:scale-[1.02]" />
                         </Link>
 
                         {/* Desktop */}

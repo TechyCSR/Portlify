@@ -183,7 +183,7 @@ const generateHTML = (profile, preferences) => {
         ` : ''}
 
         <footer>
-            <p>Generated with ❤️ by Portlify</p>
+            <p>Generated with ❤️ by PortlifyAi</p>
         </footer>
     </div>
     <script src="script.js"></script>
@@ -437,7 +437,7 @@ router.get('/portfolio', authMiddleware, getUserFromAuth, async (req, res) => {
         // Add README
         archive.append(`# ${profile.basicDetails?.name || user.username}'s Portfolio
 
-Generated from Portlify on ${new Date().toLocaleDateString()}
+Generated from PortlifyAi on ${new Date().toLocaleDateString()}
 
 ## Usage
 1. Open index.html in a browser
@@ -451,7 +451,7 @@ Generated from Portlify on ${new Date().toLocaleDateString()}
 ## Customization
 Feel free to modify the CSS variables in styles.css to change colors.
 
-Generated with ❤️ by Portlify
+Generated with ❤️ by PortlifyAi
 ${process.env.FRONTEND_URL || 'https://portlify.techycsr.dev'}
 `, { name: 'README.md' });
 
