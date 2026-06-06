@@ -2,8 +2,28 @@ import axios from 'axios'
 
 let apiUrlWarningShown = false
 
-const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-const API_URL = rawApiUrl.replace(/\/api\/?$/, '')
+function resolveApiUrl() {
+    const rawApiUrl = import.meta.env.VITE_API_URL
+    const configured = rawApiUrl ? rawApiUrl.replace(/\/api\/?$/, '') : null
+
+    if (import.meta.env.DEV && typeof window !== 'undefined') {
+        const { hostname } = window.location
+        const isLoopback = hostname === 'localhost' || hostname === '127.0.0.1'
+
+        // LAN / network IP: always proxy through Vite (same origin) to avoid CORS.
+        if (!isLoopback) {
+            return window.location.origin
+        }
+
+        // localhost: prefer Vite proxy unless a direct API URL is configured.
+        return configured || window.location.origin
+    }
+
+    return configured || 'http://localhost:5000'
+}
+
+const rawApiUrl = import.meta.env.VITE_API_URL || ''
+const API_URL = resolveApiUrl()
 
 if (import.meta.env.DEV && rawApiUrl.match(/\/api\/?$/) && !apiUrlWarningShown) {
     console.warn(

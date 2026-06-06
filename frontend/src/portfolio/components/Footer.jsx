@@ -26,7 +26,7 @@ function Footer({ profile, compact = false }) {
     const customBranding = profile?.customBranding
 
     return (
-        <footer className={`relative flex-shrink-0 ${compact ? 'py-3 mt-3' : 'py-12 px-4 mt-8'}`}>
+        <footer className={`relative flex-shrink-0 ${compact ? 'py-3 mt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]' : 'py-12 px-4 mt-8'}`}>
             {!compact && (
                 <div
                     className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 max-w-md h-px"
@@ -63,11 +63,12 @@ function Footer({ profile, compact = false }) {
                         >
                             <button
                                 type="button"
-                                className="portfolio-btn-primary w-5 h-5 rounded-full flex items-center justify-center shadow-lg"
+                                className="portfolio-btn-primary w-8 h-8 sm:w-5 sm:h-5 rounded-full flex items-center justify-center shadow-lg portfolio-touch-target"
                                 aria-label="Premium branding information"
+                                aria-expanded={showPremiumInfo}
                                 onClick={() => setShowPremiumInfo((open) => !open)}
                             >
-                                <Info size={12} strokeWidth={3} />
+                                <Info size={14} strokeWidth={3} />
                             </button>
 
                             <AnimatePresence>

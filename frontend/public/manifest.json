@@ -12,13 +12,13 @@
   "categories": ["productivity", "business", "utilities"],
   "icons": [
     {
-      "src": "/portlify_clean_logo.png",
+      "src": "/logo-2.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/portlify_clean_logo.png",
+      "src": "/logo-2.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

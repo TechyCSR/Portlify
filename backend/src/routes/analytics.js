@@ -3,6 +3,8 @@ import Analytics from '../models/Analytics.js';
 import Profile from '../models/Profile.js';
 import User from '../models/User.js';
 import authMiddleware, { getUserFromAuth } from '../middleware/auth.js';
+import { getUtcDayStart, isSameUtcDay, shiftUtcDays } from '../utils/analyticsDates.js';
+import { aggregateReferrers, sanitizeReferrerInput } from '../utils/referrer.js';
 import crypto from 'crypto';
 
 const router = express.Router();
@@ -27,7 +29,7 @@ const getDeviceType = (userAgent) => {
 router.post('/track/:username', async (req, res) => {
     try {
         const { username } = req.params;
-        const { referrer } = req.body;
+        const referrer = sanitizeReferrerInput(req.body?.referrer);
 
         // Find profile
         const profile = await Profile.findOne({ username: username.toLowerCase() });
@@ -82,25 +84,19 @@ router.get('/summary', authMiddleware, getUserFromAuth, async (req, res) => {
             });
         }
 
-        // Calculate period stats
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const today = getUtcDayStart();
+        const weekStart = shiftUtcDays(today, -6);
+        const monthStart = shiftUtcDays(today, -29);
 
-        const weekAgo = new Date(today);
-        weekAgo.setDate(weekAgo.getDate() - 7);
-
-        const monthAgo = new Date(today);
-        monthAgo.setDate(monthAgo.getDate() - 30);
-
-        const todayStats = analytics.dailyStats.find(s => s.date.getTime() === today.getTime());
+        const todayStats = analytics.dailyStats.find((s) => isSameUtcDay(s.date, today));
         const todayViews = todayStats ? todayStats.views : 0;
 
         const weekViews = analytics.dailyStats
-            .filter(s => s.date >= weekAgo)
+            .filter((s) => getUtcDayStart(s.date) >= weekStart)
             .reduce((sum, s) => sum + s.views, 0);
 
         const monthViews = analytics.dailyStats
-            .filter(s => s.date >= monthAgo)
+            .filter((s) => getUtcDayStart(s.date) >= monthStart)
             .reduce((sum, s) => sum + s.views, 0);
 
         res.json({
@@ -142,18 +138,13 @@ router.get('/me', authMiddleware, getUserFromAuth, async (req, res) => {
         }
 
         // Get last 30 days of daily stats
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        thirtyDaysAgo.setHours(0, 0, 0, 0);
+        const thirtyDaysAgo = shiftUtcDays(getUtcDayStart(), -29);
 
         const recentDailyStats = analytics.dailyStats
-            .filter(s => s.date >= thirtyDaysAgo)
+            .filter((s) => getUtcDayStart(s.date) >= thirtyDaysAgo)
             .sort((a, b) => a.date - b.date);
 
-        // Top 10 referrers
-        const topReferrers = [...analytics.referrers]
-            .sort((a, b) => b.count - a.count)
-            .slice(0, 10);
+        const topReferrers = aggregateReferrers(analytics.referrers).slice(0, 10);
 
         // Top 10 locations
         const topLocations = [...analytics.locations]

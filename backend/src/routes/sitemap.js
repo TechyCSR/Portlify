@@ -4,7 +4,7 @@ import Profile from '../models/Profile.js';
 const router = express.Router();
 
 const getFrontendUrl = () => {
-    const url = process.env.FRONTEND_URL || 'https://portlify.techycsr.dev';
+    const url = process.env.FRONTEND_URL || 'https://portlifyai.app';
     return url.replace(/\/$/, '');
 };
 

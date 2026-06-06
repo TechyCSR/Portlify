@@ -7,6 +7,7 @@ import PortfolioTemplate from '../portfolio/PortfolioTemplate'
 import LoadingState from '../portfolio/components/LoadingState'
 import ErrorState from '../portfolio/components/ErrorState'
 import { applySiteSeo, buildPortfolioSeo, resetSiteSeo } from '../utils/seo'
+import { getTrackingReferrer } from '../utils/referrer'
 
 function Portfolio() {
     const { username } = useParams()
@@ -36,7 +37,7 @@ function Portfolio() {
                     fetch(`${API_URL}/api/analytics/track/${encodeURIComponent(username)}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ referrer: document.referrer || 'direct' }),
+                        body: JSON.stringify({ referrer: getTrackingReferrer() }),
                     }).catch(() => {})
                 }
             } catch (err) {

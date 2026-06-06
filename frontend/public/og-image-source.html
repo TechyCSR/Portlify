@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 1200px;
+      height: 630px;
+      overflow: hidden;
+      font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .frame {
+      width: 1200px;
+      height: 630px;
+      background: #09090b;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(90, 122, 158, 0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(90, 122, 158, 0.045) 1px, transparent 1px);
+      background-size: 64px 64px;
+      pointer-events: none;
+    }
+    .glow {
+      position: absolute;
+      width: 420px;
+      height: 420px;
+      border-radius: 50%;
+      filter: blur(40px);
+      pointer-events: none;
+    }
+    .glow-a { left: 18%; top: 42%; background: rgba(90, 122, 158, 0.14); }
+    .glow-b { right: 14%; top: 28%; background: rgba(122, 150, 181, 0.1); }
+
+    .nav {
+      height: 72px;
+      padding: 0 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      z-index: 2;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .brand img {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      object-fit: contain;
+      filter: invert(1) brightness(1.05);
+      background: rgba(255, 255, 255, 0.04);
+      padding: 6px;
+    }
+    .brand span {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #fafafa;
+    }
+    .brand .ai {
+      background: linear-gradient(135deg, #5a7a9e, #7a96b5);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .nav-ghost {
+      color: #a1a1aa;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 10px 16px;
+    }
+    .nav-cta {
+      background: #5a7a9e;
+      color: #fafafa;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 11px 20px;
+      border-radius: 12px;
+    }
+
+    .hero {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 64px 0;
+      position: relative;
+      z-index: 2;
+      text-align: center;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      color: #a1a1aa;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 18px;
+    }
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #6b8aab;
+    }
+    .headline {
+      font-size: 54px;
+      line-height: 1.06;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      margin-bottom: 14px;
+    }
+    .headline .white { color: #fafafa; }
+    .headline .gradient {
+      background: linear-gradient(135deg, #5a7a9e 0%, #8fa4bc 55%, #7a96b5 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .subhead {
+      max-width: 700px;
+      font-size: 17px;
+      line-height: 1.45;
+      color: #a1a1aa;
+      font-weight: 500;
+      margin-bottom: 22px;
+    }
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+    .btn-primary {
+      background: #5a7a9e;
+      color: #fafafa;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 13px 22px;
+      border-radius: 14px;
+    }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #fafafa;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 13px 22px;
+      border-radius: 14px;
+    }
+    .features {
+      display: flex;
+      gap: 28px;
+      color: #71717a;
+      font-size: 12.5px;
+      font-weight: 600;
+      flex-wrap: nowrap;
+    }
+    .feature {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .feature svg {
+      width: 14px;
+      height: 14px;
+      stroke: #71717a;
+      fill: none;
+      stroke-width: 2;
+      flex-shrink: 0;
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="frame">
+    <div class="grid"></div>
+    <div class="glow glow-a"></div>
+    <div class="glow glow-b"></div>
+
+    <header class="nav">
+      <div class="brand">
+        <img src="logo-2.png" alt="" />
+        <span>Portlify<span class="ai">Ai</span></span>
+      </div>
+      <div class="nav-actions">
+        <div class="nav-ghost">Sign In</div>
+        <div class="nav-cta">Get Started</div>
+      </div>
+    </header>
+
+    <main class="hero">
+      <div class="badge"><span class="badge-dot"></span>AI-Powered Portfolio Builder</div>
+      <h1 class="headline">
+        <span class="white">Your Resume.</span><br />
+        <span class="gradient">Your Portfolio.</span><br />
+        <span class="white">In Seconds.</span>
+      </h1>
+      <p class="subhead">Upload your resume and let AI transform it into a stunning, professional portfolio that showcases your skills and experience.</p>
+      <div class="actions">
+        <div class="btn-primary">Start Building Free →</div>
+        <div class="btn-secondary">Sign In</div>
+      </div>
+      <div class="features">
+        <div class="feature">
+          <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          Developer-friendly design
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          SEO optimized pages
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="19" cy="17" r="2.5"/><circle cx="6" cy="12" r="2.5"/></svg>
+          Customizable themes
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Lightning fast loading
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          Portfolio analytics
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

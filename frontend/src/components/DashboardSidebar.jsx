@@ -5,12 +5,14 @@ import {
     BarChart3,
     ExternalLink,
     Home,
+    Lock,
     Pencil,
     Settings,
     Star,
     Upload,
     X,
 } from 'lucide-react'
+import { isNavItemEnabled } from '../utils/profileSetup'
 import { ICON_STROKE } from './IconTile'
 
 export const dashboardNavItems = [
@@ -22,37 +24,81 @@ export const dashboardNavItems = [
     { to: '/settings', icon: Settings, label: 'Settings', desc: 'Preferences & export' },
 ]
 
-function NavLink({ item, isActive, onNavigate }) {
+function NavLink({ item, isActive, onNavigate, disabled = false }) {
     const Icon = item.icon
+    const baseClassName = `group flex items-start gap-3 px-3 py-2.5 rounded-xl transition-colors ${
+        disabled
+            ? 'text-muted/70 cursor-not-allowed'
+            : isActive
+                ? 'bg-primary-500/10 text-primary'
+                : 'text-secondary hover:text-primary hover:bg-surface-hover'
+    }`
 
-    return (
-        <Link
-            to={item.to}
-            onClick={onNavigate}
-            className={`group flex items-start gap-3 px-3 py-2.5 rounded-xl transition-colors ${
-                isActive
-                    ? 'bg-primary-500/10 text-primary'
-                    : 'text-secondary hover:text-primary hover:bg-surface-hover'
-            }`}
-        >
+    const content = (
+        <>
             <Icon
                 size={18}
                 strokeWidth={ICON_STROKE}
-                className={`flex-shrink-0 mt-0.5 ${isActive ? 'text-primary-400' : 'text-secondary group-hover:text-primary'}`}
+                className={`flex-shrink-0 mt-0.5 ${
+                    disabled
+                        ? 'text-muted/60'
+                        : isActive
+                            ? 'text-primary-400'
+                            : 'text-secondary group-hover:text-primary'
+                }`}
             />
-            <span className="min-w-0">
-                <span className="block font-medium text-sm leading-tight">{item.label}</span>
-                <span className={`block text-xs mt-0.5 leading-snug ${isActive ? 'text-primary-400/70' : 'text-muted'}`}>
-                    {item.desc}
+            <span className="min-w-0 flex-1">
+                <span className="flex items-center gap-2">
+                    <span className="block font-medium text-sm leading-tight">{item.label}</span>
+                    {disabled && <Lock size={12} strokeWidth={ICON_STROKE} className="text-muted/70 flex-shrink-0" />}
+                </span>
+                <span className={`block text-xs mt-0.5 leading-snug ${
+                    disabled ? 'text-muted/60' : isActive ? 'text-primary-400/70' : 'text-muted'
+                }`}>
+                    {disabled ? 'Upload your resume to unlock' : item.desc}
                 </span>
             </span>
+        </>
+    )
+
+    if (disabled) {
+        return (
+            <div className={baseClassName} aria-disabled="true" title="Upload and save your resume to unlock this section">
+                {content}
+            </div>
+        )
+    }
+
+    return (
+        <Link to={item.to} onClick={onNavigate} className={baseClassName}>
+            {content}
         </Link>
     )
 }
 
-function SidebarContent({ basicDetails, dbUser, currentPath, onNavigate }) {
+function SidebarContent({
+    basicDetails,
+    dbUser,
+    profile,
+    currentPath,
+    needsResumeSetup,
+    hasPendingResume,
+    isLoading = false,
+    onNavigate,
+}) {
     return (
         <>
+            {needsResumeSetup && (
+                <div className="mb-5 p-3 rounded-xl border border-primary-500/20 bg-primary-500/5">
+                    <p className="text-sm font-medium text-primary mb-1">Finish your setup</p>
+                    <p className="text-xs text-secondary leading-relaxed">
+                        {hasPendingResume
+                            ? 'Review your extracted profile in the editor, then save to unlock the dashboard.'
+                            : 'Upload your resume to unlock overview, analytics, settings, and more.'}
+                    </p>
+                </div>
+            )}
+
             <div className="flex items-center gap-3 p-3 rounded-xl bg-tertiary/60 mb-5">
                 <div className="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
                     {basicDetails?.name?.charAt(0) || dbUser?.username?.charAt(0) || 'U'}
@@ -76,11 +122,12 @@ function SidebarContent({ basicDetails, dbUser, currentPath, onNavigate }) {
                         item={item}
                         isActive={currentPath === item.to}
                         onNavigate={onNavigate}
+                        disabled={isLoading || !isNavItemEnabled(item.to, profile, hasPendingResume)}
                     />
                 ))}
             </nav>
 
-            {dbUser?.username && (
+            {dbUser?.username && !needsResumeSetup && (
                 <div className="mt-6 pt-5 border-t border-border">
                     <Link
                         to={`/${dbUser.username}`}
@@ -98,7 +145,17 @@ function SidebarContent({ basicDetails, dbUser, currentPath, onNavigate }) {
     )
 }
 
-function DashboardSidebar({ basicDetails, dbUser, currentPath, open, onClose }) {
+function DashboardSidebar({
+    basicDetails,
+    dbUser,
+    profile,
+    currentPath,
+    needsResumeSetup = false,
+    hasPendingResume = false,
+    isLoading = false,
+    open,
+    onClose,
+}) {
     const drawerRef = useRef(null)
     const closeButtonRef = useRef(null)
     const handleNavigate = () => onClose?.()
@@ -185,7 +242,11 @@ function DashboardSidebar({ basicDetails, dbUser, currentPath, open, onClose }) 
                     <SidebarContent
                         basicDetails={basicDetails}
                         dbUser={dbUser}
+                        profile={profile}
                         currentPath={currentPath}
+                        needsResumeSetup={needsResumeSetup}
+                        hasPendingResume={hasPendingResume}
+                        isLoading={isLoading}
                         onNavigate={handleNavigate}
                     />
                 </div>
@@ -197,7 +258,11 @@ function DashboardSidebar({ basicDetails, dbUser, currentPath, open, onClose }) 
                     <SidebarContent
                         basicDetails={basicDetails}
                         dbUser={dbUser}
+                        profile={profile}
                         currentPath={currentPath}
+                        needsResumeSetup={needsResumeSetup}
+                        hasPendingResume={hasPendingResume}
+                        isLoading={isLoading}
                         onNavigate={handleNavigate}
                     />
                 </div>

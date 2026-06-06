@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
 import { motion } from 'framer-motion'
 import { createProfile, updateProfile, getCurrentUser, getMyProfile } from '../utils/api'
+import { hasCompletedProfileSetup, isMissingProfileError } from '../utils/profileSetup'
+import { useDashboardLayout } from '../components/DashboardLayout'
 import { useCloudinaryUpload } from '../hooks/useCloudinaryUpload'
 import { useToast } from '../context/ToastContext'
 import {
@@ -16,11 +18,12 @@ import {
 import { IconTile } from '../components/IconTile'
 import PageHeader from '../components/PageHeader'
 import MobileTabBar from '../components/MobileTabBar'
-import { LoadingState } from '../components/AsyncState'
+import { ErrorState, LoadingState } from '../components/AsyncState'
 
 function ProfileEditor() {
     const navigate = useNavigate()
     const { isLoaded, isSignedIn } = useUser()
+    const { refreshData, refreshPendingResume } = useDashboardLayout()
     const { upload: uploadPhoto, uploading: photoUploading } = useCloudinaryUpload()
     const toast = useToast()
     const [saving, setSaving] = useState(false)
@@ -29,6 +32,7 @@ function ProfileEditor() {
     const [resumeUrl, setResumeUrl] = useState('')
     const [isEditing, setIsEditing] = useState(false)
     const [loading, setLoading] = useState(true)
+    const [loadError, setLoadError] = useState('')
 
     // Form data state
     const [formData, setFormData] = useState({
@@ -80,6 +84,8 @@ function ProfileEditor() {
         }
 
         const loadProfileData = async () => {
+            setLoadError('')
+
             try {
                 // First check if user is registered
                 await getCurrentUser()
@@ -121,11 +127,12 @@ function ProfileEditor() {
                 }
             }
 
-            // Try to load from API (for editing existing profile)
+            let hasExistingProfile = false
+
             try {
                 const { data: profileData } = await getMyProfile()
-                if (profileData && profileData.basicDetails?.name) {
-                    // Only consider it a valid existing profile if it has actual data
+                if (profileData && hasCompletedProfileSetup(profileData)) {
+                    hasExistingProfile = true
                     setIsEditing(true)
                     setResumeUrl(profileData.resumeUrl || '')
                     setFormData(prev => ({
@@ -146,8 +153,19 @@ function ProfileEditor() {
                     }))
                 }
             } catch (err) {
-                // No existing profile, user will start fresh
+                if (isMissingProfileError(err)) {
+                    navigate('/upload', { replace: true })
+                    return
+                }
 
+                setLoadError(err.response?.data?.error || 'Failed to load profile. Please try again.')
+                setLoading(false)
+                return
+            }
+
+            if (!hasExistingProfile) {
+                navigate('/upload', { replace: true })
+                return
             }
 
             setLoading(false)
@@ -246,13 +264,13 @@ function ProfileEditor() {
                 await createProfile(profileData)
             }
 
-            // Clear stored data
             sessionStorage.removeItem('parsedResumeData')
+            refreshPendingResume()
+            await refreshData()
 
             toast.dismiss(loadingToast)
             toast.success('Profile saved successfully!')
 
-            // Navigate to dashboard
             setTimeout(() => navigate('/dashboard'), 500)
         } catch (err) {
             toast.dismiss(loadingToast)
@@ -282,6 +300,19 @@ function ProfileEditor() {
     // Show loading spinner while fetching data
     if (loading) {
         return <LoadingState />
+    }
+
+    if (loadError) {
+        return (
+            <ErrorState
+                message={loadError}
+                onRetry={() => {
+                    setLoading(true)
+                    setLoadError('')
+                    window.location.reload()
+                }}
+            />
+        )
     }
 
     return (

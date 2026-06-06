@@ -4,7 +4,14 @@ import { getCssVars } from '../theme'
 
 function ErrorState({ colors, message }) {
     return (
-        <div className="min-h-screen flex items-center justify-center px-4" style={{ background: colors.bg }}>
+        <div
+            className="min-h-dvh flex items-center justify-center px-4"
+            style={{
+                background: colors.bg,
+                paddingTop: 'env(safe-area-inset-top, 0px)',
+                paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+            }}
+        >
             <div
                 className="portfolio-surface rounded-2xl p-8 text-center max-w-md w-full"
                 style={getCssVars(colors)}

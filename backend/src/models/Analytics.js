@@ -1,4 +1,6 @@
 import mongoose from 'mongoose';
+import { getUtcDayStart, isSameUtcDay } from '../utils/analyticsDates.js';
+import { normalizeReferrer, resolveReferrer } from '../utils/referrer.js';
 
 // Daily stat tracking
 const dailyStatSchema = new mongoose.Schema({
@@ -10,8 +12,60 @@ const dailyStatSchema = new mongoose.Schema({
 // Referrer tracking
 const referrerSchema = new mongoose.Schema({
     source: { type: String, required: true },
+    referrerId: { type: String, default: '' },
     count: { type: Number, default: 0 }
 }, { _id: false });
+
+const MAX_STORED_REFERRERS = 50;
+const OTHER_REFERRER_ID = 'other-sites';
+const OTHER_REFERRER_LABEL = 'Other sites';
+
+function getReferrerEntryId(entry) {
+    if (entry.referrerId) {
+        return entry.referrerId;
+    }
+
+    return normalizeReferrer(entry.source).id;
+}
+
+function buildReferrerIndex(referrers) {
+    const index = new Map();
+
+    for (const entry of referrers) {
+        index.set(getReferrerEntryId(entry), entry);
+    }
+
+    return index;
+}
+
+function compactReferrers(referrers) {
+    if (referrers.length <= MAX_STORED_REFERRERS) {
+        return referrers;
+    }
+
+    const sorted = [...referrers].sort((a, b) => b.count - a.count);
+    const kept = sorted.slice(0, MAX_STORED_REFERRERS - 1);
+    const overflow = sorted.slice(MAX_STORED_REFERRERS - 1);
+    const overflowCount = overflow.reduce((sum, entry) => sum + entry.count, 0);
+
+    if (overflowCount <= 0) {
+        return kept;
+    }
+
+    const otherEntry = kept.find((entry) => getReferrerEntryId(entry) === OTHER_REFERRER_ID);
+
+    if (otherEntry) {
+        otherEntry.count += overflowCount;
+    } else {
+        kept.push({
+            source: OTHER_REFERRER_LABEL,
+            referrerId: OTHER_REFERRER_ID,
+            count: overflowCount,
+        });
+    }
+
+    return kept;
+}
 
 // Location tracking
 const locationSchema = new mongoose.Schema({
@@ -87,8 +141,7 @@ const analyticsSchema = new mongoose.Schema({
 
 // Method to record a view
 analyticsSchema.methods.recordView = async function (visitorHash, device, referrer, location) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = getUtcDayStart();
 
     // Increment total views
     this.totalViews += 1;
@@ -104,10 +157,8 @@ analyticsSchema.methods.recordView = async function (visitorHash, device, referr
         }
     }
 
-    // Update daily stats
-    let todayStat = this.dailyStats.find(s =>
-        s.date.getTime() === today.getTime()
-    );
+    // Update daily stats (normalize legacy local-midnight buckets to UTC)
+    let todayStat = this.dailyStats.find((s) => isSameUtcDay(s.date, today));
     if (!todayStat) {
         this.dailyStats.push({
             date: today,
@@ -119,6 +170,9 @@ analyticsSchema.methods.recordView = async function (visitorHash, device, referr
             this.dailyStats = this.dailyStats.slice(-90);
         }
     } else {
+        if (todayStat.date.getTime() !== today.getTime()) {
+            todayStat.date = today;
+        }
         todayStat.views += 1;
         if (isUnique) todayStat.uniqueViews += 1;
     }
@@ -128,14 +182,25 @@ analyticsSchema.methods.recordView = async function (visitorHash, device, referr
         this.devices[device] += 1;
     }
 
-    // Update referrer stats
-    if (referrer) {
-        const existingRef = this.referrers.find(r => r.source === referrer);
-        if (existingRef) {
-            existingRef.count += 1;
-        } else {
-            this.referrers.push({ source: referrer, count: 1 });
-        }
+    // Update referrer stats (always tracked, including direct traffic)
+    const normalizedReferrer = resolveReferrer(referrer);
+    const referrerIndex = buildReferrerIndex(this.referrers);
+    const existingRef = referrerIndex.get(normalizedReferrer.id);
+
+    if (existingRef) {
+        existingRef.count += 1;
+        existingRef.source = normalizedReferrer.label;
+        existingRef.referrerId = normalizedReferrer.id;
+    } else {
+        this.referrers.push({
+            source: normalizedReferrer.label,
+            referrerId: normalizedReferrer.id,
+            count: 1,
+        });
+    }
+
+    if (this.referrers.length > MAX_STORED_REFERRERS) {
+        this.referrers = compactReferrers(this.referrers);
     }
 
     // Update location stats

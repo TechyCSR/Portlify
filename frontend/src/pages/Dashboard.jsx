@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { getAnalyticsSummary } from '../utils/api'
 import { getAppUrl, getPortfolioUrl } from '../utils/appUrl'
 import { useDashboardLayout } from '../components/DashboardLayout'
+import { isMissingProfileError } from '../utils/profileSetup'
 import DashboardSkeleton from '../components/DashboardSkeleton'
 import {
     BarChart3,
@@ -71,7 +72,7 @@ function Dashboard() {
 
         const err = loadError
         console.error('Dashboard data fetch error:', err)
-        if (err.response?.status === 404 || err.response?.data?.needsSetup) {
+        if (isMissingProfileError(err)) {
             navigate('/upload')
         } else if (err.response?.data?.needsRegistration) {
             navigate('/username')

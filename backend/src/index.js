@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import { createCorsOptions } from './config/cors.js';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { clerkMiddleware } from '@clerk/express';
@@ -30,14 +31,7 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-const corsOptions = {
-    origin: process.env.NODE_ENV === 'production'
-        ? process.env.FRONTEND_URL
-        : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-};
+const corsOptions = createCorsOptions();
 
 const parseLimiter = rateLimit({
     windowMs: 60 * 60 * 1000,
