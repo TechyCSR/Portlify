@@ -4,6 +4,8 @@ import { useUser } from '@clerk/clerk-react'
 import { motion } from 'framer-motion'
 import { checkUsername, registerUser, getCurrentUser } from '../utils/api'
 import { getAppUrl } from '../utils/appUrl'
+import { Check, X } from 'lucide-react'
+import { ICON_STROKE } from '../components/IconTile'
 
 const MAX_USERNAME_LENGTH = 8
 
@@ -95,7 +97,7 @@ function UsernameSelection() {
     }
 
     return (
-        <div className="min-h-screen pt-24 pb-12 px-4 flex items-center justify-center">
+        <div className="min-h-screen pt-navbar pb-12 px-4 flex items-center justify-center">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -123,11 +125,12 @@ function UsernameSelection() {
 
                         {/* Username input */}
                         <div className="mb-6">
-                            <label className="block text-secondary text-sm font-medium mb-2">
+                            <label htmlFor="username-input" className="block text-secondary text-sm font-medium mb-2">
                                 Username
                             </label>
                             <div className="relative">
                                 <input
+                                    id="username-input"
                                     type="text"
                                     value={username}
                                     onChange={handleUsernameChange}
@@ -136,20 +139,16 @@ function UsernameSelection() {
                                     maxLength={MAX_USERNAME_LENGTH}
                                 />
                                 <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                                    <span className={`text-xs font-medium ${username.length === MAX_USERNAME_LENGTH ? 'text-amber-400' : 'text-muted'
+                                    <span className={`text-xs font-medium ${username.length === MAX_USERNAME_LENGTH ? 'text-warning' : 'text-muted'
                                         }`}>
                                         {username.length}/{MAX_USERNAME_LENGTH}
                                     </span>
                                     {isChecking && <div className="spinner w-5 h-5" />}
                                     {!isChecking && isAvailable === true && (
-                                        <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                        </svg>
+                                        <Check size={18} strokeWidth={ICON_STROKE} className="text-success" />
                                     )}
                                     {!isChecking && isAvailable === false && (
-                                        <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
+                                        <X size={18} strokeWidth={ICON_STROKE} className="text-muted" />
                                     )}
                                 </div>
                             </div>
@@ -161,17 +160,17 @@ function UsernameSelection() {
 
                             {/* Status message */}
                             {username.length > 0 && username.length < 3 && (
-                                <p className="mt-2 text-sm text-amber-400">
+                                <p className="mt-2 text-sm text-warning">
                                     Username must be at least 3 characters
                                 </p>
                             )}
                             {isAvailable === true && (
-                                <p className="mt-2 text-sm text-green-400">
+                                <p className="mt-2 text-sm text-success">
                                     ✓ Username is available!
                                 </p>
                             )}
                             {error && (
-                                <p className="mt-2 text-sm text-red-400">
+                                <p className="mt-2 text-sm text-error">
                                     {error}
                                 </p>
                             )}

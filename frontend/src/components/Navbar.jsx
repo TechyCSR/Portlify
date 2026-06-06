@@ -1,233 +1,252 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { SignedIn, SignedOut, UserButton } from '@clerk/clerk-react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { LayoutDashboard, UserCog, Upload, BarChart2, Sparkles, Settings } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { LayoutDashboard, LogIn, Menu, UserPlus, X } from 'lucide-react'
+import { ICON_STROKE } from './IconTile'
+import { dashboardNavItems } from './DashboardSidebar'
 import ThemeToggle from './ThemeToggle'
 import { useTheme } from '../context/ThemeContext'
+import { getUserButtonAppearance } from '../utils/clerkAppearance'
+
+const DASHBOARD_PATHS = dashboardNavItems.map((item) => item.to)
+const MOBILE_MENU_ID = 'navbar-mobile-menu'
+const MOBILE_ACTION_SLOT = 'inline-flex min-h-[44px] min-w-[44px] flex-shrink-0 items-center justify-center'
+
+function isDashboardPath(pathname) {
+    return DASHBOARD_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`))
+}
+
+function NavLink({ to, children, onClick, className = '', isActive = false }) {
+    return (
+        <Link
+            to={to}
+            onClick={onClick}
+            aria-current={isActive ? 'page' : undefined}
+            className={`px-4 py-2 rounded-xl font-medium transition-colors ${
+                isActive
+                    ? 'text-primary bg-primary-500/10'
+                    : 'text-secondary hover:text-primary hover:bg-surface-hover'
+            } ${className}`}
+        >
+            {children}
+        </Link>
+    )
+}
+
+function MobileNavLink({ to, children, onClick, icon: Icon, isActive = false }) {
+    return (
+        <Link
+            to={to}
+            onClick={onClick}
+            aria-current={isActive ? 'page' : undefined}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors min-h-[44px] ${
+                isActive
+                    ? 'text-primary bg-primary-500/10'
+                    : 'text-secondary hover:text-primary hover:bg-surface-hover'
+            }`}
+        >
+            {Icon && <Icon size={18} strokeWidth={ICON_STROKE} className="flex-shrink-0" />}
+            <span className="font-medium">{children}</span>
+        </Link>
+    )
+}
 
 function Navbar() {
     const { theme } = useTheme()
+    const location = useLocation()
+    const menuButtonRef = useRef(null)
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+    const [scrolled, setScrolled] = useState(false)
 
-    // Clerk appearance for UserButton based on theme
-    const userButtonAppearance = {
-        elements: {
-            avatarBox: 'w-10 h-10 ring-2 ring-primary-500/30 ring-offset-2 ring-offset-transparent',
-            userButtonPopoverCard: {
-                backgroundColor: theme === 'dark' ? '#1e1e2a' : '#ffffff',
-                border: theme === 'dark' ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.08)',
-                boxShadow: theme === 'dark'
-                    ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
-                    : '0 25px 50px -12px rgba(0, 0, 0, 0.15)'
-            },
-            userButtonPopoverActionButton: {
-                color: theme === 'dark' ? '#ffffff' : '#0f172a',
-                '&:hover': {
-                    backgroundColor: theme === 'dark' ? '#12121a' : '#f1f5f9'
-                }
-            },
-            userButtonPopoverActionButtonText: {
-                color: theme === 'dark' ? '#ffffff' : '#0f172a'
-            },
-            userButtonPopoverActionButtonIcon: {
-                color: theme === 'dark' ? '#a0a0b0' : '#475569'
-            },
-            userPreviewMainIdentifier: {
-                color: theme === 'dark' ? '#ffffff' : '#0f172a'
-            },
-            userPreviewSecondaryIdentifier: {
-                color: theme === 'dark' ? '#a0a0b0' : '#475569'
+    const onDashboard = isDashboardPath(location.pathname)
+    const userButtonAppearance = getUserButtonAppearance(theme)
+    const showMobileMenu = !onDashboard
+
+    const closeMobileMenu = () => setMobileMenuOpen(false)
+    const toggleMobileMenu = () => setMobileMenuOpen((open) => !open)
+
+    useLayoutEffect(() => {
+        closeMobileMenu()
+        setScrolled(window.scrollY > 8)
+    }, [location.pathname])
+
+    useEffect(() => {
+        const handleScroll = () => setScrolled(window.scrollY > 8)
+        window.addEventListener('scroll', handleScroll, { passive: true })
+        return () => window.removeEventListener('scroll', handleScroll)
+    }, [])
+
+    useEffect(() => {
+        if (!mobileMenuOpen) return
+
+        const previousOverflow = document.body.style.overflow
+        document.body.style.overflow = 'hidden'
+
+        const handleKeyDown = (event) => {
+            if (event.key === 'Escape') {
+                closeMobileMenu()
+                menuButtonRef.current?.focus()
             }
-        },
-        variables: {
-            colorPrimary: '#6366f1',
-            colorBackground: theme === 'dark' ? '#1e1e2a' : '#ffffff',
-            colorText: theme === 'dark' ? '#ffffff' : '#0f172a'
         }
-    }
+
+        document.addEventListener('keydown', handleKeyDown)
+        return () => {
+            document.body.style.overflow = previousOverflow
+            document.removeEventListener('keydown', handleKeyDown)
+        }
+    }, [mobileMenuOpen])
 
     return (
-        <motion.nav
-            initial={{ y: -100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="fixed top-0 left-0 right-0 z-50 glass"
-        >
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between items-center h-16">
-                    {/* Logo */}
-                    <Link to="/" className="flex items-center space-x-3 group">
-                        <motion.div
-                            whileHover={{ scale: 1.05, rotate: 5 }}
-                            className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg"
-                            style={{ background: 'var(--gradient-primary)' }}
+        <header className="fixed top-0 left-0 right-0 z-50 navbar-safe-top">
+            <nav
+                aria-label="Main navigation"
+                className={`glass border-x-0 border-t-0 transition-shadow duration-300 ${
+                    scrolled ? 'navbar-scrolled' : ''
+                }`}
+            >
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex justify-between items-center h-16">
+                        <Link
+                            to={onDashboard ? '/dashboard' : '/'}
+                            className="flex items-center gap-3 group min-w-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50"
+                            aria-label={onDashboard ? 'Portlify dashboard home' : 'Portlify home'}
                         >
-                            <span className="text-white font-bold text-xl">P</span>
-                        </motion.div>
-                        <span className="font-display font-bold text-xl heading-gradient">
-                            Portlify
-                        </span>
-                    </Link>
+                            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center bg-primary-500 shadow-sm transition-transform group-hover:scale-[1.03]">
+                                <span className="text-white font-bold text-lg sm:text-xl">P</span>
+                            </div>
+                            <span className="font-display font-bold text-lg sm:text-xl heading-gradient truncate">
+                                Portlify
+                            </span>
+                        </Link>
 
-                    {/* Desktop Navigation */}
-                    <div className="hidden md:flex items-center space-x-3">
-                        <ThemeToggle />
+                        {/* Desktop */}
+                        <div className="hidden md:flex items-center gap-2">
+                            <ThemeToggle />
 
-                        <SignedOut>
-                            <Link
-                                to="/sign-in"
-                                className="px-4 py-2 text-secondary hover:text-primary transition-colors font-medium"
-                            >
-                                Sign In
-                            </Link>
-                            <Link to="/sign-up" className="btn-primary text-sm">
-                                Get Started
-                            </Link>
-                        </SignedOut>
-
-                        <SignedIn>
-                            <Link
-                                to="/dashboard"
-                                className="px-4 py-2 text-secondary hover:text-primary transition-colors font-medium"
-                            >
-                                Dashboard
-                            </Link>
-                            <UserButton
-                                afterSignOutUrl="/"
-                                appearance={userButtonAppearance}
-                            />
-                        </SignedIn>
-                    </div>
-
-                    {/* Mobile Menu Button */}
-                    <div className="flex md:hidden items-center">
-                        <button
-                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                            className="p-2 rounded-lg text-secondary hover:text-primary hover:bg-surface transition-all"
-                            aria-label="Toggle menu"
-                        >
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                {mobileMenuOpen ? (
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                ) : (
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                                )}
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            {/* Mobile Menu */}
-            <AnimatePresence>
-                {mobileMenuOpen && (
-                    <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="md:hidden border-t border-border overflow-hidden"
-                        style={{ background: 'var(--color-surface)' }}
-                    >
-                        <div className="px-4 py-4 space-y-3">
                             <SignedOut>
-                                <Link
-                                    to="/sign-in"
-                                    onClick={() => setMobileMenuOpen(false)}
-                                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-secondary hover:text-primary hover:bg-white/5 transition-all"
-                                >
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                                    </svg>
-                                    Sign In
-                                </Link>
-                                <Link
-                                    to="/sign-up"
-                                    onClick={() => setMobileMenuOpen(false)}
-                                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-white font-medium"
-                                    style={{ background: 'var(--gradient-primary)' }}
-                                >
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                                    </svg>
+                                <NavLink to="/sign-in">Sign In</NavLink>
+                                <Link to="/sign-up" className="btn-primary text-sm ml-1">
                                     Get Started
                                 </Link>
                             </SignedOut>
 
                             <SignedIn>
-                                {/* User Account Section */}
-                                <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/5 mb-2">
-                                    <UserButton
-                                        afterSignOutUrl="/"
-                                        appearance={userButtonAppearance}
-                                    />
-                                    <span className="text-primary text-sm font-medium">My Account</span>
-                                </div>
+                                <NavLink
+                                    to="/dashboard"
+                                    isActive={onDashboard}
+                                    className="inline-flex items-center gap-2"
+                                >
+                                    <LayoutDashboard size={16} strokeWidth={ICON_STROKE} />
+                                    Dashboard
+                                </NavLink>
+                                <UserButton
+                                    afterSignOutUrl="/"
+                                    appearance={userButtonAppearance}
+                                />
+                            </SignedIn>
+                        </div>
 
-                                {/* Dashboard Navigation Links */}
-                                <div className="space-y-1">
-                                    <Link
-                                        to="/dashboard"
-                                        onClick={() => setMobileMenuOpen(false)}
-                                        className="flex items-center gap-3 px-4 py-3 rounded-xl text-secondary hover:text-primary hover:bg-white/5 transition-all"
-                                    >
-                                        <LayoutDashboard size={20} />
-                                        Overview
-                                    </Link>
-                                    <Link
-                                        to="/editor"
-                                        onClick={() => setMobileMenuOpen(false)}
-                                        className="flex items-center gap-3 px-4 py-3 rounded-xl text-secondary hover:text-primary hover:bg-white/5 transition-all"
-                                    >
-                                        <UserCog size={20} />
-                                        Edit Profile
-                                    </Link>
-                                    <Link
-                                        to="/upload"
-                                        onClick={() => setMobileMenuOpen(false)}
-                                        className="flex items-center gap-3 px-4 py-3 rounded-xl text-secondary hover:text-primary hover:bg-white/5 transition-all"
-                                    >
-                                        <Upload size={20} />
-                                        Upload Resume
-                                    </Link>
-                                    <Link
-                                        to="/analytics"
-                                        onClick={() => setMobileMenuOpen(false)}
-                                        className="flex items-center gap-3 px-4 py-3 rounded-xl text-secondary hover:text-primary hover:bg-white/5 transition-all"
-                                    >
-                                        <BarChart2 size={20} />
-                                        Analytics
-                                    </Link>
-                                    <Link
-                                        to="/premium"
-                                        onClick={() => setMobileMenuOpen(false)}
-                                        className="flex items-center gap-3 px-4 py-3 rounded-xl text-secondary hover:text-primary hover:bg-white/5 transition-all"
-                                    >
-                                        <Sparkles size={20} />
-                                        Premium
-                                    </Link>
-                                    <Link
-                                        to="/settings"
-                                        onClick={() => setMobileMenuOpen(false)}
-                                        className="flex items-center gap-3 px-4 py-3 rounded-xl text-secondary hover:text-primary hover:bg-white/5 transition-all"
-                                    >
-                                        <Settings size={20} />
-                                        Settings
-                                    </Link>
-                                </div>
+                        {/* Mobile — fixed-width action slots prevent layout shift on route change */}
+                        <div className="flex md:hidden items-center gap-2">
+                            <ThemeToggle />
+
+                            <SignedIn>
+                                <UserButton
+                                    afterSignOutUrl="/"
+                                    appearance={userButtonAppearance}
+                                />
                             </SignedIn>
 
-                            {/* Theme Toggle in Mobile Menu */}
-                            <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-white/5">
-                                <span className="text-secondary text-sm font-medium">Theme</span>
-                                <ThemeToggle />
-                            </div>
+                            {showMobileMenu ? (
+                                <button
+                                    ref={menuButtonRef}
+                                    type="button"
+                                    onClick={toggleMobileMenu}
+                                    className={`${MOBILE_ACTION_SLOT} rounded-xl text-secondary hover:text-primary hover:bg-surface-hover transition-colors`}
+                                    aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+                                    aria-expanded={mobileMenuOpen}
+                                    aria-controls={MOBILE_MENU_ID}
+                                >
+                                    {mobileMenuOpen
+                                        ? <X size={22} strokeWidth={ICON_STROKE} />
+                                        : <Menu size={22} strokeWidth={ICON_STROKE} />}
+                                </button>
+                            ) : (
+                                <span className={MOBILE_ACTION_SLOT} aria-hidden="true" />
+                            )}
                         </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </motion.nav>
+                    </div>
+                </div>
+
+                <AnimatePresence initial={false}>
+                    {showMobileMenu && mobileMenuOpen && (
+                        <motion.div
+                            id={MOBILE_MENU_ID}
+                            role="navigation"
+                            aria-label="Mobile menu"
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="md:hidden border-t border-border overflow-hidden bg-surface"
+                        >
+                            <div className="px-4 py-4 space-y-1 max-h-below-navbar overflow-y-auto">
+                                <SignedOut>
+                                    <MobileNavLink
+                                        to="/sign-in"
+                                        onClick={closeMobileMenu}
+                                        icon={LogIn}
+                                        isActive={location.pathname.startsWith('/sign-in')}
+                                    >
+                                        Sign In
+                                    </MobileNavLink>
+                                    <MobileNavLink
+                                        to="/sign-up"
+                                        onClick={closeMobileMenu}
+                                        icon={UserPlus}
+                                        isActive={location.pathname.startsWith('/sign-up')}
+                                    >
+                                        Get Started
+                                    </MobileNavLink>
+                                </SignedOut>
+
+                                <SignedIn>
+                                    <p className="px-4 pt-1 pb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
+                                        Menu
+                                    </p>
+
+                                    <MobileNavLink
+                                        to="/dashboard"
+                                        onClick={closeMobileMenu}
+                                        icon={LayoutDashboard}
+                                        isActive={location.pathname === '/dashboard'}
+                                    >
+                                        Dashboard
+                                    </MobileNavLink>
+
+                                    <div className="space-y-0.5">
+                                        {dashboardNavItems
+                                            .filter((item) => item.to !== '/dashboard')
+                                            .map((item) => (
+                                                <MobileNavLink
+                                                    key={item.to}
+                                                    to={item.to}
+                                                    onClick={closeMobileMenu}
+                                                    icon={item.icon}
+                                                    isActive={location.pathname === item.to}
+                                                >
+                                                    {item.label}
+                                                </MobileNavLink>
+                                            ))}
+                                    </div>
+                                </SignedIn>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </nav>
+        </header>
     )
 }
 

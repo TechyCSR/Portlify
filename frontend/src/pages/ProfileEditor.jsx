@@ -13,6 +13,10 @@ import {
     Linkedin, Github, Twitter, Rocket, Sparkles,
     Terminal, Layers, Database, Wrench, Cloud, MessageCircle
 } from 'lucide-react'
+import { IconTile } from '../components/IconTile'
+import PageHeader from '../components/PageHeader'
+import MobileTabBar from '../components/MobileTabBar'
+import { LoadingState } from '../components/AsyncState'
 
 function ProfileEditor() {
     const navigate = useNavigate()
@@ -277,45 +281,24 @@ function ProfileEditor() {
 
     // Show loading spinner while fetching data
     if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center pt-20">
-                <div className="spinner" />
-            </div>
-        )
+        return <LoadingState />
     }
 
     return (
-        <div className="min-h-screen pt-20 pb-12 px-4">
-            <div className="max-w-6xl mx-auto">
-                {/* Header */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mb-8"
-                >
-                    {/* Back button */}
-                    <button
-                        onClick={() => navigate('/dashboard')}
-                        className="flex items-center gap-2 text-secondary hover:text-primary mb-6 transition-colors group"
-                    >
-                        <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                        </svg>
-                        Back to Dashboard
-                    </button>
-
-                    <div className="text-center">
-                        <h1 className="text-3xl font-display font-bold text-primary mb-2">
-                            {isEditing ? 'Edit Your Profile' : 'Review Your Profile'}
-                        </h1>
-                        <p className="text-secondary">
-                            {isEditing
-                                ? 'Update your information and save changes to your portfolio.'
-                                : 'AI has extracted your information. Review and edit before generating your portfolio.'
-                            }
-                        </p>
-                    </div>
-                </motion.div>
+        <div className="max-w-6xl mx-auto pb-6">
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+            >
+                <PageHeader
+                    title={isEditing ? 'Edit Your Profile' : 'Review Your Profile'}
+                    description={
+                        isEditing
+                            ? 'Update your information and save changes to your portfolio.'
+                            : 'AI has extracted your information. Review and edit before generating your portfolio.'
+                    }
+                />
+            </motion.div>
 
                 <div className="flex flex-col lg:flex-row gap-6">
                     {/* Sidebar Navigation - Desktop */}
@@ -324,7 +307,7 @@ function ProfileEditor() {
                         animate={{ opacity: 1, x: 0 }}
                         className="hidden lg:block lg:w-64 flex-shrink-0"
                     >
-                        <div className="glass-card rounded-2xl p-4 sticky top-24">
+                        <div className="glass-card rounded-2xl p-4 sticky sticky-below-navbar">
                             <nav className="space-y-1">
                                 {sections.map(section => (
                                     <button
@@ -344,23 +327,11 @@ function ProfileEditor() {
                         </div>
                     </motion.div>
 
-                    {/* Mobile Navigation - Horizontal Scroll */}
-                    <div className="lg:hidden sticky top-20 z-20 bg-background/80 backdrop-blur-md -mx-4 px-4 py-2 border-b border-white/5 mb-6 overflow-x-auto no-scrollbar flex gap-2">
-                        {sections.map(section => (
-                            <button
-                                key={section.id}
-                                onClick={() => setActiveSection(section.id)}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all ${activeSection === section.id
-                                        ? 'text-white shadow-lg shadow-primary-500/25'
-                                        : 'bg-white/5 border border-white/10 text-secondary'
-                                    }`}
-                                style={activeSection === section.id ? { background: 'var(--gradient-primary)' } : {}}
-                            >
-                                <span className="text-base">{section.icon}</span>
-                                {section.label}
-                            </button>
-                        ))}
-                    </div>
+                    <MobileTabBar
+                        tabs={sections}
+                        activeId={activeSection}
+                        onChange={setActiveSection}
+                    />
 
                     {/* Main Content */}
                     <motion.div
@@ -378,11 +349,11 @@ function ProfileEditor() {
                                     {/* Profile Photo */}
                                     <div className="flex items-center gap-6 mb-8">
                                         <div className="relative">
-                                            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center overflow-hidden ring-4 ring-white/10">
+                                            <div className="w-24 h-24 rounded-full bg-primary-500 flex items-center justify-center overflow-hidden">
                                                 {formData.basicDetails.profilePhoto ? (
                                                     <img src={formData.basicDetails.profilePhoto} alt="Profile" className="w-full h-full object-cover" />
                                                 ) : (
-                                                    <span className="text-3xl font-bold text-primary">
+                                                    <span className="text-3xl font-bold text-white">
                                                         {formData.basicDetails.name?.charAt(0)?.toUpperCase() || '?'}
                                                     </span>
                                                 )}
@@ -469,28 +440,21 @@ function ProfileEditor() {
                                     <h2 className="text-xl font-bold text-primary mb-6">Skills</h2>
 
                                     {[
-                                        { key: 'programmingLanguages', label: 'Programming Languages', placeholder: 'Python, JavaScript, SQL, C++...', icon: Terminal, gradient: 'from-blue-500 to-cyan-500' },
-                                        { key: 'frameworks', label: 'Frameworks & Libraries', placeholder: 'React, Node.js, TensorFlow, Flask...', icon: Layers, gradient: 'from-purple-500 to-pink-500' },
-                                        { key: 'databases', label: 'Databases', placeholder: 'MongoDB, MySQL, PostgreSQL...', icon: Database, gradient: 'from-emerald-500 to-teal-500' },
-                                        { key: 'tools', label: 'Tools', placeholder: 'Git, Docker, Postman, VS Code...', icon: Wrench, gradient: 'from-orange-500 to-amber-500' },
-                                        { key: 'cloudSystems', label: 'Cloud & Systems', placeholder: 'AWS, Linux, Windows, Heroku...', icon: Cloud, gradient: 'from-indigo-500 to-violet-500' },
-                                        { key: 'softSkills', label: 'Soft Skills', placeholder: 'Leadership, Communication, Team Collaboration...', icon: MessageCircle, gradient: 'from-rose-500 to-pink-500' }
+                                        { key: 'programmingLanguages', label: 'Programming Languages', placeholder: 'Python, JavaScript, SQL, C++...', icon: Terminal },
+                                        { key: 'frameworks', label: 'Frameworks & Libraries', placeholder: 'React, Node.js, TensorFlow, Flask...', icon: Layers },
+                                        { key: 'databases', label: 'Databases', placeholder: 'MongoDB, MySQL, PostgreSQL...', icon: Database },
+                                        { key: 'tools', label: 'Tools', placeholder: 'Git, Docker, Postman, VS Code...', icon: Wrench },
+                                        { key: 'cloudSystems', label: 'Cloud & Systems', placeholder: 'AWS, Linux, Windows, Heroku...', icon: Cloud },
+                                        { key: 'softSkills', label: 'Soft Skills', placeholder: 'Leadership, Communication, Team Collaboration...', icon: MessageCircle }
                                     ].map(category => (
                                         <motion.div
                                             key={category.key}
-                                            className="glass-card rounded-xl p-5 border border-border/50 group hover:border-white/20 transition-all duration-300"
+                                            className="glass-card rounded-xl p-5 group hover:bg-surface-hover transition-colors duration-300"
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
-                                            whileHover={{ scale: 1.01 }}
                                         >
                                             <div className="flex items-center gap-3 mb-4">
-                                                <motion.div
-                                                    className={`w-10 h-10 rounded-xl bg-gradient-to-br ${category.gradient} flex items-center justify-center shadow-lg`}
-                                                    whileHover={{ scale: 1.1, rotate: 5 }}
-                                                    transition={{ type: 'spring', stiffness: 400 }}
-                                                >
-                                                    <category.icon size={20} className="text-white" />
-                                                </motion.div>
+                                                <IconTile icon={category.icon} />
                                                 <label className="text-primary font-medium">{category.label}</label>
                                             </div>
                                             <div className="flex flex-wrap gap-2 mb-3 min-h-[2rem]">
@@ -499,7 +463,7 @@ function ProfileEditor() {
                                                         key={i}
                                                         initial={{ opacity: 0, scale: 0.8 }}
                                                         animate={{ opacity: 1, scale: 1 }}
-                                                        className={`px-3 py-1.5 rounded-full bg-gradient-to-r ${category.gradient} bg-opacity-20 text-white text-sm flex items-center gap-2 backdrop-blur-sm border border-white/10`}
+                                                        className="px-3 py-1.5 rounded-md bg-tertiary text-secondary text-sm flex items-center gap-2"
                                                     >
                                                         {skill}
                                                         <button onClick={() => removeSkill(category.key, skill)} className="hover:text-red-300 transition-colors">×</button>
@@ -526,7 +490,7 @@ function ProfileEditor() {
                                                         addSkill(category.key, input.value)
                                                         input.value = ''
                                                     }}
-                                                    className={`px-4 py-2 rounded-xl bg-gradient-to-r ${category.gradient} text-white hover:opacity-90 transition-opacity shadow-lg`}
+                                                    className="btn-primary px-4 py-2 text-sm"
                                                 >
                                                     Add
                                                 </motion.button>
@@ -1144,7 +1108,7 @@ function ProfileEditor() {
 
                         <div className="mt-8 space-y-6">
                             {/* Section Navigation - Glassy Minimalistic */}
-                            <div className="flex justify-between items-center pt-8 mt-8 border-t border-white/5">
+                            <div className="flex justify-between items-center pt-8 mt-8 border-t border-border">
                                 <motion.button
                                     whileHover={{ scale: 1.02, x: -5 }}
                                     whileTap={{ scale: 0.98 }}
@@ -1212,7 +1176,6 @@ function ProfileEditor() {
                         </div>
                     </motion.div>
                 </div>
-            </div>
         </div>
     )
 }

@@ -3,41 +3,14 @@ import { useNavigate } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { savePreferences, getCurrentUser } from '../utils/api'
-
-// Icons
-const icons = {
-    code: (
-        <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-        </svg>
-    ),
-    briefcase: (
-        <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-        </svg>
-    ),
-    academic: (
-        <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-        </svg>
-    ),
-    star: (
-        <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-        </svg>
-    ),
-    check: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-        </svg>
-    )
-}
+import { Briefcase, Check, Code2, GraduationCap, Star } from 'lucide-react'
+import { IconTile, ICON_STROKE } from '../components/IconTile'
 
 // Animation variants
 const pageVariants = {
-    initial: { opacity: 0, x: 100 },
-    animate: { opacity: 1, x: 0, transition: { duration: 0.4, ease: 'easeOut' } },
-    exit: { opacity: 0, x: -100, transition: { duration: 0.3 } }
+    initial: { opacity: 0, y: 16 },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' } },
+    exit: { opacity: 0, y: -12, transition: { duration: 0.25 } }
 }
 
 const cardVariants = {
@@ -128,50 +101,46 @@ function Onboarding() {
     const portfolioTypes = [
         {
             id: 'technical',
-            icon: icons.code,
+            icon: Code2,
             title: 'Technical Portfolio',
             description: 'For developers, engineers, designers',
             examples: 'GitHub repos, coding projects, tech skills',
-            gradient: 'from-indigo-500 to-purple-500'
         },
         {
             id: 'non-technical',
-            icon: icons.briefcase,
+            icon: Briefcase,
             title: 'General Portfolio',
             description: 'For business, creative, academic roles',
             examples: 'Work experience, publications, achievements',
-            gradient: 'from-emerald-500 to-teal-500'
         }
     ]
 
     const experienceLevels = [
         {
             id: 'fresher',
-            icon: icons.academic,
+            icon: GraduationCap,
             title: 'Fresher / Student',
             description: '0-2 years of experience',
             highlights: 'Education, projects, internships, skills',
-            gradient: 'from-pink-500 to-rose-500'
         },
         {
             id: 'experienced',
-            icon: icons.star,
+            icon: Star,
             title: 'Experienced Professional',
             description: '2+ years of work experience',
             highlights: 'Career growth, leadership, achievements',
-            gradient: 'from-amber-500 to-orange-500'
         }
     ]
 
     const themes = [
-        { id: 'modern', name: 'Modern', colors: ['#6366f1', '#a855f7'], bg: '#0f172a' },
+        { id: 'modern', name: 'Modern', colors: ['#5a7a9e', '#7a96b5'], bg: '#09090b' },
         { id: 'minimal', name: 'Minimal', colors: ['#18181b', '#3f3f46'], bg: '#ffffff' },
         { id: 'creative', name: 'Creative', colors: ['#ec4899', '#f472b6'], bg: '#1f1f1f' },
         { id: 'professional', name: 'Professional', colors: ['#0f766e', '#14b8a6'], bg: '#f0fdfa' }
     ]
 
     return (
-        <div className="min-h-screen pt-24 pb-12 px-4">
+        <div className="min-h-screen pt-navbar pb-12 px-4 overflow-x-clip">
             <div className="max-w-4xl mx-auto">
                 {/* Progress Bar */}
                 <div className="mb-12">
@@ -186,11 +155,11 @@ function Onboarding() {
                                     style={step >= s ? { background: 'var(--gradient-primary)' } : {}}
                                     animate={{ scale: step === s ? 1.1 : 1 }}
                                 >
-                                    {step > s ? icons.check : s}
+                                    {step > s ? <Check size={16} strokeWidth={ICON_STROKE} /> : s}
                                 </motion.div>
                                 {s < 3 && (
                                     <div
-                                        className={`hidden sm:block w-24 md:w-40 h-1 mx-2 rounded transition-all ${step > s ? 'bg-indigo-500' : 'bg-border'
+                                        className={`hidden sm:block w-24 md:w-40 h-1 mx-2 rounded transition-all ${step > s ? 'bg-primary-500' : 'bg-border'
                                             }`}
                                     />
                                 )}
@@ -222,7 +191,8 @@ function Onboarding() {
 
                             <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
                                 {portfolioTypes.map((type, i) => (
-                                    <motion.div
+                                    <motion.button
+                                        type="button"
                                         key={type.id}
                                         variants={cardVariants}
                                         initial="initial"
@@ -231,8 +201,9 @@ function Onboarding() {
                                         whileTap="tap"
                                         custom={i}
                                         onClick={() => handleSelect('portfolioType', type.id)}
-                                        className={`relative glass-card rounded-3xl p-8 cursor-pointer transition-all overflow-hidden ${preferences.portfolioType === type.id
-                                                ? 'ring-2 ring-indigo-500'
+                                        aria-pressed={preferences.portfolioType === type.id}
+                                        className={`relative glass-card rounded-3xl p-8 cursor-pointer transition-all overflow-hidden hover:bg-surface-hover w-full text-left ${preferences.portfolioType === type.id
+                                                ? 'ring-2 ring-primary-500/40'
                                                 : ''
                                             }`}
                                     >
@@ -241,22 +212,20 @@ function Onboarding() {
                                             <motion.div
                                                 initial={{ scale: 0 }}
                                                 animate={{ scale: 1 }}
-                                                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white"
+                                                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center text-white"
                                             >
-                                                {icons.check}
+                                                <Check size={16} strokeWidth={ICON_STROKE} />
                                             </motion.div>
                                         )}
 
-                                        <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${type.gradient} flex items-center justify-center text-white mb-6`}>
-                                            {type.icon}
-                                        </div>
+                                        <IconTile icon={type.icon} className="w-14 h-14 mb-6" size={24} />
 
                                         <h3 className="text-xl font-bold text-primary mb-2">{type.title}</h3>
                                         <p className="text-secondary mb-4">{type.description}</p>
                                         <p className="text-sm text-muted">
                                             <span className="font-medium">Examples:</span> {type.examples}
                                         </p>
-                                    </motion.div>
+                                    </motion.button>
                                 ))}
                             </div>
                         </motion.div>
@@ -280,7 +249,8 @@ function Onboarding() {
 
                             <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
                                 {experienceLevels.map((level, i) => (
-                                    <motion.div
+                                    <motion.button
+                                        type="button"
                                         key={level.id}
                                         variants={cardVariants}
                                         initial="initial"
@@ -289,8 +259,9 @@ function Onboarding() {
                                         whileTap="tap"
                                         custom={i}
                                         onClick={() => handleSelect('experienceLevel', level.id)}
-                                        className={`relative glass-card rounded-3xl p-8 cursor-pointer transition-all ${preferences.experienceLevel === level.id
-                                                ? 'ring-2 ring-indigo-500'
+                                        aria-pressed={preferences.experienceLevel === level.id}
+                                        className={`relative glass-card rounded-3xl p-8 cursor-pointer transition-all hover:bg-surface-hover w-full text-left ${preferences.experienceLevel === level.id
+                                                ? 'ring-2 ring-primary-500/40'
                                                 : ''
                                             }`}
                                     >
@@ -298,22 +269,20 @@ function Onboarding() {
                                             <motion.div
                                                 initial={{ scale: 0 }}
                                                 animate={{ scale: 1 }}
-                                                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white"
+                                                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center text-white"
                                             >
-                                                {icons.check}
+                                                <Check size={16} strokeWidth={ICON_STROKE} />
                                             </motion.div>
                                         )}
 
-                                        <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${level.gradient} flex items-center justify-center text-white mb-6`}>
-                                            {level.icon}
-                                        </div>
+                                        <IconTile icon={level.icon} className="w-14 h-14 mb-6" size={24} />
 
                                         <h3 className="text-xl font-bold text-primary mb-2">{level.title}</h3>
                                         <p className="text-secondary mb-4">{level.description}</p>
                                         <p className="text-sm text-muted">
                                             <span className="font-medium">Highlights:</span> {level.highlights}
                                         </p>
-                                    </motion.div>
+                                    </motion.button>
                                 ))}
                             </div>
                         </motion.div>
@@ -337,7 +306,8 @@ function Onboarding() {
 
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
                                 {themes.map((theme, i) => (
-                                    <motion.div
+                                    <motion.button
+                                        type="button"
                                         key={theme.id}
                                         variants={cardVariants}
                                         initial="initial"
@@ -346,8 +316,9 @@ function Onboarding() {
                                         whileTap="tap"
                                         custom={i}
                                         onClick={() => handleSelect('themePreference', theme.id)}
-                                        className={`relative cursor-pointer transition-all ${preferences.themePreference === theme.id
-                                                ? 'ring-2 ring-indigo-500 ring-offset-2 ring-offset-background'
+                                        aria-pressed={preferences.themePreference === theme.id}
+                                        className={`relative cursor-pointer transition-all w-full text-left ${preferences.themePreference === theme.id
+                                                ? 'ring-2 ring-primary-500 ring-offset-2 ring-offset-background'
                                                 : ''
                                             }`}
                                     >
@@ -390,12 +361,12 @@ function Onboarding() {
                                             <motion.div
                                                 initial={{ scale: 0 }}
                                                 animate={{ scale: 1 }}
-                                                className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center text-white text-xs"
+                                                className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-primary-500 flex items-center justify-center text-white text-xs"
                                             >
-                                                {icons.check}
+                                                <Check size={14} strokeWidth={ICON_STROKE} />
                                             </motion.div>
                                         )}
-                                    </motion.div>
+                                    </motion.button>
                                 ))}
                             </div>
                         </motion.div>

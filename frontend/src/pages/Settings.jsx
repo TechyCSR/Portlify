@@ -5,74 +5,36 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { getCurrentUser, getPreferences, updatePreferences, getMyProfile, downloadPortfolio, resetProfile, updateVisibility, checkUsername, updateUsername, getPremiumStatus, getCustomBranding, updateCustomBranding } from '../utils/api'
 import { getAppUrl } from '../utils/appUrl'
 import { useToast } from '../context/ToastContext'
-
-// Icons
-const icons = {
-    user: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-        </svg>
-    ),
-    palette: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-        </svg>
-    ),
-    download: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-        </svg>
-    ),
-    eye: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-        </svg>
-    ),
-    trash: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-        </svg>
-    ),
-    back: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-        </svg>
-    ),
-    check: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-        </svg>
-    ),
-    warning: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-        </svg>
-    ),
-    close: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-        </svg>
-    ),
-    shield: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-        </svg>
-    ),
-    edit: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-        </svg>
-    )
-}
+import {
+    AlertTriangle,
+    Check,
+    CircleCheck,
+    Download,
+    ExternalLink,
+    Eye,
+    Info,
+    Lock,
+    Palette,
+    Pencil,
+    ShieldCheck,
+    Star,
+    Tag,
+    Trash2,
+    User,
+    X,
+} from 'lucide-react'
+import { IconTile, InlineIcon, ICON_STROKE } from '../components/IconTile'
+import PageHeader from '../components/PageHeader'
+import MobileTabBar from '../components/MobileTabBar'
+import { ErrorState, LoadingState } from '../components/AsyncState'
 
 const tabs = [
-    { id: 'profile', label: 'Profile', icon: icons.user },
-    { id: 'appearance', label: 'Appearance', icon: icons.palette },
-    { id: 'security', label: 'Premium', icon: icons.shield },
-    { id: 'export', label: 'Export', icon: icons.download },
-    { id: 'privacy', label: 'Privacy', icon: icons.eye },
-    { id: 'data', label: 'Data', icon: icons.trash }
+    { id: 'profile', label: 'Profile', icon: User },
+    { id: 'appearance', label: 'Appearance', icon: Palette },
+    { id: 'premium', label: 'Premium', icon: ShieldCheck },
+    { id: 'export', label: 'Export', icon: Download },
+    { id: 'privacy', label: 'Privacy', icon: Eye },
+    { id: 'data', label: 'Data', icon: Trash2 },
 ]
 
 const portfolioTypes = [
@@ -86,7 +48,7 @@ const experienceLevels = [
 ]
 
 const themes = [
-    { id: 'modern', name: 'Modern', colors: ['#6366f1', '#a855f7'] },
+    { id: 'modern', name: 'Modern', colors: ['#5a7a9e', '#7a96b5'] },
     { id: 'minimal', name: 'Minimal', colors: ['#18181b', '#71717a'] },
     { id: 'creative', name: 'Creative', colors: ['#ec4899', '#f472b6'] },
     { id: 'professional', name: 'Professional', colors: ['#0f766e', '#14b8a6'] }
@@ -341,52 +303,29 @@ function Settings() {
     }
 
     if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center pt-20">
-                <div className="spinner w-8 h-8" />
-            </div>
-        )
+        return <LoadingState />
     }
 
     if (loadError) {
         return (
-            <div className="min-h-screen flex items-center justify-center pt-20 px-4">
-                <div className="glass-card rounded-2xl p-8 max-w-md text-center">
-                    <p className="text-red-400 mb-4">{loadError}</p>
-                    <button
-                        onClick={() => { setLoading(true); window.location.reload() }}
-                        className="btn-primary px-6 py-2 rounded-xl"
-                    >
-                        Retry
-                    </button>
-                </div>
-            </div>
+            <ErrorState
+                message={loadError}
+                onRetry={() => { setLoading(true); window.location.reload() }}
+            />
         )
     }
 
     return (
-        <div className="min-h-screen pt-24 pb-12 px-4">
-            <div className="max-w-4xl mx-auto">
-                {/* Header */}
-                <div className="flex items-center gap-4 mb-8">
-                    <motion.button
-                        whileHover={{ scale: 1.05, x: -3 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => navigate('/dashboard')}
-                        className="p-3 rounded-xl glass-card text-secondary hover:text-primary transition-colors"
-                    >
-                        {icons.back}
-                    </motion.button>
-                    <div>
-                        <h1 className="text-2xl font-display font-bold text-primary">Settings</h1>
-                        <p className="text-secondary">Manage your preferences and export options</p>
-                    </div>
-                </div>
+        <div className="max-w-4xl mx-auto pb-6">
+            <PageHeader
+                title="Settings"
+                description="Manage your preferences and export options"
+            />
 
                 <div className="grid md:grid-cols-[240px,1fr] gap-6">
                     {/* Sidebar */}
                     {/* Sidebar Navigation - Desktop */}
-                    <div className="hidden md:block glass-card rounded-2xl p-4 h-fit sticky top-24">
+                    <div className="hidden md:block glass-card rounded-2xl p-4 h-fit sticky sticky-below-navbar">
                         <nav className="space-y-1">
                             {tabs.map((tab) => (
                                 <motion.button
@@ -394,33 +333,27 @@ function Settings() {
                                     whileHover={{ x: 4 }}
                                     onClick={() => setActiveTab(tab.id)}
                                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === tab.id
-                                        ? tab.id === 'data' ? 'bg-red-500/20 text-red-400' : 'bg-indigo-500/20 text-indigo-400'
+                                        ? tab.id === 'data' ? 'bg-red-500/20 text-red-400' : 'bg-primary-500/20 text-primary-400'
                                         : 'text-secondary hover:text-primary hover:bg-surface'
                                         }`}
                                 >
-                                    {tab.icon}
+                                    <InlineIcon icon={tab.icon} size={18} />
                                     <span className="font-medium">{tab.label}</span>
                                 </motion.button>
                             ))}
                         </nav>
                     </div>
 
-                    {/* Mobile Navigation - Horizontal Scroll */}
-                    <div className="md:hidden sticky top-20 z-10 bg-background/80 backdrop-blur-md -mx-4 px-4 py-2 border-b border-white/5 mb-4 overflow-x-auto no-scrollbar flex gap-2">
-                        {tabs.map((tab) => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all ${activeTab === tab.id
-                                    ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-500/25'
-                                    : 'bg-white/5 border border-white/10 text-secondary'
-                                    }`}
-                            >
-                                {tab.icon}
-                                {tab.label}
-                            </button>
-                        ))}
-                    </div>
+                    <MobileTabBar
+                        tabs={tabs.map((tab) => ({
+                            id: tab.id,
+                            label: tab.label,
+                            icon: <InlineIcon icon={tab.icon} size={16} />,
+                        }))}
+                        activeId={activeTab}
+                        onChange={setActiveTab}
+                        className="md:hidden mb-4"
+                    />
 
                     {/* Content */}
                     <div className="glass-card rounded-2xl p-6">
@@ -446,8 +379,8 @@ function Settings() {
                                                     whileTap={{ scale: 0.98 }}
                                                     onClick={() => handlePreferenceChange('portfolioType', type.id)}
                                                     className={`p-4 rounded-xl border-2 transition-all text-left ${preferences.portfolioType === type.id
-                                                        ? 'border-indigo-500 bg-indigo-500/10'
-                                                        : 'border-border hover:border-indigo-500/50'
+                                                        ? 'border-primary-500 bg-primary-500/10'
+                                                        : 'border-border hover:border-primary-500/50'
                                                         }`}
                                                 >
                                                     <p className="font-medium text-primary">{type.name}</p>
@@ -468,8 +401,8 @@ function Settings() {
                                                     whileTap={{ scale: 0.98 }}
                                                     onClick={() => handlePreferenceChange('experienceLevel', level.id)}
                                                     className={`p-4 rounded-xl border-2 transition-all text-left ${preferences.experienceLevel === level.id
-                                                        ? 'border-indigo-500 bg-indigo-500/10'
-                                                        : 'border-border hover:border-indigo-500/50'
+                                                        ? 'border-primary-500 bg-primary-500/10'
+                                                        : 'border-border hover:border-primary-500/50'
                                                         }`}
                                                 >
                                                     <p className="font-medium text-primary">{level.name}</p>
@@ -499,8 +432,8 @@ function Settings() {
                                                 whileTap={{ scale: 0.98 }}
                                                 onClick={() => handlePreferenceChange('themePreference', theme.id)}
                                                 className={`relative p-4 rounded-xl border-2 transition-all ${preferences.themePreference === theme.id
-                                                    ? 'border-indigo-500'
-                                                    : 'border-border hover:border-indigo-500/50'
+                                                    ? 'border-primary-500'
+                                                    : 'border-border hover:border-primary-500/50'
                                                     }`}
                                             >
                                                 <div
@@ -509,35 +442,35 @@ function Settings() {
                                                 />
                                                 <p className="text-center font-medium text-primary">{theme.name}</p>
 
-                                                <motion.div
-                                                    initial={{ scale: 0 }}
-                                                    animate={{ scale: 1 }}
-                                                    className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center text-white"
-                                                >
-                                                    {icons.check}
-                                                </motion.div>
+                                                {preferences.themePreference === theme.id && (
+                                                    <motion.div
+                                                        initial={{ scale: 0 }}
+                                                        animate={{ scale: 1 }}
+                                                        className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-primary-500 flex items-center justify-center text-white"
+                                                    >
+                                                        <Check size={16} strokeWidth={ICON_STROKE} className="text-white" />
+                                                    </motion.div>
+                                                )}
                                             </motion.button>
                                         ))}
                                     </div>
                                 </motion.div>
                             )}
 
-                            {/* Security Tab */}
-                            {activeTab === 'security' && (
+                            {/* Premium Tab */}
+                            {activeTab === 'premium' && (
                                 <motion.div
-                                    key="security"
+                                    key="premium"
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -10 }}
                                     className="space-y-6"
                                 >
                                     <div className="flex items-center justify-between">
-                                        <h2 className="text-xl font-bold text-primary">Security Settings</h2>
+                                        <h2 className="text-xl font-bold text-primary">Premium Features</h2>
                                         {isPremium && (
-                                            <div className="px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 text-amber-400 text-xs font-semibold flex items-center gap-1.5">
-                                                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                                </svg>
+                                            <div className="px-3 py-1.5 rounded-full bg-tertiary text-secondary text-xs font-semibold flex items-center gap-1.5">
+                                                <InlineIcon icon={Star} size={14} />
                                                 Premium
                                             </div>
                                         )}
@@ -556,15 +489,7 @@ function Settings() {
 
                                             <div className="relative p-6">
                                                 <div className="flex items-start gap-4">
-                                                    <motion.div
-                                                        animate={{ rotateY: [0, 360] }}
-                                                        transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                                                        className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/25"
-                                                    >
-                                                        <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                                        </svg>
-                                                    </motion.div>
+                                                    <IconTile icon={Star} size={28} className="w-14 h-14 rounded-2xl" />
                                                     <div className="flex-1">
                                                         <h3 className="text-lg font-bold text-primary mb-2">Premium Features</h3>
                                                         <p className="text-secondary text-sm mb-4">
@@ -596,51 +521,25 @@ function Settings() {
                                         {!isPremium && (
                                             <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/20 backdrop-blur-[2px] rounded-2xl">
                                                 <div className="px-4 py-2 rounded-full bg-surface/90 border border-border text-muted text-sm flex items-center gap-2">
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                                    </svg>
+                                                    <InlineIcon icon={Lock} size={16} />
                                                     Premium Required
                                                 </div>
                                             </div>
                                         )}
 
                                         {/* Animated gradient background */}
-                                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/10 via-purple-600/5 to-cyan-600/10 animate-gradient-slow" />
+                                        <div className="absolute inset-0 bg-gradient-to-br from-primary-600/10 via-accent-600/5 to-cyan-600/10 animate-gradient-slow" />
                                         <div className="absolute inset-0 backdrop-blur-xl bg-white/[0.02]" />
 
                                         {/* Glass border effect */}
                                         <div className="absolute inset-0 rounded-2xl border border-white/10" />
-                                        <div className="absolute inset-[1px] rounded-2xl border border-white/5" />
+                                        <div className="absolute inset-[1px] rounded-2xl border border-border" />
 
                                         {/* Content */}
                                         <div className="relative p-6">
                                             <div className="flex items-start gap-5">
                                                 {/* 3D Shield Icon */}
-                                                <motion.div
-                                                    className="relative"
-                                                    whileHover={{ rotateY: 180 }}
-                                                    transition={{ type: "spring", stiffness: 200, damping: 15 }}
-                                                    style={{ transformStyle: "preserve-3d" }}
-                                                >
-                                                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500/30 to-purple-500/30 flex items-center justify-center backdrop-blur-sm border border-white/10 shadow-lg shadow-indigo-500/20">
-                                                        <motion.div
-                                                            animate={{
-                                                                rotateZ: [0, 5, -5, 0],
-                                                            }}
-                                                            transition={{
-                                                                duration: 4,
-                                                                repeat: Infinity,
-                                                                ease: "easeInOut"
-                                                            }}
-                                                        >
-                                                            <svg className="w-7 h-7 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                                                            </svg>
-                                                        </motion.div>
-                                                    </div>
-                                                    {/* Glow effect */}
-                                                    <div className="absolute -inset-2 bg-indigo-500/20 rounded-3xl blur-xl opacity-50" />
-                                                </motion.div>
+                                                <IconTile icon={ShieldCheck} size={28} className="w-14 h-14 rounded-2xl" />
 
                                                 <div className="flex-1 min-w-0">
                                                     <h3 className="font-bold text-primary text-lg mb-1">Update Username</h3>
@@ -656,7 +555,7 @@ function Settings() {
                                                 whileHover={{ scale: 1.01 }}
                                                 transition={{ type: "spring", stiffness: 400 }}
                                             >
-                                                <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-purple-500/5" />
+                                                <div className="absolute inset-0 bg-gradient-to-r from-primary-500/5 to-accent-500/5" />
                                                 <div className="relative p-4 backdrop-blur-sm border border-white/10 rounded-xl">
                                                     <div className="flex items-center justify-between gap-4">
                                                         <div className="min-w-0">
@@ -674,7 +573,7 @@ function Settings() {
                                                         </div>
                                                         <div className="text-right shrink-0">
                                                             <p className="text-[10px] text-muted uppercase tracking-wider mb-1">Portfolio URL</p>
-                                                            <p className="text-xs text-indigo-400 font-mono bg-indigo-500/10 px-2 py-1 rounded-lg">
+                                                            <p className="text-xs text-primary-400 font-mono bg-primary-500/10 px-2 py-1 rounded-lg">
                                                                 /{userData?.username}
                                                             </p>
                                                         </div>
@@ -696,11 +595,11 @@ function Settings() {
                                                         whileFocus={{ scale: 1.01 }}
                                                     >
                                                         {/* Input glow effect on focus */}
-                                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500/50 to-purple-500/50 rounded-xl opacity-0 group-focus-within:opacity-100 blur transition-opacity duration-300" />
+                                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-primary-500/50 to-accent-500/50 rounded-xl opacity-0 group-focus-within:opacity-100 blur transition-opacity duration-300" />
 
-                                                        <div className="relative flex items-center bg-surface/80 backdrop-blur-sm rounded-xl border border-white/10 group-focus-within:border-indigo-500/50 transition-colors overflow-hidden">
+                                                        <div className="relative flex items-center bg-surface/80 backdrop-blur-sm rounded-xl border border-white/10 group-focus-within:border-primary-500/50 transition-colors overflow-hidden">
                                                             {/* @ prefix badge */}
-                                                            <div className="pl-4 pr-2 py-3 text-indigo-400 font-mono text-lg font-semibold select-none">
+                                                            <div className="pl-4 pr-2 py-3 text-primary-400 font-mono text-lg font-semibold select-none">
                                                                 @
                                                             </div>
                                                             <input
@@ -732,13 +631,13 @@ function Settings() {
                                                         className="relative px-5 py-3 rounded-xl font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed overflow-hidden group"
                                                     >
                                                         {/* Button background */}
-                                                        <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 group-hover:from-indigo-500/30 group-hover:to-purple-500/30 transition-colors" />
-                                                        <div className="absolute inset-0 border border-indigo-500/30 rounded-xl" />
+                                                        <div className="absolute inset-0 bg-gradient-to-r from-primary-500/20 to-accent-500/20 group-hover:from-primary-500/30 group-hover:to-accent-500/30 transition-colors" />
+                                                        <div className="absolute inset-0 border border-primary-500/30 rounded-xl" />
 
-                                                        <span className="relative text-indigo-400">
+                                                        <span className="relative text-primary-400">
                                                             {checkingUsername ? (
                                                                 <motion.div
-                                                                    className="w-5 h-5 border-2 border-indigo-400/30 border-t-indigo-400 rounded-full"
+                                                                    className="w-5 h-5 border-2 border-primary-400/30 border-t-primary-400 rounded-full"
                                                                     animate={{ rotate: 360 }}
                                                                     transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                                                                 />
@@ -751,9 +650,7 @@ function Settings() {
 
                                                 {/* Requirements hint */}
                                                 <p className="text-xs text-muted flex items-center gap-2">
-                                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                    </svg>
+                                                    <InlineIcon icon={Info} size={14} />
                                                     3-8 characters: lowercase letters, numbers, underscore
                                                 </p>
 
@@ -772,9 +669,7 @@ function Settings() {
                                                                 transition={{ type: "spring", stiffness: 500, delay: 0.1 }}
                                                                 className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center"
                                                             >
-                                                                <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                                                                </svg>
+                                                                <InlineIcon icon={Check} size={16} className="text-green-400" />
                                                             </motion.div>
                                                             <div>
                                                                 <p className="text-green-400 font-medium text-sm">@{newUsername} is available!</p>
@@ -790,9 +685,7 @@ function Settings() {
                                                             className="flex items-center gap-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20"
                                                         >
                                                             <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center">
-                                                                <svg className="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                                </svg>
+                                                                <InlineIcon icon={X} size={16} className="text-red-400" />
                                                             </div>
                                                             <p className="text-red-400 text-sm">{usernameError}</p>
                                                         </motion.div>
@@ -808,14 +701,14 @@ function Settings() {
                                                             exit={{ opacity: 0, height: 0, marginTop: 0 }}
                                                         >
                                                             <motion.button
-                                                                whileHover={{ scale: 1.02, boxShadow: "0 20px 40px -15px rgba(99, 102, 241, 0.4)" }}
+                                                                whileHover={{ scale: 1.02, boxShadow: "0 20px 40px -15px rgba(90, 122, 158, 0.4)" }}
                                                                 whileTap={{ scale: 0.98 }}
                                                                 onClick={handleUpdateUsername}
                                                                 disabled={updatingUsername}
                                                                 className="relative w-full py-4 rounded-xl font-semibold text-white overflow-hidden group disabled:opacity-50"
                                                             >
                                                                 {/* Animated gradient background */}
-                                                                <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_100%] animate-gradient-x" />
+                                                                <div className="absolute inset-0 bg-gradient-to-r from-primary-600 via-accent-600 to-primary-600 bg-[length:200%_100%] animate-gradient-x" />
 
                                                                 {/* Shine effect */}
                                                                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -834,9 +727,7 @@ function Settings() {
                                                                         </>
                                                                     ) : (
                                                                         <>
-                                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                                            </svg>
+                                                                            <InlineIcon icon={CircleCheck} size={20} className="text-white" />
                                                                             Confirm Change to @{newUsername}
                                                                         </>
                                                                     )}
@@ -859,15 +750,7 @@ function Settings() {
                                         <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-orange-500/5" />
                                         <div className="relative p-4 border border-amber-500/20 rounded-xl backdrop-blur-sm">
                                             <div className="flex items-start gap-3">
-                                                <motion.div
-                                                    animate={{ rotateZ: [0, 10, -10, 0] }}
-                                                    transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-                                                    className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center flex-shrink-0"
-                                                >
-                                                    <svg className="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                                    </svg>
-                                                </motion.div>
+                                                <IconTile icon={AlertTriangle} size={16} className="w-8 h-8 rounded-lg" />
                                                 <div className="text-sm">
                                                     <p className="font-medium text-amber-400 mb-1">Important Note</p>
                                                     <p className="text-secondary leading-relaxed">Changing your username will update your portfolio URL. Old links will no longer work after the change.</p>
@@ -888,45 +771,25 @@ function Settings() {
                                         {!isPremium && (
                                             <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/20 backdrop-blur-[2px] rounded-2xl">
                                                 <div className="px-4 py-2 rounded-full bg-surface/90 border border-border text-muted text-sm flex items-center gap-2">
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                                    </svg>
+                                                    <InlineIcon icon={Lock} size={16} />
                                                     Premium Required
                                                 </div>
                                             </div>
                                         )}
 
                                         {/* Animated gradient background */}
-                                        <div className="absolute inset-0 bg-gradient-to-br from-pink-600/10 via-purple-600/5 to-indigo-600/10 animate-gradient-slow" />
+                                        <div className="absolute inset-0 bg-gradient-to-br from-pink-600/10 via-accent-600/5 to-primary-600/10 animate-gradient-slow" />
                                         <div className="absolute inset-0 backdrop-blur-xl bg-white/[0.02]" />
 
                                         {/* Glass border effect */}
                                         <div className="absolute inset-0 rounded-2xl border border-white/10" />
-                                        <div className="absolute inset-[1px] rounded-2xl border border-white/5" />
+                                        <div className="absolute inset-[1px] rounded-2xl border border-border" />
 
                                         {/* Content */}
                                         <div className="relative p-6">
                                             <div className="flex items-start gap-5 mb-6">
                                                 {/* 3D Tag Icon */}
-                                                <motion.div
-                                                    className="relative"
-                                                    whileHover={{ rotateY: 180 }}
-                                                    transition={{ type: "spring", stiffness: 200, damping: 15 }}
-                                                    style={{ transformStyle: "preserve-3d" }}
-                                                >
-                                                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500/30 to-purple-500/30 flex items-center justify-center backdrop-blur-sm border border-white/10 shadow-lg shadow-pink-500/20">
-                                                        <motion.div
-                                                            animate={{ rotateZ: [0, 5, -5, 0] }}
-                                                            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                                                        >
-                                                            <svg className="w-7 h-7 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                                                            </svg>
-                                                        </motion.div>
-                                                    </div>
-                                                    {/* Glow effect */}
-                                                    <div className="absolute -inset-2 bg-pink-500/20 rounded-3xl blur-xl opacity-50" />
-                                                </motion.div>
+                                                <IconTile icon={Tag} size={28} className="w-14 h-14 rounded-2xl" />
 
                                                 <div className="flex-1 min-w-0">
                                                     <h3 className="font-bold text-primary text-lg mb-1">Custom Branding</h3>
@@ -1011,14 +874,12 @@ function Settings() {
                                                         </div>
 
                                                         {/* Preview */}
-                                                        <div className="p-4 rounded-xl bg-black/20 border border-white/5">
+                                                        <div className="p-4 rounded-xl bg-black/20 border border-border">
                                                             <p className="text-xs text-muted uppercase tracking-wider mb-2">Preview</p>
                                                             <div className="flex items-center justify-center gap-2 text-sm">
                                                                 <span className="text-secondary">{customBranding.text || 'Made by Your Name'}</span>
                                                                 {customBranding.url && (
-                                                                    <svg className="w-4 h-4 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                                                    </svg>
+                                                                    <InlineIcon icon={ExternalLink} size={16} />
                                                                 )}
                                                             </div>
                                                         </div>
@@ -1029,7 +890,7 @@ function Settings() {
                                                             whileTap={{ scale: 0.98 }}
                                                             onClick={handleSaveBranding}
                                                             disabled={savingBranding}
-                                                            className="w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white font-medium shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 transition-shadow disabled:opacity-50"
+                                                            className="w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-accent-500 text-white font-medium shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 transition-shadow disabled:opacity-50"
                                                         >
                                                             {savingBranding ? (
                                                                 <span className="flex items-center justify-center gap-2">
@@ -1062,10 +923,10 @@ function Settings() {
                                 >
                                     <h2 className="text-xl font-bold text-primary mb-6">Export Portfolio</h2>
 
-                                    <div className="p-6 rounded-xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 mb-6">
+                                    <div className="p-6 rounded-xl bg-gradient-to-br from-primary-500/10 to-accent-500/10 border border-primary-500/20 mb-6">
                                         <div className="flex items-start gap-4">
-                                            <div className="p-3 rounded-xl bg-indigo-500/20 text-indigo-400">
-                                                {icons.download}
+                                            <div className="p-3 rounded-xl bg-primary-500/20 text-primary-400">
+                                                <Download size={20} strokeWidth={ICON_STROKE} className="text-secondary" />
                                             </div>
                                             <div className="flex-1">
                                                 <h3 className="font-bold text-primary mb-2">Download as Static Site</h3>
@@ -1123,7 +984,7 @@ function Settings() {
                                             </div>
                                             <button
                                                 onClick={() => setIsPublic(!isPublic)}
-                                                className={`relative w-14 h-8 rounded-full transition-all ${isPublic ? 'bg-indigo-500' : 'bg-gray-600'
+                                                className={`relative w-14 h-8 rounded-full transition-all ${isPublic ? 'bg-primary-500' : 'bg-gray-600'
                                                     }`}
                                             >
                                                 <motion.div
@@ -1156,7 +1017,7 @@ function Settings() {
                                     <div className="p-6 rounded-xl bg-gradient-to-br from-red-500/10 to-orange-500/10 border border-red-500/20">
                                         <div className="flex items-start gap-4">
                                             <div className="p-3 rounded-xl bg-red-500/20 text-red-400">
-                                                {icons.trash}
+                                                <Trash2 size={20} strokeWidth={ICON_STROKE} className="text-secondary" />
                                             </div>
                                             <div className="flex-1">
                                                 <h3 className="font-bold text-primary mb-2">Reset All Data</h3>
@@ -1205,7 +1066,7 @@ function Settings() {
                                             animate={{ opacity: 1 }}
                                             className="text-green-400 text-sm flex items-center gap-2"
                                         >
-                                            {icons.check} Settings saved!
+                                            <Check size={16} strokeWidth={ICON_STROKE} className="text-secondary" /> Settings saved!
                                         </motion.p>
                                     )}
                                 </div>
@@ -1229,7 +1090,6 @@ function Settings() {
                         )}
                     </div>
                 </div>
-            </div>
 
             {/* Reset Confirmation Modal */}
             <AnimatePresence>
@@ -1251,7 +1111,7 @@ function Settings() {
                             <div className="flex items-center justify-between mb-4">
                                 <div className="flex items-center gap-3">
                                     <div className="p-2 rounded-xl bg-red-500/20 text-red-400">
-                                        {icons.warning}
+                                        <AlertTriangle size={22} strokeWidth={ICON_STROKE} className="text-secondary" />
                                     </div>
                                     <h3 className="text-lg font-bold text-primary">Confirm Reset</h3>
                                 </div>
@@ -1259,7 +1119,7 @@ function Settings() {
                                     onClick={() => setShowResetModal(false)}
                                     className="p-2 rounded-lg hover:bg-surface text-muted hover:text-primary transition-colors"
                                 >
-                                    {icons.close}
+                                    <X size={18} strokeWidth={ICON_STROKE} />
                                 </button>
                             </div>
 
