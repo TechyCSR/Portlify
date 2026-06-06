@@ -6,6 +6,7 @@ import { getThemeColors } from '../portfolio/theme'
 import PortfolioTemplate from '../portfolio/PortfolioTemplate'
 import LoadingState from '../portfolio/components/LoadingState'
 import ErrorState from '../portfolio/components/ErrorState'
+import { applySiteSeo, buildPortfolioSeo, resetSiteSeo } from '../utils/seo'
 
 function Portfolio() {
     const { username } = useParams()
@@ -27,32 +28,7 @@ function Portfolio() {
                 if (cancelled) return
 
                 setProfile(data)
-
-                const name = data.basicDetails?.name || username
-                const headline = data.basicDetails?.headline
-                    || data.basicDetails?.about?.substring(0, 60)
-                    || 'Professional'
-
-                document.title = `${name} — ${headline} | Portlify by TechyCSR`
-
-                const metaDesc = document.querySelector('meta[name="description"]')
-                if (metaDesc) {
-                    metaDesc.setAttribute(
-                        'content',
-                        `${name}'s professional portfolio — ${headline}. Built with Portlify by TechyCSR.`
-                    )
-                }
-
-                const ogTitle = document.querySelector('meta[property="og:title"]')
-                if (ogTitle) ogTitle.setAttribute('content', `${name} — ${headline} | Portlify`)
-
-                const ogDesc = document.querySelector('meta[property="og:description"]')
-                if (ogDesc) {
-                    ogDesc.setAttribute(
-                        'content',
-                        `${name}'s professional portfolio — ${headline}. Built with Portlify.`
-                    )
-                }
+                applySiteSeo(buildPortfolioSeo(data, username))
 
                 const viewKey = `viewed_${username}`
                 if (!sessionStorage.getItem(viewKey)) {
@@ -75,6 +51,7 @@ function Portfolio() {
 
         return () => {
             cancelled = true
+            resetSiteSeo()
         }
     }, [username])
 

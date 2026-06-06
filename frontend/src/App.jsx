@@ -16,6 +16,8 @@ import Premium from './pages/Premium'
 import Portfolio from './pages/Portfolio'
 import ProtectedRoute from './components/ProtectedRoute'
 import DashboardLayout from './components/DashboardLayout'
+import ClerkThemeProvider from './components/ClerkThemeProvider'
+import SeoManager from './components/SeoManager'
 import { getClerkAppearance } from './utils/clerkAppearance'
 
 // Layout wrapper that conditionally shows navbar
@@ -127,12 +129,15 @@ function AppRoutes() {
 function App() {
     return (
         <ThemeProvider>
-            <ToastProvider>
-                <Router>
-                    <ScrollToTop />
-                    <AppRoutes />
-                </Router>
-            </ToastProvider>
+            <ClerkThemeProvider>
+                <ToastProvider>
+                    <Router>
+                        <ScrollToTop />
+                        <SeoManager />
+                        <AppRoutes />
+                    </Router>
+                </ToastProvider>
+            </ClerkThemeProvider>
         </ThemeProvider>
     )
 }

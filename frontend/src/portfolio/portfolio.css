@@ -3,16 +3,80 @@
   -webkit-font-smoothing: antialiased;
   color: var(--pf-text);
   background: var(--pf-bg);
+  height: 100dvh;
+  overflow: hidden;
 }
 
-.portfolio-section {
-  scroll-margin-top: 5.5rem;
+.portfolio-section-panel {
+  overscroll-behavior: contain;
 }
 
-@media (min-width: 1024px) {
-  .portfolio-section {
-    scroll-margin-top: 2rem;
-  }
+.portfolio-scroll-area {
+  isolation: isolate;
+}
+
+.portfolio-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.portfolio-scroll::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.portfolio-scroll:hover,
+.portfolio-scroll:focus-within {
+  scrollbar-width: thin;
+  scrollbar-color: var(--pf-border) transparent;
+}
+
+.portfolio-scroll:hover::-webkit-scrollbar,
+.portfolio-scroll:focus-within::-webkit-scrollbar {
+  width: 5px;
+}
+
+.portfolio-scroll:hover::-webkit-scrollbar-track,
+.portfolio-scroll:focus-within::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.portfolio-scroll:hover::-webkit-scrollbar-thumb,
+.portfolio-scroll:focus-within::-webkit-scrollbar-thumb {
+  background: var(--pf-border);
+  border-radius: 9999px;
+}
+
+.portfolio-scroll:hover::-webkit-scrollbar-thumb:hover,
+.portfolio-scroll:focus-within::-webkit-scrollbar-thumb:hover {
+  background: var(--pf-text-muted);
+}
+
+.portfolio-scroll-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2.5rem;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.portfolio-scroll-fade-top {
+  top: 0;
+  background: linear-gradient(to bottom, var(--pf-bg) 0%, transparent 100%);
+}
+
+.portfolio-scroll-fade-bottom {
+  bottom: 0;
+  background: linear-gradient(to top, var(--pf-bg) 0%, transparent 100%);
+}
+
+.portfolio-aside-scroll {
+  overscroll-behavior: contain;
+}
+
+.portfolio-section-content {
+  padding-bottom: 0.25rem;
 }
 
 .portfolio-text {
@@ -140,6 +204,17 @@
   .portfolio-root {
     background: #fff !important;
     color: #111 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .portfolio-scroll {
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  .portfolio-scroll-fade {
+    display: none !important;
   }
 
   .portfolio-surface {

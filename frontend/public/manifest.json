@@ -1,7 +1,7 @@
 {
-  "name": "Portlify - AI Resume to Portfolio Builder",
-  "short_name": "Portlify",
-  "description": "Transform your resume into a stunning, professional portfolio in seconds with AI.",
+  "name": "PortlifyAi - AI Resume to Portfolio Builder",
+  "short_name": "PortlifyAi",
+  "description": "PortlifyAi transforms your resume into a stunning, professional portfolio in seconds. Upload PDF, DOC, or DOCX — AI extracts your skills, experience, and projects into a shareable portfolio URL.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#09090b",
@@ -12,10 +12,16 @@
   "categories": ["productivity", "business", "utilities"],
   "icons": [
     {
-      "src": "/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "src": "/portlify_clean_logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/portlify_clean_logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "/favicon-192x192.png",
@@ -25,7 +31,8 @@
     {
       "src": "/favicon-512x512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     }
   ],
   "screenshots": [
@@ -34,7 +41,7 @@
       "sizes": "1200x630",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "Portlify Homepage"
+      "label": "PortlifyAi Homepage"
     }
   ],
   "related_applications": [],

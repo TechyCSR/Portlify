@@ -12,12 +12,21 @@ function getLuminance(hex) {
     return 0.2126 * r + 0.7152 * g + 0.0722 * b
 }
 
-const PALETTES = {
+export const PORTFOLIO_PALETTES = {
     modern: { primary: '#5a7a9e', secondary: '#7a96b5' },
     minimal: { primary: '#3f3f46', secondary: '#71717a' },
     creative: { primary: '#db2777', secondary: '#7c3aed' },
     professional: { primary: '#0f766e', secondary: '#0e7490' },
 }
+
+export const PORTFOLIO_THEME_OPTIONS = [
+    { id: 'modern', name: 'Modern', previewBg: '#09090b', isLight: false },
+    { id: 'minimal', name: 'Minimal', previewBg: '#fafaf9', isLight: true },
+    { id: 'creative', name: 'Creative', previewBg: '#09090b', isLight: false },
+    { id: 'professional', name: 'Professional', previewBg: '#fafaf9', isLight: true },
+]
+
+const PALETTES = PORTFOLIO_PALETTES
 
 const NEUTRALS = {
     dark: {

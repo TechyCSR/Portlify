@@ -804,7 +804,7 @@ function Settings() {
                                                 <div className="flex items-center justify-between">
                                                     <div>
                                                         <p className="font-medium text-primary">Enable Custom Branding</p>
-                                                        <p className="text-xs text-muted mt-1">Show your custom text instead of "Built with Portlify"</p>
+                                                        <p className="text-xs text-muted mt-1">Show your custom text instead of "Built with PortlifyAi"</p>
                                                     </div>
                                                     <button
                                                         onClick={async () => {

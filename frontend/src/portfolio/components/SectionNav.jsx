@@ -3,7 +3,7 @@ function SectionNav({ sections, activeSection, onNavigate }) {
 
     return (
         <nav
-            className="portfolio-no-print portfolio-surface lg:hidden sticky top-14 z-40 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 border-b border-[var(--pf-border-subtle)] rounded-none shadow-none"
+            className="portfolio-no-print portfolio-surface lg:hidden flex-shrink-0 py-2.5 px-3 border border-[var(--pf-border-subtle)] rounded-xl shadow-none"
             aria-label="Section navigation"
         >
             <div className="flex gap-2 overflow-x-auto hide-scrollbar">
@@ -15,6 +15,7 @@ function SectionNav({ sections, activeSection, onNavigate }) {
                             type="button"
                             onClick={() => onNavigate(section.id)}
                             data-active={activeSection === section.id}
+                            aria-current={activeSection === section.id ? 'true' : undefined}
                             className="portfolio-nav-link flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium whitespace-nowrap flex-shrink-0"
                         >
                             <Icon size={14} />

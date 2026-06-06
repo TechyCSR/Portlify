@@ -70,7 +70,7 @@ app.use(clerkMiddleware());
 
 app.get('/', (req, res) => {
     res.json({
-        message: 'Portlify API is running',
+        message: 'PortlifyAi API is running',
         version: '1.0.0'
     });
 });
