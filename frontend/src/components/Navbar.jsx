@@ -7,6 +7,7 @@ import { ICON_STROKE } from './IconTile'
 import { dashboardNavItems } from './DashboardSidebar'
 import ThemeToggle from './ThemeToggle'
 import { useTheme } from '../context/ThemeContext'
+import { useDashboardNavBridge } from '../context/DashboardNavBridge'
 import { getUserButtonAppearance } from '../utils/clerkAppearance'
 import BrandLogo from './BrandLogo'
 import { BRAND_NAME_DISPLAY } from '../constants/brand'
@@ -58,20 +59,39 @@ function Navbar() {
     const { theme } = useTheme()
     const location = useLocation()
     const menuButtonRef = useRef(null)
+    const dashboardNav = useDashboardNavBridge()
+    const openDashboardSidebar = dashboardNav?.openSidebar
+    const closeDashboardSidebar = dashboardNav?.closeSidebar
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
     const [scrolled, setScrolled] = useState(false)
 
     const onDashboard = isDashboardPath(location.pathname)
     const userButtonAppearance = getUserButtonAppearance(theme)
-    const showMobileMenu = !onDashboard
+    const usesDashboardDrawer = onDashboard && Boolean(dashboardNav)
+    const drawerOpen = usesDashboardDrawer && dashboardNav.sidebarOpen
+    const showMobileMenuButton = !onDashboard
+    const menuOpen = usesDashboardDrawer ? drawerOpen : mobileMenuOpen
 
     const closeMobileMenu = () => setMobileMenuOpen(false)
-    const toggleMobileMenu = () => setMobileMenuOpen((open) => !open)
+
+    const toggleMobileMenu = () => {
+        if (usesDashboardDrawer) {
+            if (dashboardNav.sidebarOpen) {
+                closeDashboardSidebar?.()
+            } else {
+                openDashboardSidebar?.()
+            }
+            return
+        }
+
+        setMobileMenuOpen((open) => !open)
+    }
 
     useLayoutEffect(() => {
         closeMobileMenu()
+        closeDashboardSidebar?.()
         setScrolled(window.scrollY > 8)
-    }, [location.pathname])
+    }, [location.pathname, closeDashboardSidebar])
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 8)
@@ -80,7 +100,7 @@ function Navbar() {
     }, [])
 
     useEffect(() => {
-        if (!mobileMenuOpen) return
+        if (!mobileMenuOpen || usesDashboardDrawer) return
 
         const previousOverflow = document.body.style.overflow
         document.body.style.overflow = 'hidden'
@@ -97,7 +117,7 @@ function Navbar() {
             document.body.style.overflow = previousOverflow
             document.removeEventListener('keydown', handleKeyDown)
         }
-    }, [mobileMenuOpen])
+    }, [mobileMenuOpen, usesDashboardDrawer])
 
     return (
         <header className="fixed top-0 left-0 right-0 z-50 navbar-safe-top">
@@ -107,18 +127,22 @@ function Navbar() {
                     scrolled ? 'navbar-scrolled' : ''
                 }`}
             >
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-16">
+                <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+                    <div className="flex justify-between items-center gap-2 h-16 min-w-0">
                         <Link
                             to="/"
-                            className="flex items-center gap-3 group min-w-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50"
+                            className="flex items-center gap-2 sm:gap-3 group min-w-0 flex-shrink rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50"
                             aria-label={`${BRAND_NAME_DISPLAY} home`}
                         >
-                            <BrandLogo className="transition-transform group-hover:scale-[1.02]" />
+                            <BrandLogo
+                                size="sm"
+                                className="transition-transform group-hover:scale-[1.02] min-w-0"
+                                nameClassName="max-[420px]:hidden"
+                            />
                         </Link>
 
                         {/* Desktop */}
-                        <div className="hidden md:flex items-center gap-2">
+                        <div className="hidden md:flex items-center gap-2 flex-shrink-0">
                             <ThemeToggle />
 
                             <SignedOut>
@@ -144,40 +168,66 @@ function Navbar() {
                             </SignedIn>
                         </div>
 
-                        {/* Mobile — fixed-width action slots prevent layout shift on route change */}
-                        <div className="flex md:hidden items-center gap-2">
-                            <ThemeToggle />
+                        {/* Mobile */}
+                        <div className="flex md:hidden items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                            <ThemeToggle className="min-h-[44px] min-w-[44px] flex items-center justify-center" />
 
                             <SignedIn>
-                                <UserButton
-                                    afterSignOutUrl="/"
-                                    appearance={userButtonAppearance}
-                                />
+                                {!onDashboard && (
+                                    <Link
+                                        to="/dashboard"
+                                        className="btn-primary inline-flex min-h-[44px] items-center justify-center gap-1.5 px-3 sm:px-4 text-sm whitespace-nowrap"
+                                        aria-label="Go to dashboard"
+                                    >
+                                        <LayoutDashboard size={16} strokeWidth={ICON_STROKE} className="flex-shrink-0" />
+                                        <span className="max-[360px]:hidden">Dashboard</span>
+                                    </Link>
+                                )}
+
+                                <div className="flex items-center justify-center min-h-[44px] min-w-[44px]">
+                                    <UserButton
+                                        afterSignOutUrl="/"
+                                        appearance={userButtonAppearance}
+                                    />
+                                </div>
                             </SignedIn>
 
-                            {showMobileMenu ? (
+                            {showMobileMenuButton ? (
+                                <SignedOut>
+                                    <button
+                                        ref={menuButtonRef}
+                                        type="button"
+                                        onClick={toggleMobileMenu}
+                                        className={`${MOBILE_ACTION_SLOT} rounded-xl text-secondary hover:text-primary hover:bg-surface-hover transition-colors`}
+                                        aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+                                        aria-expanded={menuOpen}
+                                        aria-controls={MOBILE_MENU_ID}
+                                    >
+                                        {menuOpen
+                                            ? <X size={22} strokeWidth={ICON_STROKE} />
+                                            : <Menu size={22} strokeWidth={ICON_STROKE} />}
+                                    </button>
+                                </SignedOut>
+                            ) : (
                                 <button
                                     ref={menuButtonRef}
                                     type="button"
                                     onClick={toggleMobileMenu}
                                     className={`${MOBILE_ACTION_SLOT} rounded-xl text-secondary hover:text-primary hover:bg-surface-hover transition-colors`}
-                                    aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
-                                    aria-expanded={mobileMenuOpen}
-                                    aria-controls={MOBILE_MENU_ID}
+                                    aria-label={menuOpen ? 'Close navigation' : 'Open navigation'}
+                                    aria-expanded={menuOpen}
                                 >
-                                    {mobileMenuOpen
+                                    {menuOpen
                                         ? <X size={22} strokeWidth={ICON_STROKE} />
                                         : <Menu size={22} strokeWidth={ICON_STROKE} />}
                                 </button>
-                            ) : (
-                                <span className={MOBILE_ACTION_SLOT} aria-hidden="true" />
                             )}
                         </div>
                     </div>
                 </div>
 
                 <AnimatePresence initial={false}>
-                    {showMobileMenu && mobileMenuOpen && (
+                    {showMobileMenuButton && mobileMenuOpen && (
                         <motion.div
                             id={MOBILE_MENU_ID}
                             role="navigation"
@@ -188,7 +238,7 @@ function Navbar() {
                             transition={{ duration: 0.2 }}
                             className="md:hidden border-t border-border overflow-hidden bg-surface"
                         >
-                            <div className="px-4 py-4 space-y-1 max-h-below-navbar overflow-y-auto">
+                            <div className="px-3 sm:px-4 py-4 space-y-2 max-h-below-navbar overflow-y-auto overscroll-contain">
                                 <SignedOut>
                                     <MobileNavLink
                                         to="/sign-in"
@@ -198,46 +248,15 @@ function Navbar() {
                                     >
                                         Sign In
                                     </MobileNavLink>
-                                    <MobileNavLink
+                                    <Link
                                         to="/sign-up"
                                         onClick={closeMobileMenu}
-                                        icon={UserPlus}
-                                        isActive={location.pathname.startsWith('/sign-up')}
+                                        className="btn-primary flex items-center justify-center gap-2 w-full min-h-[44px] text-sm"
                                     >
+                                        <UserPlus size={18} strokeWidth={ICON_STROKE} />
                                         Get Started
-                                    </MobileNavLink>
+                                    </Link>
                                 </SignedOut>
-
-                                <SignedIn>
-                                    <p className="px-4 pt-1 pb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
-                                        Menu
-                                    </p>
-
-                                    <MobileNavLink
-                                        to="/dashboard"
-                                        onClick={closeMobileMenu}
-                                        icon={LayoutDashboard}
-                                        isActive={location.pathname === '/dashboard'}
-                                    >
-                                        Dashboard
-                                    </MobileNavLink>
-
-                                    <div className="space-y-0.5">
-                                        {dashboardNavItems
-                                            .filter((item) => item.to !== '/dashboard')
-                                            .map((item) => (
-                                                <MobileNavLink
-                                                    key={item.to}
-                                                    to={item.to}
-                                                    onClick={closeMobileMenu}
-                                                    icon={item.icon}
-                                                    isActive={location.pathname === item.to}
-                                                >
-                                                    {item.label}
-                                                </MobileNavLink>
-                                            ))}
-                                    </div>
-                                </SignedIn>
                             </div>
                         </motion.div>
                     )}

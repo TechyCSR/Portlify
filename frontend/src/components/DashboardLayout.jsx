@@ -1,6 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
-import { Menu } from 'lucide-react'
 import { getCurrentUser, getMyProfile } from '../utils/api'
 import {
     hasCompletedProfileSetup,
@@ -9,7 +8,7 @@ import {
     resolveResumeRouteGuard,
 } from '../utils/profileSetup'
 import { ErrorState, LoadingState } from './AsyncState'
-import { ICON_STROKE } from './IconTile'
+import { useDashboardNavBridge } from '../context/DashboardNavBridge'
 import DashboardSidebar from './DashboardSidebar'
 
 const DashboardLayoutContext = createContext(null)
@@ -20,21 +19,6 @@ export function useDashboardLayout() {
         throw new Error('useDashboardLayout must be used within DashboardLayout')
     }
     return context
-}
-
-export function SidebarMenuButton({ className = '' }) {
-    const { openSidebar } = useDashboardLayout()
-
-    return (
-        <button
-            type="button"
-            onClick={openSidebar}
-            className={`md:hidden p-2.5 rounded-xl bg-tertiary text-secondary hover:text-primary hover:bg-surface-hover transition-colors flex-shrink-0 ${className}`}
-            aria-label="Open navigation menu"
-        >
-            <Menu size={20} strokeWidth={ICON_STROKE} />
-        </button>
-    )
 }
 
 function resolveDbUser(userData, profileData) {
@@ -51,7 +35,7 @@ function resolveDbUser(userData, profileData) {
 
 function DashboardLayout() {
     const location = useLocation()
-    const [sidebarOpen, setSidebarOpen] = useState(false)
+    const { sidebarOpen, closeSidebar } = useDashboardNavBridge()
     const [dbUser, setDbUser] = useState(null)
     const [profile, setProfile] = useState(null)
     const [basicDetails, setBasicDetails] = useState(null)
@@ -112,9 +96,9 @@ function DashboardLayout() {
     }, [])
 
     useEffect(() => {
-        setSidebarOpen(false)
+        closeSidebar()
         setHasPendingResume(hasPendingResumeData())
-    }, [location.pathname])
+    }, [location.pathname, closeSidebar])
 
     useEffect(() => {
         refreshData()
@@ -154,7 +138,6 @@ function DashboardLayout() {
     }, [routeGuardDecision.type, userLoadError, profileLoadError])
 
     const contextValue = useMemo(() => ({
-        openSidebar: () => setSidebarOpen(true),
         dbUser,
         profile,
         basicDetails,
@@ -201,7 +184,7 @@ function DashboardLayout() {
                         hasPendingResume={hasPendingResume}
                         isLoading={isLoading}
                         open={sidebarOpen}
-                        onClose={() => setSidebarOpen(false)}
+                        onClose={closeSidebar}
                     />
                     <main className="flex-1 min-w-0">
                         {mainContent}

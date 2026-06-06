@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { SignedIn, SignedOut } from '@clerk/clerk-react'
 import { motion, useScroll, useTransform } from 'framer-motion'
@@ -25,9 +26,21 @@ const fadeUp = {
 }
 
 function Landing() {
+    const [compactHero, setCompactHero] = useState(() => {
+        if (typeof window === 'undefined') return true
+        return window.matchMedia('(max-width: 639px)').matches
+    })
     const { scrollY } = useScroll()
     const heroY = useTransform(scrollY, [0, 400], [0, 60])
     const heroOpacity = useTransform(scrollY, [0, 280], [1, 0.4])
+
+    useEffect(() => {
+        const mediaQuery = window.matchMedia('(max-width: 639px)')
+        const updateCompactHero = () => setCompactHero(mediaQuery.matches)
+        updateCompactHero()
+        mediaQuery.addEventListener('change', updateCompactHero)
+        return () => mediaQuery.removeEventListener('change', updateCompactHero)
+    }, [])
 
     const features = [
         {
@@ -78,8 +91,8 @@ function Landing() {
 
     return (
         <div className="min-h-screen overflow-x-clip">
-            {/* Hero Section */}
-            <section className="relative min-h-[calc(100dvh-var(--navbar-offset))] flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-navbar overflow-x-clip">
+            {/* Hero Section — top-aligned on mobile so CTAs stay above the fold */}
+            <section className="relative px-4 sm:px-6 lg:px-8 pt-navbar pb-10 sm:pb-14 overflow-x-clip sm:min-h-[calc(100dvh-var(--navbar-offset))] sm:flex sm:items-center sm:justify-center">
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">
                     <div className="absolute top-1/4 left-1/4 w-48 sm:w-64 md:w-80 h-48 sm:h-64 md:h-80 bg-primary-500/10 rounded-full blur-3xl" />
                     <div className="absolute bottom-1/4 right-1/4 w-48 sm:w-64 md:w-80 h-48 sm:h-64 md:h-80 bg-accent-500/8 rounded-full blur-3xl" />
@@ -88,24 +101,24 @@ function Landing() {
                 <div className="absolute inset-0 bg-[linear-gradient(rgba(90,122,158,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(90,122,158,0.025)_1px,transparent_1px)] bg-[size:64px_64px] pointer-events-none" />
 
                 <motion.div
-                    style={{ y: heroY, opacity: heroOpacity }}
-                    className="relative z-10 max-w-5xl mx-auto text-center w-full"
+                    style={compactHero ? undefined : { y: heroY, opacity: heroOpacity }}
+                    className="relative z-10 max-w-5xl mx-auto text-center w-full min-w-0 pt-5 sm:pt-0"
                 >
                     <motion.div
                         initial={{ opacity: 0, y: 12 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1, duration: 0.4 }}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-tertiary mb-8"
+                        className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-tertiary mb-4 sm:mb-8"
                     >
                         <div className="w-1.5 h-1.5 rounded-full bg-primary-400" />
-                        <span className="text-sm font-medium text-secondary">AI-Powered Portfolio Builder</span>
+                        <span className="text-xs sm:text-sm font-medium text-secondary">AI-Powered Portfolio Builder</span>
                     </motion.div>
 
                     <motion.h1
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.15, duration: 0.5 }}
-                        className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-bold leading-[1.1] mb-4 sm:mb-6"
+                        className="text-[1.75rem] leading-[1.12] sm:text-5xl md:text-6xl lg:text-7xl font-display font-bold sm:leading-[1.1] mb-3 sm:mb-6 px-1"
                     >
                         <span className="text-primary">Your Resume.</span>
                         <br />
@@ -118,7 +131,7 @@ function Landing() {
                         initial={{ opacity: 0, y: 12 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.25, duration: 0.4 }}
-                        className="text-base sm:text-lg md:text-xl text-secondary max-w-2xl mx-auto mb-6 sm:mb-10 leading-relaxed px-2"
+                        className="text-sm sm:text-lg md:text-xl text-secondary max-w-2xl mx-auto mb-5 sm:mb-10 leading-relaxed px-1 sm:px-2"
                     >
                         Upload your resume and let AI transform it into a stunning,
                         professional portfolio that showcases your skills and experience.
@@ -128,21 +141,30 @@ function Landing() {
                         initial={{ opacity: 0, y: 12 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.35, duration: 0.4 }}
-                        className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-10 sm:mb-16 w-full max-w-md sm:max-w-none mx-auto px-4 sm:px-0"
+                        className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 mb-6 sm:mb-16 w-full max-w-sm sm:max-w-none mx-auto"
                     >
                         <SignedOut>
-                            <Link to="/sign-up" className="btn-primary group flex items-center justify-center gap-2 w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg">
+                            <Link
+                                to="/sign-up"
+                                className="btn-primary group flex items-center justify-center gap-2 w-full min-h-[48px] sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 text-base sm:text-lg"
+                            >
                                 Start Building Free
-                                <ArrowRight size={18} strokeWidth={ICON_STROKE} className="transition-transform group-hover:translate-x-0.5" />
+                                <ArrowRight size={18} strokeWidth={ICON_STROKE} className="transition-transform group-hover:translate-x-0.5 flex-shrink-0" />
                             </Link>
-                            <Link to="/sign-in" className="btn-secondary w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg text-center">
+                            <Link
+                                to="/sign-in"
+                                className="btn-secondary flex items-center justify-center w-full min-h-[48px] sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 text-base sm:text-lg text-center"
+                            >
                                 Sign In
                             </Link>
                         </SignedOut>
                         <SignedIn>
-                            <Link to="/dashboard" className="btn-primary group flex items-center justify-center gap-2 w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg">
+                            <Link
+                                to="/dashboard"
+                                className="btn-primary group flex items-center justify-center gap-2 w-full min-h-[48px] sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 text-base sm:text-lg"
+                            >
                                 Go to Dashboard
-                                <ArrowRight size={18} strokeWidth={ICON_STROKE} className="transition-transform group-hover:translate-x-0.5" />
+                                <ArrowRight size={18} strokeWidth={ICON_STROKE} className="transition-transform group-hover:translate-x-0.5 flex-shrink-0" />
                             </Link>
                         </SignedIn>
                     </motion.div>
@@ -151,7 +173,7 @@ function Landing() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.5, duration: 0.4 }}
-                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4 max-w-4xl mx-auto px-2"
+                        className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4 max-w-4xl mx-auto px-2"
                     >
                         {benefits.map((benefit, i) => {
                             const Icon = benefit.icon
@@ -292,15 +314,21 @@ function Landing() {
                             Start for free, no credit card required.
                         </p>
                         <SignedOut>
-                            <Link to="/sign-up" className="btn-primary group inline-flex items-center gap-2 px-6 sm:px-10 py-3 sm:py-4 text-base sm:text-lg">
+                            <Link
+                                to="/sign-up"
+                                className="btn-primary group flex items-center justify-center gap-2 w-full max-w-sm mx-auto min-h-[48px] sm:inline-flex sm:w-auto px-6 sm:px-10 py-3.5 sm:py-4 text-base sm:text-lg"
+                            >
                                 Get Started Free
-                                <ArrowRight size={18} strokeWidth={ICON_STROKE} className="transition-transform group-hover:translate-x-0.5" />
+                                <ArrowRight size={18} strokeWidth={ICON_STROKE} className="transition-transform group-hover:translate-x-0.5 flex-shrink-0" />
                             </Link>
                         </SignedOut>
                         <SignedIn>
-                            <Link to="/dashboard" className="btn-primary group inline-flex items-center gap-2 px-6 sm:px-10 py-3 sm:py-4 text-base sm:text-lg">
+                            <Link
+                                to="/dashboard"
+                                className="btn-primary group flex items-center justify-center gap-2 w-full max-w-sm mx-auto min-h-[48px] sm:inline-flex sm:w-auto px-6 sm:px-10 py-3.5 sm:py-4 text-base sm:text-lg"
+                            >
                                 Go to Dashboard
-                                <ArrowRight size={18} strokeWidth={ICON_STROKE} className="transition-transform group-hover:translate-x-0.5" />
+                                <ArrowRight size={18} strokeWidth={ICON_STROKE} className="transition-transform group-hover:translate-x-0.5 flex-shrink-0" />
                             </Link>
                         </SignedIn>
                     </div>
@@ -308,7 +336,7 @@ function Landing() {
             </section>
 
             {/* Footer */}
-            <footer className="py-8 sm:py-12 bg-secondary">
+            <footer className="py-8 sm:py-12 bg-secondary pb-[max(2rem,env(safe-area-inset-bottom))]">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                         <BrandLogo size="sm" />

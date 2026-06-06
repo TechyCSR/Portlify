@@ -26,7 +26,7 @@ export const dashboardNavItems = [
 
 function NavLink({ item, isActive, onNavigate, disabled = false }) {
     const Icon = item.icon
-    const baseClassName = `group flex items-start gap-3 px-3 py-2.5 rounded-xl transition-colors ${
+    const baseClassName = `group flex items-start gap-3 px-3 py-3 min-h-[44px] rounded-xl transition-colors ${
         disabled
             ? 'text-muted/70 cursor-not-allowed'
             : isActive
@@ -134,7 +134,7 @@ function SidebarContent({
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={onNavigate}
-                        className="btn-primary flex items-center justify-center gap-2 w-full text-sm"
+                        className="btn-primary flex items-center justify-center gap-2 w-full min-h-[44px] text-sm"
                     >
                         <ExternalLink size={16} strokeWidth={ICON_STROKE} />
                         View Live Portfolio
@@ -233,7 +233,7 @@ function DashboardSidebar({
                             ref={closeButtonRef}
                             type="button"
                             onClick={onClose}
-                            className="p-2 rounded-lg text-secondary hover:text-primary hover:bg-surface-hover transition-colors"
+                            className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-secondary hover:text-primary hover:bg-surface-hover transition-colors"
                             aria-label="Close menu"
                         >
                             <X size={18} strokeWidth={ICON_STROKE} />

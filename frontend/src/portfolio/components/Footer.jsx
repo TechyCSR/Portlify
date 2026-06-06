@@ -63,7 +63,7 @@ function Footer({ profile, compact = false }) {
                         >
                             <button
                                 type="button"
-                                className="portfolio-btn-primary w-8 h-8 sm:w-5 sm:h-5 rounded-full flex items-center justify-center shadow-lg portfolio-touch-target"
+                                className="portfolio-btn-primary min-h-[44px] min-w-[44px] rounded-full flex items-center justify-center shadow-lg portfolio-touch-target"
                                 aria-label="Premium branding information"
                                 aria-expanded={showPremiumInfo}
                                 onClick={() => setShowPremiumInfo((open) => !open)}
@@ -88,7 +88,7 @@ function Footer({ profile, compact = false }) {
                                             href={`${getAppUrl()}/premium`}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="portfolio-btn-primary block py-1.5 px-3 rounded-lg font-semibold"
+                                            className="portfolio-btn-primary block min-h-[44px] py-2.5 px-3 rounded-lg font-semibold"
                                         >
                                             Upgrade to Premium
                                         </a>

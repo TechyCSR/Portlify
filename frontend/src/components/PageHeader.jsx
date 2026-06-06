@@ -1,10 +1,7 @@
-import { SidebarMenuButton } from './DashboardLayout'
-
 function PageHeader({ title, description, className = '', children }) {
     return (
-        <div className={`flex items-start gap-3 mb-8 ${className}`}>
-            <SidebarMenuButton className="mt-0.5 flex-shrink-0" />
-            <div className="min-w-0 flex-1">
+        <div className={`mb-8 ${className}`}>
+            <div className="min-w-0">
                 <h1 className="text-2xl sm:text-3xl font-display font-bold text-primary leading-tight">
                     {title}
                 </h1>
