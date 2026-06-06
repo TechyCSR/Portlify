@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getMyProfile, getCurrentUser, getAnalyticsSummary } from '../utils/api'
+import { getAppUrl, getPortfolioUrl } from '../utils/appUrl'
 import { Terminal, Layers, Database, Wrench, Cloud, MessageCircle } from 'lucide-react'
 
 // SVG Icons
@@ -186,7 +187,7 @@ function Dashboard() {
     }, [navigate, isLoaded, isSignedIn, retryCount])
 
     const copyLink = () => {
-        navigator.clipboard.writeText(`https://portlify.techycsr.dev/${dbUser.username}`)
+        navigator.clipboard.writeText(getPortfolioUrl(dbUser?.username))
         setCopied(true)
         setTimeout(() => setCopied(false), 2000)
     }
@@ -344,7 +345,7 @@ function Dashboard() {
                                         <div>
                                             <p className="text-sm text-muted mb-1">Your portfolio URL</p>
                                             <p className="text-primary font-medium">
-                                                portlify.techycsr.dev/<span className="heading-gradient">{dbUser.username}</span>
+                                                {getAppUrl().replace(/^https?:\/\//, '')}/<span className="heading-gradient">{dbUser.username}</span>
                                             </p>
                                         </div>
                                     </div>

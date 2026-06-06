@@ -1,4 +1,4 @@
-import { clerkClient, requireAuth } from '@clerk/express';
+import { requireAuth } from '@clerk/express';
 
 // Middleware to require authentication
 export const authMiddleware = requireAuth();

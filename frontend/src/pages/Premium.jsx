@@ -65,6 +65,7 @@ function Premium() {
     const toast = useToast()
 
     const [loading, setLoading] = useState(true)
+    const [loadError, setLoadError] = useState('')
     const [isPremium, setIsPremium] = useState(false)
     const [processing, setProcessing] = useState(false)
     const [userData, setUserData] = useState(null)
@@ -77,6 +78,7 @@ function Premium() {
         }
 
         const loadData = async () => {
+            setLoadError('')
             try {
                 const [statusRes, userRes] = await Promise.all([
                     getPremiumStatus(),
@@ -85,7 +87,11 @@ function Premium() {
                 setIsPremium(statusRes.data.isPremium)
                 setUserData(userRes.data)
             } catch (err) {
-                console.error('Failed to load premium status:', err)
+                if (err.response?.data?.needsRegistration) {
+                    navigate('/username')
+                    return
+                }
+                setLoadError(err.response?.data?.error || 'Failed to load premium status')
             } finally {
                 setLoading(false)
             }
@@ -180,6 +186,22 @@ function Premium() {
         return (
             <div className="min-h-screen flex items-center justify-center pt-20">
                 <div className="spinner w-8 h-8" />
+            </div>
+        )
+    }
+
+    if (loadError) {
+        return (
+            <div className="min-h-screen flex items-center justify-center pt-20 px-4">
+                <div className="glass-card rounded-2xl p-8 max-w-md text-center">
+                    <p className="text-red-400 mb-4">{loadError}</p>
+                    <button
+                        onClick={() => { setLoading(true); window.location.reload() }}
+                        className="btn-primary px-6 py-2 rounded-xl"
+                    >
+                        Retry
+                    </button>
+                </div>
             </div>
         )
     }

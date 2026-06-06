@@ -67,6 +67,12 @@ const volunteeringSchema = new mongoose.Schema({
     description: { type: String, default: '' }
 }, { _id: false });
 
+const referenceSchema = new mongoose.Schema({
+    name: { type: String, default: '' },
+    relationship: { type: String, default: '' },
+    contact: { type: String, default: '' }
+}, { _id: false });
+
 // Main profile schema
 const profileSchema = new mongoose.Schema({
     userId: {
@@ -148,6 +154,12 @@ const profileSchema = new mongoose.Schema({
     // Volunteering (new)
     volunteering: {
         type: [volunteeringSchema],
+        default: []
+    },
+
+    // References
+    references: {
+        type: [referenceSchema],
         default: []
     },
 

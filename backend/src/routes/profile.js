@@ -3,8 +3,13 @@ import User from '../models/User.js';
 import Profile from '../models/Profile.js';
 import authMiddleware, { getUserFromAuth } from '../middleware/auth.js';
 import { parseResumeWithAI } from '../utils/geminiParser.js';
+import { validateCloudinaryUrl, validateCloudinaryPhotoUrl } from '../utils/validateUrl.js';
+import { pickAllowedProfileFields, getDefaultSkills, getEmptyProfileData } from '../utils/profileFields.js';
+import { sanitizeProfileFields } from '../utils/sanitizeProfile.js';
 
 const router = express.Router();
+
+const userNotFoundResponse = () => ({ error: 'User not found', needsRegistration: true });
 
 // Parse resume with AI (returns data without saving)
 router.post('/parse', authMiddleware, getUserFromAuth, async (req, res) => {
@@ -15,16 +20,18 @@ router.post('/parse', authMiddleware, getUserFromAuth, async (req, res) => {
             return res.status(400).json({ error: 'Resume URL is required' });
         }
 
-        // Find user
-        const user = await User.findOne({ clerkId: req.clerkUserId });
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+        const urlValidation = validateCloudinaryUrl(resumeUrl);
+        if (!urlValidation.valid) {
+            return res.status(400).json({ error: urlValidation.error });
         }
 
-        // Parse resume with Ollama AI
+        const user = await User.findOne({ clerkId: req.clerkUserId });
+        if (!user) {
+            return res.status(404).json(userNotFoundResponse());
+        }
+
         const parsedData = await parseResumeWithAI(resumeUrl);
 
-        // Return parsed data for user to review/edit
         res.json({
             message: 'Resume parsed successfully',
             data: parsedData,
@@ -32,49 +39,41 @@ router.post('/parse', authMiddleware, getUserFromAuth, async (req, res) => {
         });
     } catch (error) {
         console.error('Parse resume error:', error);
-        res.status(500).json({ error: error.message || 'Failed to parse resume' });
+        const message = process.env.NODE_ENV === 'production'
+            ? 'Failed to parse resume'
+            : (error.message || 'Failed to parse resume');
+        res.status(500).json({ error: message });
     }
 });
 
 // Create/update profile with parsed data (after user review)
 router.post('/create', authMiddleware, getUserFromAuth, async (req, res) => {
     try {
-        const {
-            resumeUrl,
-            basicDetails,
-            skills,
-            experience,
-            education,
-            projects,
-            achievements,
-            extraCurricular,
-            socialLinks,
-            customSections
-        } = req.body;
+        const allowedFields = pickAllowedProfileFields(req.body);
+        const { resumeUrl } = req.body;
 
-        // Find user
         const user = await User.findOne({ clerkId: req.clerkUserId });
         if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+            return res.status(404).json(userNotFoundResponse());
         }
 
-        // Build profile data
+        const fieldsToSanitize = {
+            resumeUrl: resumeUrl || '',
+            ...allowedFields,
+            skills: allowedFields.skills || getDefaultSkills()
+        };
+
+        const { sanitized, error: sanitizeError } = sanitizeProfileFields(fieldsToSanitize);
+        if (sanitizeError) {
+            return res.status(400).json({ error: sanitizeError });
+        }
+
         const profileData = {
             username: user.username,
-            resumeUrl: resumeUrl || '',
-            basicDetails: basicDetails || {},
-            skills: skills || { technical: [], soft: [], tools: [], languages: [] },
-            experience: experience || [],
-            education: education || [],
-            projects: projects || [],
-            achievements: achievements || [],
-            extraCurricular: extraCurricular || [],
-            socialLinks: socialLinks || {},
-            customSections: customSections || [],
+            ...sanitized,
             updatedAt: new Date()
         };
 
-        // Update or create profile
         const profile = await Profile.findOneAndUpdate(
             { userId: user._id },
             profileData,
@@ -94,18 +93,25 @@ router.post('/create', authMiddleware, getUserFromAuth, async (req, res) => {
 // Update profile (for editing individual sections)
 router.put('/update', authMiddleware, getUserFromAuth, async (req, res) => {
     try {
-        const updates = req.body;
+        const updates = pickAllowedProfileFields(req.body);
 
-        // Find user
-        const user = await User.findOne({ clerkId: req.clerkUserId });
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+        if (Object.keys(updates).length === 0) {
+            return res.status(400).json({ error: 'No valid fields to update' });
         }
 
-        // Find and update profile
+        const user = await User.findOne({ clerkId: req.clerkUserId });
+        if (!user) {
+            return res.status(404).json(userNotFoundResponse());
+        }
+
+        const { sanitized, error: sanitizeError } = sanitizeProfileFields(updates);
+        if (sanitizeError) {
+            return res.status(400).json({ error: sanitizeError });
+        }
+
         const profile = await Profile.findOneAndUpdate(
             { userId: user._id },
-            { ...updates, updatedAt: new Date() },
+            { ...sanitized, updatedAt: new Date() },
             { new: true }
         );
 
@@ -132,13 +138,16 @@ router.put('/photo', authMiddleware, getUserFromAuth, async (req, res) => {
             return res.status(400).json({ error: 'Photo URL is required' });
         }
 
-        // Find user
-        const user = await User.findOne({ clerkId: req.clerkUserId });
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+        const photoValidation = validateCloudinaryPhotoUrl(photoUrl);
+        if (!photoValidation.valid) {
+            return res.status(400).json({ error: photoValidation.error });
         }
 
-        // Update profile photo
+        const user = await User.findOne({ clerkId: req.clerkUserId });
+        if (!user) {
+            return res.status(404).json(userNotFoundResponse());
+        }
+
         const profile = await Profile.findOneAndUpdate(
             { userId: user._id },
             { 'basicDetails.profilePhoto': photoUrl, updatedAt: new Date() },
@@ -164,7 +173,7 @@ router.get('/me', authMiddleware, getUserFromAuth, async (req, res) => {
     try {
         const user = await User.findOne({ clerkId: req.clerkUserId });
         if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+            return res.status(404).json(userNotFoundResponse());
         }
 
         const profile = await Profile.findOne({ userId: user._id });
@@ -187,7 +196,7 @@ router.get('/:username', async (req, res) => {
         const profile = await Profile.findOne({
             username: username.toLowerCase(),
             isPublic: true
-        }).select('-resumeUrl -userId'); // Don't expose resume URL or user ID
+        }).select('-resumeUrl -userId');
 
         if (!profile) {
             return res.status(404).json({ error: 'Profile not found' });
@@ -205,45 +214,14 @@ router.post('/reset', authMiddleware, getUserFromAuth, async (req, res) => {
     try {
         const user = await User.findOne({ clerkId: req.clerkUserId });
         if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+            return res.status(404).json(userNotFoundResponse());
         }
 
-        // Reset profile to empty state
+        const emptyData = getEmptyProfileData();
+
         const profile = await Profile.findOneAndUpdate(
             { userId: user._id },
-            {
-                basicDetails: {
-                    name: '',
-                    title: '',
-                    email: '',
-                    phone: '',
-                    location: '',
-                    bio: '',
-                    profilePhoto: ''
-                },
-                skills: {
-                    technical: [],
-                    soft: [],
-                    tools: [],
-                    languages: []
-                },
-                experience: [],
-                education: [],
-                projects: [],
-                achievements: [],
-                extraCurricular: [],
-                certifications: [],
-                publications: [],
-                volunteering: [],
-                socialLinks: {},
-                customSections: [],
-                resumeUrl: '',
-                stats: {
-                    totalViews: 0,
-                    lastViewed: null
-                },
-                updatedAt: new Date()
-            },
+            { ...emptyData, updatedAt: new Date() },
             { new: true }
         );
 
@@ -251,7 +229,6 @@ router.post('/reset', authMiddleware, getUserFromAuth, async (req, res) => {
             return res.status(404).json({ error: 'Profile not found' });
         }
 
-        // Reset user preferences but keep onboardingCompleted true
         user.preferences = {
             portfolioType: 'technical',
             experienceLevel: 'fresher',
@@ -274,14 +251,18 @@ router.put('/visibility', authMiddleware, getUserFromAuth, async (req, res) => {
     try {
         const { isPublic } = req.body;
 
+        if (typeof isPublic !== 'boolean') {
+            return res.status(400).json({ error: 'isPublic must be a boolean' });
+        }
+
         const user = await User.findOne({ clerkId: req.clerkUserId });
         if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+            return res.status(404).json(userNotFoundResponse());
         }
 
         const profile = await Profile.findOneAndUpdate(
             { userId: user._id },
-            { isPublic: isPublic, updatedAt: new Date() },
+            { isPublic, updatedAt: new Date() },
             { new: true }
         );
 

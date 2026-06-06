@@ -4,17 +4,52 @@ import crypto from 'crypto';
 import User from '../models/User.js';
 import Profile from '../models/Profile.js';
 import authMiddleware, { getUserFromAuth } from '../middleware/auth.js';
+import { validateHttpsUrl } from '../utils/validateUrl.js';
 
 const router = express.Router();
 
-// Initialize Razorpay
-const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID,
-    key_secret: process.env.RAZORPAY_KEY_SECRET
-});
-
-// Premium price in paise (11 INR = 1100 paise)
 const PREMIUM_AMOUNT = 1100;
+
+let razorpayInstance = null;
+
+function getRazorpay() {
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+    if (!keyId || !keySecret) {
+        return null;
+    }
+
+    if (!razorpayInstance) {
+        razorpayInstance = new Razorpay({
+            key_id: keyId,
+            key_secret: keySecret
+        });
+    }
+
+    return razorpayInstance;
+}
+
+function paymentNotConfigured(res) {
+    return res.status(503).json({
+        error: 'Payment service is not configured. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET.'
+    });
+}
+
+function signaturesMatch(expected, actual) {
+    if (typeof expected !== 'string' || typeof actual !== 'string') {
+        return false;
+    }
+
+    const expectedBuf = Buffer.from(expected, 'utf8');
+    const actualBuf = Buffer.from(actual, 'utf8');
+
+    if (expectedBuf.length !== actualBuf.length) {
+        return false;
+    }
+
+    return crypto.timingSafeEqual(expectedBuf, actualBuf);
+}
 
 // Get premium status (protected)
 router.get('/status', authMiddleware, getUserFromAuth, async (req, res) => {
@@ -38,18 +73,21 @@ router.get('/status', authMiddleware, getUserFromAuth, async (req, res) => {
 // Create Razorpay order (protected)
 router.post('/create-order', authMiddleware, getUserFromAuth, async (req, res) => {
     try {
+        const razorpay = getRazorpay();
+        if (!razorpay) {
+            return paymentNotConfigured(res);
+        }
+
         const user = await User.findOne({ clerkId: req.clerkUserId });
 
         if (!user) {
             return res.status(404).json({ error: 'User not found', needsRegistration: true });
         }
 
-        // Check if already premium
         if (user.isPremium) {
             return res.status(400).json({ error: 'You are already a premium member' });
         }
 
-        // Create Razorpay order
         const options = {
             amount: PREMIUM_AMOUNT,
             currency: 'INR',
@@ -78,42 +116,85 @@ router.post('/create-order', authMiddleware, getUserFromAuth, async (req, res) =
 // Verify payment and activate premium (protected)
 router.post('/verify', authMiddleware, getUserFromAuth, async (req, res) => {
     try {
+        const razorpay = getRazorpay();
+        if (!razorpay) {
+            return paymentNotConfigured(res);
+        }
+
         const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
         if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
             return res.status(400).json({ error: 'Missing payment verification data' });
         }
 
-        // Verify signature
         const body = razorpay_order_id + '|' + razorpay_payment_id;
         const expectedSignature = crypto
             .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
             .update(body.toString())
             .digest('hex');
 
-        if (expectedSignature !== razorpay_signature) {
+        if (!signaturesMatch(expectedSignature, razorpay_signature)) {
             return res.status(400).json({ error: 'Invalid payment signature' });
         }
 
-        // Update user to premium
-        const user = await User.findOneAndUpdate(
-            { clerkId: req.clerkUserId },
+        const existingUser = await User.findOne({ clerkId: req.clerkUserId });
+        if (!existingUser) {
+            return res.status(404).json({ error: 'User not found', needsRegistration: true });
+        }
+
+        if (existingUser.isPremium && existingUser.premiumDetails?.orderId === razorpay_order_id) {
+            return res.json({
+                success: true,
+                message: 'Premium membership already active',
+                isPremium: true
+            });
+        }
+
+        const order = await razorpay.orders.fetch(razorpay_order_id);
+
+        if (Number(order.amount) !== PREMIUM_AMOUNT) {
+            return res.status(400).json({ error: 'Invalid payment amount' });
+        }
+
+        if (order.notes?.userId !== existingUser._id.toString()) {
+            return res.status(403).json({ error: 'Payment order does not belong to this user' });
+        }
+
+        const payment = await razorpay.payments.fetch(razorpay_payment_id);
+        if (payment.status !== 'captured') {
+            return res.status(400).json({ error: 'Payment has not been completed' });
+        }
+
+        if (payment.order_id !== razorpay_order_id) {
+            return res.status(400).json({ error: 'Payment does not match order' });
+        }
+
+        const updatedUser = await User.findOneAndUpdate(
+            { clerkId: req.clerkUserId, isPremium: false },
             {
-                isPremium: true,
-                premiumDetails: {
-                    activatedAt: new Date(),
-                    paymentId: razorpay_payment_id,
-                    orderId: razorpay_order_id
+                $set: {
+                    isPremium: true,
+                    premiumDetails: {
+                        activatedAt: new Date(),
+                        paymentId: razorpay_payment_id,
+                        orderId: razorpay_order_id
+                    }
                 }
             },
             { new: true }
         );
 
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+        if (!updatedUser) {
+            const currentUser = await User.findOne({ clerkId: req.clerkUserId });
+            if (currentUser?.isPremium && currentUser.premiumDetails?.orderId === razorpay_order_id) {
+                return res.json({
+                    success: true,
+                    message: 'Premium membership already active',
+                    isPremium: true
+                });
+            }
+            return res.status(400).json({ error: 'You are already a premium member' });
         }
-
-        console.log(`Premium activated for user: ${user.username}`);
 
         res.json({
             success: true,
@@ -137,19 +218,26 @@ router.put('/branding', authMiddleware, getUserFromAuth, async (req, res) => {
             return res.status(404).json({ error: 'User not found', needsRegistration: true });
         }
 
-        // Check premium status
         if (!user.isPremium) {
             return res.status(403).json({ error: 'Premium membership required for custom branding' });
         }
 
-        // Update profile branding
+        let brandingUrl = '';
+        if (url) {
+            const safeUrl = validateHttpsUrl(url);
+            if (!safeUrl) {
+                return res.status(400).json({ error: 'Branding URL must be a valid HTTPS link' });
+            }
+            brandingUrl = safeUrl;
+        }
+
         const profile = await Profile.findOneAndUpdate(
             { userId: user._id },
             {
                 customBranding: {
                     enabled: enabled !== undefined ? enabled : true,
                     text: text || '',
-                    url: url || ''
+                    url: brandingUrl
                 }
             },
             { new: true }
