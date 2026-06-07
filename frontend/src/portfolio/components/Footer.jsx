@@ -26,7 +26,7 @@ function Footer({ profile, compact = false }) {
     const customBranding = profile?.customBranding
 
     return (
-        <footer className={`relative flex-shrink-0 ${compact ? 'py-3 mt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]' : 'py-12 px-4 mt-8'}`}>
+        <footer className={`relative flex-shrink-0 overflow-visible ${compact ? 'px-2 sm:px-0 py-3 mt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]' : 'py-12 px-4 mt-8'}`}>
             {!compact && (
                 <div
                     className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 max-w-md h-px"
@@ -34,7 +34,7 @@ function Footer({ profile, compact = false }) {
                 />
             )}
 
-            <div className={`${compact ? '' : 'max-w-6xl mx-auto'} flex justify-center`}>
+            <div className={`${compact ? 'w-full' : 'max-w-6xl mx-auto'} flex justify-center`}>
                 {customBranding?.enabled && customBranding?.text ? (
                     <a
                         href={safeHref(customBranding.url) || '#'}
@@ -55,20 +55,20 @@ function Footer({ profile, compact = false }) {
                         )}
                     </a>
                 ) : (
-                    <div className="relative">
+                    <div className="inline-flex items-center gap-2 sm:gap-3 max-w-full">
                         <div
-                            className="absolute -top-2 -left-2 z-20 portfolio-no-print"
+                            className="relative flex-shrink-0 portfolio-no-print"
                             onMouseEnter={handleMouseEnter}
                             onMouseLeave={handleMouseLeave}
                         >
                             <button
                                 type="button"
-                                className="portfolio-btn-primary min-h-[44px] min-w-[44px] rounded-full flex items-center justify-center shadow-lg portfolio-touch-target"
+                                className="portfolio-btn-primary rounded-full flex items-center justify-center shadow-lg portfolio-touch-target w-9 h-9 sm:w-10 sm:h-10"
                                 aria-label="Premium branding information"
                                 aria-expanded={showPremiumInfo}
                                 onClick={() => setShowPremiumInfo((open) => !open)}
                             >
-                                <Info size={14} strokeWidth={3} />
+                                <Info size={compact ? 12 : 14} strokeWidth={3} className="flex-shrink-0" />
                             </button>
 
                             <AnimatePresence>
@@ -77,7 +77,7 @@ function Footer({ profile, compact = false }) {
                                         initial={{ opacity: 0, y: 8, scale: 0.96 }}
                                         animate={{ opacity: 1, y: 0, scale: 1 }}
                                         exit={{ opacity: 0, y: 8, scale: 0.96 }}
-                                        className="portfolio-surface absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-56 p-4 rounded-xl text-xs text-center shadow-xl z-30"
+                                        className="portfolio-surface absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-[min(14rem,calc(100vw-2rem))] p-3 sm:p-4 rounded-xl text-xs text-center shadow-xl z-30"
                                         onMouseEnter={handleMouseEnter}
                                         onMouseLeave={handleMouseLeave}
                                     >
@@ -101,17 +101,17 @@ function Footer({ profile, compact = false }) {
                             href={getAppUrl()}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className={`group portfolio-surface rounded-xl inline-flex items-center gap-3 transition-transform hover:-translate-y-0.5 ${compact ? 'px-4 py-2' : 'px-6 py-3'}`}
+                            className={`group portfolio-surface rounded-xl inline-flex items-center gap-2 sm:gap-3 transition-transform hover:-translate-y-0.5 min-w-0 ${compact ? 'px-3 py-2 sm:px-4' : 'px-6 py-3'}`}
                         >
                             <img
                                 src={BRAND_LOGO_SRC}
                                 alt={BRAND_LOGO_ALT}
-                                className={`object-contain flex-shrink-0 ${compact ? 'w-6 h-6' : 'w-8 h-8'}`}
+                                className={`object-contain flex-shrink-0 ${compact ? 'w-5 h-5 sm:w-6 sm:h-6' : 'w-8 h-8'}`}
                                 width={compact ? 24 : 32}
                                 height={compact ? 24 : 32}
                                 decoding="async"
                             />
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 whitespace-nowrap">
                                 <span className={`portfolio-text-secondary ${compact ? 'text-xs' : 'text-sm'}`}>Built with</span>
                                 <span className={`font-semibold ${compact ? 'text-xs' : 'text-sm'}`}>
                                     <span className="portfolio-text">Portlify</span>
@@ -121,7 +121,7 @@ function Footer({ profile, compact = false }) {
                             <ChevronRight
                                 size={16}
                                 strokeWidth={ICON_STROKE}
-                                className="portfolio-link opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all"
+                                className="portfolio-link opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all hidden sm:block flex-shrink-0"
                             />
                         </a>
                     </div>
