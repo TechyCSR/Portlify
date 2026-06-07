@@ -24,12 +24,20 @@ Resume.pdf → AI Parser → Professional Portfolio → Share Anywhere
 
 ## 🎬 Demo
 
-<video src="https://portlifyai.app/demo-v22.mp4" controls width="100%"></video>
+<div align="center">
 
----
+![Portlify Demo](./frontend/public/demo-v22.gif)
 
+<br />
+
+[![Watch Full Demo](https://img.shields.io/badge/▶_Watch_Full_Demo-4F46E5?style=for-the-badge&logo=google-chrome&logoColor=white)](./frontend/public/demo-v22.mp4)
+[![Open Live App](https://img.shields.io/badge/Open_Live_App-portlifyai.app-10B981?style=for-the-badge&logo=vercel&logoColor=white)](https://portlifyai.app/)
+
+<br />
 
 **Live Example:** [portlifyai.app/username](https://portlifyai.app/)
+
+</div>
 
 ---
 
