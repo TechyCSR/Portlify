@@ -54,15 +54,19 @@ function UsernameSelection() {
     useEffect(() => {
         if (!username || username.length < 3) {
             setIsAvailable(null)
+            setError('')
             return
         }
 
         const timer = setTimeout(async () => {
             setIsChecking(true)
+            setError('')
             try {
                 const { data } = await checkUsername(username)
                 setIsAvailable(data.available)
-                setError(data.error || '')
+                setError(
+                    data.error || (data.available === false ? 'Username is not available' : '')
+                )
             } catch (err) {
                 setError(err.response?.data?.error || 'Failed to check username')
                 setIsAvailable(false)
@@ -99,6 +103,8 @@ function UsernameSelection() {
         const value = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '')
         if (value.length <= MAX_USERNAME_LENGTH) {
             setUsername(value)
+            setIsAvailable(null)
+            setError('')
         }
     }
 
@@ -154,7 +160,7 @@ function UsernameSelection() {
                                         <Check size={18} strokeWidth={ICON_STROKE} className="text-success" />
                                     )}
                                     {!isChecking && isAvailable === false && (
-                                        <X size={18} strokeWidth={ICON_STROKE} className="text-muted" />
+                                        <X size={18} strokeWidth={ICON_STROKE} className="text-error" />
                                     )}
                                 </div>
                             </div>
@@ -175,7 +181,12 @@ function UsernameSelection() {
                                     ✓ Username is available!
                                 </p>
                             )}
-                            {error && (
+                            {isAvailable === false && !isChecking && (
+                                <p className="mt-2 text-sm text-error">
+                                    ✗ {error || 'Username is not available'}
+                                </p>
+                            )}
+                            {error && isAvailable !== false && (
                                 <p className="mt-2 text-sm text-error">
                                     {error}
                                 </p>

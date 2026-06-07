@@ -33,8 +33,16 @@ router.get('/check-username', async (req, res) => {
 
         const existingUser = await User.findOne({ username: username.toLowerCase() });
 
+        if (existingUser) {
+            return res.json({
+                available: false,
+                username: username.toLowerCase(),
+                error: 'Username is not available'
+            });
+        }
+
         res.json({
-            available: !existingUser,
+            available: true,
             username: username.toLowerCase()
         });
     } catch (error) {
