@@ -26,7 +26,7 @@ Resume.pdf → AI Parser → Professional Portfolio → Share Anywhere
 
 <div align="center">
 
-![Portlify Demo](./frontend/public/demo-v22-full.mp4)
+<video src="https://github.com/user-attachments/assets/5b241c68-fa7a-40bf-8bd8-7fd738f5bf35" controls width="100%"></video>
 
 <br />
 
