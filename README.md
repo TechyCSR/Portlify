@@ -4,7 +4,7 @@
 
 ### AI-Powered Resume to Portfolio in Seconds
 
-[![Live Demo](https://img.shields.io/badge/demo-portlify.techycsr.dev-4F46E5?style=for-the-badge&logo=vercel&logoColor=white)](https://portlify.techycsr.dev)
+[![Live Demo](https://img.shields.io/badge/demo-portlifyai.app-4F46E5?style=for-the-badge&logo=vercel&logoColor=white)](https://portlifyai.app/)
 [![API](https://img.shields.io/badge/api-portlifybackend.techycsr.dev-10B981?style=for-the-badge&logo=node.js&logoColor=white)](https://portlifybackend.techycsr.dev)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
 
@@ -24,12 +24,12 @@ Resume.pdf → AI Parser → Professional Portfolio → Share Anywhere
 
 ## 🎬 Demo
 
-https://github.com/user-attachments/assets/e36d6f10-bb27-4ae8-a2b6-81122ef85994
+<video src="https://portlifyai.app/demo-v22.mp4" controls width="100%"></video>
 
 ---
 
 
-**Live Example:** [portlify.techycsr.dev/username](https://portlify.techycsr.dev)
+**Live Example:** [portlifyai.app/username](https://portlifyai.app/)
 
 ---
 
