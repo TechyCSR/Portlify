@@ -5,7 +5,6 @@
 ### AI-Powered Resume to Portfolio in Seconds
 
 [![Live Demo](https://img.shields.io/badge/demo-portlifyai.app-4F46E5?style=for-the-badge&logo=vercel&logoColor=white)](https://portlifyai.app/)
-[![API](https://img.shields.io/badge/api-portlifybackend.techycsr.dev-10B981?style=for-the-badge&logo=node.js&logoColor=white)](https://portlifybackend.techycsr.dev)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
 
 [Features](#-features) • [Architecture](#-architecture)  • [Quick Start](#-quick-start) • [API](#-api-reference)
