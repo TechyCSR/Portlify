@@ -26,11 +26,10 @@ Resume.pdf → AI Parser → Professional Portfolio → Share Anywhere
 
 <div align="center">
 
-![Portlify Demo](./frontend/public/demo-v22.gif)
+![Portlify Demo](./frontend/public/demo-v22-full.mp4)
 
 <br />
 
-[![Watch Full Demo](https://img.shields.io/badge/▶_Watch_Full_Demo-4F46E5?style=for-the-badge&logo=google-chrome&logoColor=white)](./frontend/public/demo-v22.mp4)
 [![Open Live App](https://img.shields.io/badge/Open_Live_App-portlifyai.app-10B981?style=for-the-badge&logo=vercel&logoColor=white)](https://portlifyai.app/)
 
 <br />
