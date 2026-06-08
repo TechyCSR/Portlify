@@ -382,7 +382,15 @@ function ProfileEditor() {
                                         <div className="relative">
                                             <div className="w-24 h-24 rounded-full bg-primary-500 flex items-center justify-center overflow-hidden">
                                                 {formData.basicDetails.profilePhoto ? (
-                                                    <img src={formData.basicDetails.profilePhoto} alt="Profile" className="w-full h-full object-cover" />
+                                                    <img
+                                                        src={formData.basicDetails.profilePhoto}
+                                                        alt={formData.basicDetails.name ? `${formData.basicDetails.name} profile photo` : 'Profile photo'}
+                                                        width={96}
+                                                        height={96}
+                                                        loading="lazy"
+                                                        decoding="async"
+                                                        className="w-full h-full object-cover"
+                                                    />
                                                 ) : (
                                                     <span className="text-3xl font-bold text-white">
                                                         {formData.basicDetails.name?.charAt(0)?.toUpperCase() || '?'}

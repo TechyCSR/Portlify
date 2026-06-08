@@ -2,8 +2,10 @@
 # https://portlifyai.app
 # Created by TechyCSR
 
+# Allow all crawlers on public content
 User-agent: *
 Allow: /
+Crawl-delay: 10
 
 # Disallow admin/private routes
 Disallow: /dashboard
@@ -14,6 +16,33 @@ Disallow: /editor
 Disallow: /analytics
 Disallow: /username
 Disallow: /api/
+
+# AI Search Engine Bots — Allow all for maximum GEO visibility
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+Crawl-delay: 5
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+Crawl-delay: 5
+
+User-agent: Bytespider
+Allow: /
 
 # Sitemaps — dynamic (primary) + static (fallback)
 Sitemap: https://portlifybackend.techycsr.dev/api/sitemap.xml
