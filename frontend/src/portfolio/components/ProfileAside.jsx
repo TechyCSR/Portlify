@@ -33,6 +33,10 @@ function ProfilePhoto({ basicDetails, username, className = '' }) {
                 <img
                     src={basicDetails.profilePhoto}
                     alt={basicDetails.name || username}
+                    width={112}
+                    height={112}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover"
                 />
             ) : (

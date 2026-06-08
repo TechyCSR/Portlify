@@ -15,6 +15,7 @@ import {
     OG_IMAGE_PATH,
     OG_IMAGE_VERSION,
 } from '../constants/brand'
+import { getFaqSchemaEntities } from '../constants/faq'
 import { getAppUrl, getPortfolioUrl } from './appUrl'
 import { safeHref } from './safeUrl'
 
@@ -293,6 +294,11 @@ export function getSiteStructuredData(siteUrl = DEFAULT_SITE_URL) {
                 publisher: {
                     '@id': `${base}/#organization`,
                 },
+            },
+            {
+                '@type': 'FAQPage',
+                '@id': `${base}/#faq`,
+                mainEntity: getFaqSchemaEntities(),
             },
         ],
     }

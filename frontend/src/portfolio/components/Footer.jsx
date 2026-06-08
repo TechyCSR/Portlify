@@ -63,12 +63,12 @@ function Footer({ profile, compact = false }) {
                         >
                             <button
                                 type="button"
-                                className="portfolio-btn-primary rounded-full flex items-center justify-center shadow-lg portfolio-touch-target w-9 h-9 sm:w-10 sm:h-10"
+                                className={`portfolio-btn-primary rounded-full flex items-center justify-center shadow-md ${compact ? 'w-6 h-6 sm:w-7 sm:h-7' : 'w-7 h-7 sm:w-8 sm:h-8'}`}
                                 aria-label="Premium branding information"
                                 aria-expanded={showPremiumInfo}
                                 onClick={() => setShowPremiumInfo((open) => !open)}
                             >
-                                <Info size={compact ? 12 : 14} strokeWidth={3} className="flex-shrink-0" />
+                                <Info size={compact ? 10 : 12} strokeWidth={2.5} className="flex-shrink-0" />
                             </button>
 
                             <AnimatePresence>

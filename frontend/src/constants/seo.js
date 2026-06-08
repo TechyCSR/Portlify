@@ -4,6 +4,9 @@ import {
     BRAND_NAME_DISPLAY,
     DEFAULT_TITLE,
 } from './brand'
+import { getSiteStructuredData } from '../utils/seo'
+
+const LANDING_PAGE_JSONLD = getSiteStructuredData()
 
 export const PAGE_SEO = {
     '/': {
@@ -11,6 +14,7 @@ export const PAGE_SEO = {
         description: BRAND_DESCRIPTION,
         keywords: BRAND_KEYWORDS,
         robots: 'index, follow',
+        jsonLd: LANDING_PAGE_JSONLD,
     },
     '/premium': {
         title: `Premium Plans | ${BRAND_NAME_DISPLAY}`,
