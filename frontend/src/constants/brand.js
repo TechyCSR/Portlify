@@ -29,6 +29,13 @@ export const BRAND_SOCIAL = [
     'https://twitter.com/techycsr',
 ]
 
+export const PRODUCT_HUNT = {
+    url: 'https://www.producthunt.com/products/portlifyai?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-portlifyai',
+    postId: '1167150',
+    cacheKey: '1780997225343',
+    alt: 'PortlifyAi on Product Hunt — Dead Resume to Live Portfolio in Just 10 Seconds',
+}
+
 export const DEFAULT_SITE_URL = 'https://portlifyai.app'
 export const OG_IMAGE_PATH = '/og-image.png'
 export const OG_IMAGE_VERSION = '6'

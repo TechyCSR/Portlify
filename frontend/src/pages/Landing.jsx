@@ -18,6 +18,7 @@ import {
     Zap,
 } from 'lucide-react'
 import BrandLogo from '../components/BrandLogo'
+import ProductHuntBadge from '../components/ProductHuntBadge'
 import { IconTile, ICON_STROKE } from '../components/IconTile'
 import { BRAND_NAME_DISPLAY } from '../constants/brand'
 import { LANDING_FAQ } from '../constants/faq'
@@ -164,15 +165,15 @@ function Landing() {
                         transition={{ delay: 0.25, duration: 0.4 }}
                         className="text-sm sm:text-lg md:text-xl text-secondary max-w-2xl mx-auto mb-5 sm:mb-10 leading-relaxed px-1 sm:px-2"
                     >
-                        Turn your resume into a professional portfolio in under 30 seconds.
-                        Free to use — upload PDF, DOC, or DOCX and get a shareable URL instantly.
+                        Upload your resume as a PDF, DOC, or DOCX and get a shareable portfolio
+                        link in seconds. Free to use, no credit card required.
                     </motion.p>
 
                     <motion.div
                         initial={{ opacity: 0, y: 12 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.35, duration: 0.4 }}
-                        className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 mb-6 sm:mb-16 w-full max-w-sm sm:max-w-none mx-auto"
+                        className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 mb-4 sm:mb-5 w-full max-w-sm sm:max-w-none mx-auto"
                     >
                         <SignedOut>
                             <Link
@@ -198,6 +199,15 @@ function Landing() {
                                 <ArrowRight size={18} strokeWidth={ICON_STROKE} className="transition-transform group-hover:translate-x-0.5 flex-shrink-0" />
                             </Link>
                         </SignedIn>
+                    </motion.div>
+
+                    <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.45, duration: 0.4 }}
+                        className="flex justify-center mb-6 sm:mb-12"
+                    >
+                        <ProductHuntBadge />
                     </motion.div>
 
                     <motion.div
